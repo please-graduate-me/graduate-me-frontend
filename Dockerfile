@@ -5,11 +5,11 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY backend/package.json ./backend/
 COPY frontend/package.json ./frontend/
 COPY packages/shared/package.json ./packages/shared/
-RUN pnpm install --frozen-lockfile --filter @tubedict/web... --ignore-scripts
+RUN pnpm install --frozen-lockfile --filter @graduate-me/web... --ignore-scripts
 COPY . .
 ARG API_INTERNAL_URL=http://api:4000
 ENV API_INTERNAL_URL=$API_INTERNAL_URL
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm --filter @tubedict/shared build && pnpm --filter @tubedict/web build
+RUN pnpm --filter @graduate-me/shared build && pnpm --filter @graduate-me/web build
 EXPOSE 3000
-CMD ["pnpm", "--filter", "@tubedict/web", "start"]
+CMD ["pnpm", "--filter", "@graduate-me/web", "start"]
