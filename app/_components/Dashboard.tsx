@@ -174,6 +174,8 @@ export function Dashboard() {
                 <Link href={videoPaths.lesson(item.videoId)}>{item.title}</Link>
                 <span className={[styles.muted, styles.small].join(' ')}>
                   {jobLabels[item.status]}
+                  {` · ${item.category ?? '미분류'}`}
+                  {` · 좋아요 ${item.likeCount}`}
                   {item.count > 0 &&
                     ` · ${Math.min(item.currentIndex, item.count)}/${item.count} 구절 진행`}
                 </span>
