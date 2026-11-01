@@ -1,12 +1,15 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { reachedEnd, rewindTarget } from '@/domains/videos/lib/playback';
+import type { LearningSettings } from '@/domains/users/model/settings';
+import { createReplayScheduler } from '@/domains/videos/lib/replayScheduler';
 
 import { loadAPI, type Player } from '@/lib/youtube/player';
 /** 외부 플레이어의 수명 주기와 구절 재생을 화면 상태에서 분리한다. */
 export function useYouTubePlayer(
   youtubeId: string,
-  segment?: { id: string; start: number; end: number }
+  segment: { id: string; start: number; end: number } | undefined,
+  settings: LearningSettings
 ) {
   const container = useRef<HTMLDivElement>(null);
   const player = useRef<Player | null>(null);
@@ -15,22 +18,59 @@ export function useYouTubePlayer(
     bounds.current = segment;
   }, [segment]);
   const engaged = useRef(false);
+  const settingsRef = useRef(settings);
+  const manuallyPaused = useRef(false);
+  const [waiting, setWaiting] = useState(false);
+  const [scheduler] = useState(() => createReplayScheduler(setWaiting));
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
   const pendingSeek = useRef<{ target: number; at: number } | null>(null);
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState('');
   const [blocked, setBlocked] = useState(false);
-  const seek = useCallback((target: number, play: boolean) => {
-    const p = player.current;
-    if (!p) return;
-    pendingSeek.current = { target, at: Date.now() };
-    p.seekTo(target, true);
-    if (play) {
-      engaged.current = true;
-      setBlocked(false);
-      p.playVideo();
-    } else p.pauseVideo();
-  }, []);
+  const [availableRates, setAvailableRates] = useState<number[]>([1]);
+  const [actualRate, setActualRate] = useState(1);
+  const seek = useCallback(
+    (target: number, play: boolean, manual = true) => {
+      if (manual) scheduler.reset();
+      else scheduler.cancel();
+      manuallyPaused.current = !play;
+      const p = player.current;
+      if (!p || typeof p.seekTo !== 'function') return;
+      pendingSeek.current = { target, at: Date.now() };
+      p.seekTo(target, true);
+      if (play) {
+        engaged.current = true;
+        setBlocked(false);
+        p.playVideo();
+      } else p.pauseVideo();
+    },
+    [scheduler]
+  );
+  const scheduleReplay = useCallback(
+    (initial = false) => {
+      const range = bounds.current;
+      const options = settingsRef.current;
+      if (!options.autoReplay || !range || manuallyPaused.current) return;
+      scheduler.schedule(
+        () => {
+          // 예약 중 이동한 구절을 이전 구절의 예약으로 재생하지 않는다.
+          if (
+            settingsRef.current.autoReplay &&
+            bounds.current?.id === range.id &&
+            !manuallyPaused.current
+          )
+            seek(range.start, true, false);
+        },
+        options.replayDelay,
+        options.replayCount,
+        !initial
+      );
+    },
+    [scheduler, seek]
+  );
   useEffect(() => {
     let disposed = false;
     const containerElement = container.current;
@@ -52,21 +92,37 @@ export function useYouTubePlayer(
           },
           events: {
             onReady: () => {
-              if (!disposed) setReady(true);
+              if (!disposed) {
+                setAvailableRates(
+                  player.current?.getAvailablePlaybackRates() ?? [1]
+                );
+                setActualRate(player.current?.getPlaybackRate() ?? 1);
+                setReady(true);
+              }
             },
             onStateChange: (event: { data: number }) => {
               if (!disposed) {
                 setPlaying(event.data === 1);
                 if (event.data === 1) {
+                  scheduler.cancel();
                   engaged.current = true;
+                  manuallyPaused.current = false;
                   setBlocked(false);
                 }
+                if (event.data === 0) scheduleReplay();
               }
             },
+            onPlaybackRateChange: (event: { data: number }) => {
+              if (!disposed) setActualRate(event.data);
+            },
             onAutoplayBlocked: () => {
-              if (!disposed) setBlocked(true);
+              if (!disposed) {
+                scheduler.cancel();
+                setBlocked(true);
+              }
             },
             onError: (event: { data: number }) => {
+              scheduler.cancel();
               if (!disposed)
                 setError(
                   [101, 150].includes(event.data)
@@ -93,32 +149,68 @@ export function useYouTubePlayer(
         else if (Date.now() - pending.at < 4000) return;
         else {
           pendingSeek.current = null;
+          scheduler.cancel();
+          manuallyPaused.current = true;
           p.pauseVideo();
           setBlocked(true);
           return;
         }
       }
-      if (p.getPlayerState() === 1 && reachedEnd(current, range.end))
+      if (p.getPlayerState() === 1 && reachedEnd(current, range.end)) {
         p.pauseVideo();
+        scheduleReplay();
+      }
     }, 50);
     return () => {
       // 화면을 떠난 뒤 도착한 SDK 응답이 새 플레이어를 만들지 않게 한다.
       disposed = true;
       clearInterval(interval);
+      scheduler.cancel();
       player.current?.destroy();
       player.current = null;
       containerElement?.replaceChildren();
     };
-  }, [youtubeId]);
+  }, [youtubeId, scheduleReplay, scheduler]);
   useEffect(() => {
     if (!ready) return;
-    if (segment) seek(segment.start, engaged.current);
-    else player.current?.pauseVideo();
-  }, [ready, segment, seek]);
+    scheduler.reset();
+    if (segment) {
+      seek(segment.start, engaged.current);
+      manuallyPaused.current = false;
+      if (!engaged.current) scheduleReplay(true);
+    } else player.current?.pauseVideo();
+    return () => scheduler.cancel();
+  }, [ready, segment, seek, scheduler, scheduleReplay]);
+  useEffect(() => {
+    scheduler.reset();
+    if (ready && settings.autoReplay && bounds.current) {
+      manuallyPaused.current = false;
+      if (player.current?.getPlayerState() !== 1) scheduleReplay(true);
+    }
+  }, [
+    ready,
+    settings.autoReplay,
+    settings.replayDelay,
+    settings.replayCount,
+    scheduleReplay,
+    scheduler,
+  ]);
+  useEffect(() => {
+    if (ready)
+      player.current?.setPlaybackRate(
+        availableRates.includes(settings.playbackRate)
+          ? settings.playbackRate
+          : 1
+      );
+  }, [ready, settings.playbackRate, availableRates]);
   const replay = useCallback(() => {
     if (bounds.current) seek(bounds.current.start, true);
   }, [seek]);
-  const pause = useCallback(() => player.current?.pauseVideo(), []);
+  const pause = useCallback(() => {
+    manuallyPaused.current = true;
+    scheduler.cancel();
+    player.current?.pauseVideo?.();
+  }, [scheduler]);
   const resetPlayback = useCallback(
     (start: number) => {
       engaged.current = false;
@@ -127,25 +219,31 @@ export function useYouTubePlayer(
     [seek]
   );
   const prepareNext = useCallback(() => {
+    scheduler.cancel();
     engaged.current = true;
     player.current?.pauseVideo();
-  }, []);
+  }, [scheduler]);
   const toggle = useCallback(() => {
     const p = player.current,
       range = bounds.current;
     if (!p || !range) return;
-    if (p.getPlayerState() === 1) p.pauseVideo();
-    else if (
+    if (p.getPlayerState() === 1 || scheduler.waiting) {
+      manuallyPaused.current = true;
+      scheduler.cancel();
+      p.pauseVideo();
+    } else if (
       p.getCurrentTime() < range.start ||
       p.getCurrentTime() >= range.end
     )
       seek(range.start, true);
     else {
+      manuallyPaused.current = false;
+      scheduler.reset();
       engaged.current = true;
       setBlocked(false);
       p.playVideo();
     }
-  }, [seek]);
+  }, [seek, scheduler]);
   const rewind = useCallback(() => {
     const p = player.current,
       range = bounds.current;
@@ -159,6 +257,9 @@ export function useYouTubePlayer(
     mount,
     ready,
     playing,
+    waiting,
+    availableRates,
+    actualRate,
     error,
     blocked,
     replay,

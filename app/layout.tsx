@@ -1,5 +1,6 @@
 import * as styles from './layout.css';
 import { videoPaths } from '@/domains/videos/config/paths';
+import { userPaths } from '@/domains/users/config/paths';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
@@ -20,6 +21,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             graduate me
           </Link>
           <span>유튜브로 하는 영어 받아쓰기</span>
+          <Link href={userPaths.settings}>설정</Link>
         </header>
         <main className={styles.main}>{children}</main>
         <footer className={styles.footer}>한 구절씩, 내 속도로.</footer>

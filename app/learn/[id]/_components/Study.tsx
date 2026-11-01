@@ -19,11 +19,19 @@ import type { LearningAction } from '@/domains/videos/model/contracts';
 import { useYouTubePlayer } from './useYouTubePlayer';
 import { SegmentSelect } from './SegmentSelect';
 import { VideoInfo } from './VideoInfo';
+import { LearningOptions } from '../../../_components/LearningOptions';
+import { useLearningSettings } from '../../../_components/useLearningSettings';
 
 /** 저장과 제출 및 구절 이동의 순서를 한 화면에서 조율한다. */
 export function Study({ initial }: { initial: Lesson }) {
   const router = useRouter();
   const { video, segments } = initial;
+  const {
+    settings,
+    saving: savingSettings,
+    error: settingsError,
+    change: changeSettings,
+  } = useLearningSettings(initial.settings);
   const [index, setIndex] = useState(initial.progress.currentIndex);
   const [mode, setMode] = useState<Mode>(initial.progress.mode);
   const [states, setStates] = useState(initial.states);
@@ -46,6 +54,8 @@ export function Study({ initial }: { initial: Lesson }) {
     mount,
     ready: playerReady,
     playing,
+    waiting,
+    actualRate,
     error: playerError,
     blocked,
     replay,
@@ -54,7 +64,7 @@ export function Study({ initial }: { initial: Lesson }) {
     pause,
     resetPlayback,
     prepareNext,
-  } = useYouTubePlayer(video.youtubeId, segment);
+  } = useYouTubePlayer(video.youtubeId, segment, settings);
   const state = states.find(
     (item) => item.segmentId === segment?.id && item.mode === mode
   );
@@ -381,7 +391,7 @@ export function Study({ initial }: { initial: Lesson }) {
             <Button
               onClick={toggle}
               disabled={!playerReady || complete}>
-              {playing ? '일시정지' : '재생'}
+              {playing || waiting ? '일시정지' : '재생'}
             </Button>
             <Button
               variant='secondary'
@@ -400,6 +410,15 @@ export function Study({ initial }: { initial: Lesson }) {
             구절 끝에서 자동으로 멈춰요. 영상 안의 자막은 플레이어에서 끌 수
             있어요.
           </p>
+          {waiting && <p role='status'>다음 미리듣기를 기다리고 있어요.</p>}
+          <LearningOptions
+            settings={settings}
+            saving={savingSettings}
+            error={settingsError}
+            actualRate={actualRate}
+            ready={playerReady}
+            onChange={(next) => void changeSettings(next)}
+          />
           <details>
             <summary>키보드 단축키</summary>
             <ul className={styles.shortcutList}>

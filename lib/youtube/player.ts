@@ -2,6 +2,9 @@
 export type Player = {
   getCurrentTime(): number;
   getPlayerState(): number;
+  getAvailablePlaybackRates(): number[];
+  getPlaybackRate(): number;
+  setPlaybackRate(rate: number): void;
   seekTo(seconds: number, allowSeekAhead: boolean): void;
   playVideo(): void;
   pauseVideo(): void;
