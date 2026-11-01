@@ -1,16 +1,13 @@
+import { requireSession } from '../requireSession';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { getSession } from '@/domains/auth/api/auth';
 import { getAdminAccess, getAdminShares } from '@/domains/admin/api/admin';
 import { videoPaths } from '@/domains/videos/config/paths';
-import { createServerTransport } from '@/lib/api/server';
 import { Panel } from '@/components/ui/layouts/Panel';
 import { ShareDashboard } from './_components/ShareDashboard';
 
 /** 화면 진입 단계에서도 관리 권한을 확인한다. */
 export default async function AdminPage() {
-  const transport = await createServerTransport();
-  if (!(await getSession(transport))?.user) redirect(videoPaths.home);
+  const { transport } = await requireSession();
   if (!(await getAdminAccess(transport)).allowed)
     return (
       <Panel>

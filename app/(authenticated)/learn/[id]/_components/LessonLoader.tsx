@@ -60,7 +60,7 @@ export function LessonLoader({ initial }: { initial: Lesson }) {
     );
   return (
     <>
-      <Link href={videoPaths.home}>← 영상 목록</Link>
+      <Link href={videoPaths.library}>← 영상 목록</Link>
       <Panel className={[styles.processing].join(' ')}>
         <h1>{lesson?.video.title ?? '학습 영상 불러오기'}</h1>
         <p role='status'>

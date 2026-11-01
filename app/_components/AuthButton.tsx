@@ -20,7 +20,10 @@ export function AuthButton({
     setError('');
     try {
       const { csrfToken } = await getCsrfToken();
-      const callbackUrl = new URL(videoPaths.home, window.location.origin).href;
+      const callbackUrl = new URL(
+        action === 'signin' ? videoPaths.library : videoPaths.home,
+        window.location.origin
+      ).href;
       const result = await (action === 'signin' ? signIn : signOut)(
         csrfToken,
         callbackUrl

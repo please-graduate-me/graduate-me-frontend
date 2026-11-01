@@ -1,11 +1,10 @@
+import { requireSession } from '../../requireSession';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
-import { getSession } from '@/domains/auth/api/auth';
+import { notFound } from 'next/navigation';
 import { getSharedLesson } from '@/domains/shares/api/shares';
 import { videoPaths } from '@/domains/videos/config/paths';
 import { Panel } from '@/components/ui/layouts/Panel';
 import { ApiError } from '@/lib/api/request';
-import { createServerTransport } from '@/lib/api/server';
 import { SharedEntry } from './_components/SharedEntry';
 import * as styles from './page.css';
 
@@ -16,8 +15,7 @@ export default async function SharedVideo({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const transport = await createServerTransport();
-  if (!(await getSession(transport))?.user) redirect(videoPaths.home);
+  const { transport } = await requireSession();
   const lesson = await getSharedLesson(id, transport).catch((error) => {
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;

@@ -1,3 +1,5 @@
+import { getSession } from '@/domains/auth/api/auth';
+import { createServerTransport } from '@/lib/api/server';
 import * as styles from './layout.css';
 import { videoPaths } from '@/domains/videos/config/paths';
 import { userPaths } from '@/domains/users/config/paths';
@@ -10,7 +12,12 @@ export const metadata: Metadata = {
   description: '한 구절씩 듣고, 직접 쓰고, 다시 들어보세요.',
 };
 /** 페이지 전환에도 공통 화면 틀과 기본 스타일을 유지한다. */
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default async function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await getSession(await createServerTransport());
   return (
     <html lang='ko'>
       <body>
@@ -21,7 +28,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             graduate me
           </Link>
           <span>유튜브로 하는 영어 받아쓰기</span>
-          <Link href={userPaths.settings}>설정</Link>
+          {session?.user && (
+            <>
+              <Link href={videoPaths.library}>내 영상</Link>
+              <Link href={userPaths.settings}>설정</Link>
+            </>
+          )}
         </header>
         <main className={styles.main}>{children}</main>
         <footer className={styles.footer}>한 구절씩, 내 속도로.</footer>

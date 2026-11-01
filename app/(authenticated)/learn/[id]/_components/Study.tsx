@@ -16,13 +16,13 @@ import { useRouter } from 'next/navigation';
 import { type Grade, type Mode } from '@/domains/videos/model/contracts';
 import { isTextInput } from '@/lib/dom/isTextInput';
 import type { LearningAction } from '@/domains/videos/model/contracts';
-import { useYouTubePlayer } from './useYouTubePlayer';
+import { useYouTubePlayer } from '../../../../_components/useYouTubePlayer';
 import { SegmentSelect } from './SegmentSelect';
 import { VideoInfo } from './VideoInfo';
 import { PlaybackStatus } from './PlaybackStatus';
 import { ShareButton } from './ShareButton';
-import { LearningOptions } from '../../../_components/LearningOptions';
-import { useLearningSettings } from '../../../_components/useLearningSettings';
+import { LearningOptions } from '../../../../_components/LearningOptions';
+import { useLearningSettings } from '../../../../_components/useLearningSettings';
 
 /** 저장과 제출 및 구절 이동의 순서를 한 화면에서 조율한다. */
 export function Study({ initial }: { initial: Lesson }) {
@@ -324,12 +324,12 @@ export function Study({ initial }: { initial: Lesson }) {
   return (
     <>
       <Link
-        href={videoPaths.home}
+        href={videoPaths.library}
         onClick={(event) => {
           if (unsaved.current || busyRef.current) {
             event.preventDefault();
             void perform(async () => {
-              router.push(videoPaths.home);
+              router.push(videoPaths.library);
             });
           }
         }}>
