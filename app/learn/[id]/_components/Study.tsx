@@ -19,6 +19,7 @@ import type { LearningAction } from '@/domains/videos/model/contracts';
 import { useYouTubePlayer } from './useYouTubePlayer';
 import { SegmentSelect } from './SegmentSelect';
 import { VideoInfo } from './VideoInfo';
+import { PlaybackStatus } from './PlaybackStatus';
 import { LearningOptions } from '../../../_components/LearningOptions';
 import { useLearningSettings } from '../../../_components/useLearningSettings';
 
@@ -54,6 +55,7 @@ export function Study({ initial }: { initial: Lesson }) {
     mount,
     ready: playerReady,
     playing,
+    buffering,
     waiting,
     actualRate,
     error: playerError,
@@ -371,6 +373,14 @@ export function Study({ initial }: { initial: Lesson }) {
         <Panel
           hidden={complete}
           aria-label='영상 플레이어'>
+          <PlaybackStatus
+            playing={playing}
+            waiting={waiting}
+            ready={playerReady}
+            buffering={buffering}
+            blocked={blocked}
+            error={playerError}
+          />
           <div
             className={styles.videoFrame}
             ref={mount}
@@ -410,7 +420,6 @@ export function Study({ initial }: { initial: Lesson }) {
             구절 끝에서 자동으로 멈춰요. 영상 안의 자막은 플레이어에서 끌 수
             있어요.
           </p>
-          {waiting && <p role='status'>다음 미리듣기를 기다리고 있어요.</p>}
           <LearningOptions
             settings={settings}
             saving={savingSettings}

@@ -28,6 +28,7 @@ export function useYouTubePlayer(
   const pendingSeek = useRef<{ target: number; at: number } | null>(null);
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [buffering, setBuffering] = useState(false);
   const [error, setError] = useState('');
   const [blocked, setBlocked] = useState(false);
   const [availableRates, setAvailableRates] = useState<number[]>([1]);
@@ -103,6 +104,7 @@ export function useYouTubePlayer(
             onStateChange: (event: { data: number }) => {
               if (!disposed) {
                 setPlaying(event.data === 1);
+                setBuffering(event.data === 3);
                 if (event.data === 1) {
                   scheduler.cancel();
                   engaged.current = true;
@@ -257,6 +259,7 @@ export function useYouTubePlayer(
     mount,
     ready,
     playing,
+    buffering,
     waiting,
     availableRates,
     actualRate,
