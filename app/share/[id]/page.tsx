@@ -1,0 +1,61 @@
+import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
+import { getSession } from '@/domains/auth/api/auth';
+import { getSharedLesson } from '@/domains/shares/api/shares';
+import { videoPaths } from '@/domains/videos/config/paths';
+import { Panel } from '@/components/ui/layouts/Panel';
+import { ApiError } from '@/lib/api/request';
+import { createServerTransport } from '@/lib/api/server';
+import { SharedEntry } from './_components/SharedEntry';
+import * as styles from './page.css';
+
+/** 로그인 확인을 마친 사용자에게만 공유받은 영상과 구절을 제공한다. */
+export default async function SharedVideo({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const transport = await createServerTransport();
+  if (!(await getSession(transport))?.user) redirect(videoPaths.home);
+  const lesson = await getSharedLesson(id, transport).catch((error) => {
+    if (error instanceof ApiError && error.status === 404) notFound();
+    throw error;
+  });
+  const query = new URLSearchParams({
+    rel: '0',
+    ...(lesson.segment
+      ? {
+          start: String(Math.floor(lesson.segment.start)),
+          end: String(Math.ceil(lesson.segment.end)),
+        }
+      : {}),
+  });
+  return (
+    <>
+      <Link href={videoPaths.home}>← 홈</Link>
+      <Panel>
+        <p>{lesson.segment ? '공유받은 구절' : '공유받은 영상'}</p>
+        <h1>{lesson.video.title}</h1>
+        <p>
+          {lesson.video.category ?? '미분류'}
+          {lesson.segment &&
+            ` · ${lesson.segment.start.toFixed(1)}초 ~ ${lesson.segment.end.toFixed(1)}초`}
+        </p>
+        <iframe
+          className={styles.player}
+          src={`https://www.youtube.com/embed/${lesson.video.youtubeId}?${query}`}
+          title={lesson.video.title}
+          allow='accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+          allowFullScreen
+          referrerPolicy='strict-origin-when-cross-origin'
+        />
+        <SharedEntry
+          key={id}
+          id={id}
+          segment={Boolean(lesson.segment)}
+        />
+      </Panel>
+    </>
+  );
+}

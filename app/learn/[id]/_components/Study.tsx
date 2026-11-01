@@ -20,6 +20,7 @@ import { useYouTubePlayer } from './useYouTubePlayer';
 import { SegmentSelect } from './SegmentSelect';
 import { VideoInfo } from './VideoInfo';
 import { PlaybackStatus } from './PlaybackStatus';
+import { ShareButton } from './ShareButton';
 import { LearningOptions } from '../../../_components/LearningOptions';
 import { useLearningSettings } from '../../../_components/useLearningSettings';
 
@@ -360,6 +361,7 @@ export function Study({ initial }: { initial: Lesson }) {
         video={video}
         initialFavorite={initial.progress.favorite}
       />
+      <ShareButton videoId={video.id} />
       <SegmentSelect
         segments={segments}
         states={states}
@@ -497,6 +499,11 @@ export function Study({ initial }: { initial: Lesson }) {
                 </select>
               </label>
             </div>
+            <ShareButton
+              key={segment.id}
+              videoId={video.id}
+              segmentId={segment.id}
+            />
             <progress
               max={segments.length}
               value={index}
