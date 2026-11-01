@@ -17,6 +17,7 @@ import { type Grade, type Mode } from '@/domains/videos/model/contracts';
 import { isTextInput } from '@/lib/dom/isTextInput';
 import type { LearningAction } from '@/domains/videos/model/contracts';
 import { useYouTubePlayer } from './useYouTubePlayer';
+import { SegmentSelect } from './SegmentSelect';
 
 /** 저장과 제출 및 구절 이동의 순서를 한 화면에서 조율한다. */
 export function Study({ initial }: { initial: Lesson }) {
@@ -328,6 +329,14 @@ export function Study({ initial }: { initial: Lesson }) {
           )}
         </p>
       )}
+      <SegmentSelect
+        segments={segments}
+        states={states}
+        mode={mode}
+        index={index}
+        disabled={busy}
+        onNavigate={(next) => void navigate(next)}
+      />
       <div className={styles.studyGrid}>
         <Panel
           hidden={complete}
