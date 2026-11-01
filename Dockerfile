@@ -5,7 +5,6 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY backend/package.json ./backend/
 COPY frontend/package.json ./frontend/
 COPY packages/shared/package.json ./packages/shared/
-COPY packages/database/package.json ./packages/database/
 RUN pnpm install --frozen-lockfile --filter @tubedict/web... --ignore-scripts
 COPY . .
 ARG API_INTERNAL_URL=http://api:4000
