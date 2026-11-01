@@ -47,6 +47,7 @@ export function Study({ initial }: { initial: Lesson }) {
     rewind,
     toggle,
     pause,
+    resetPlayback,
     prepareNext,
   } = useYouTubePlayer(video.youtubeId, segment);
   const state = states.find(
@@ -185,6 +186,26 @@ export function Study({ initial }: { initial: Lesson }) {
       setIndex(next);
       setMode(nextMode);
       setFeedback(null);
+    });
+  }
+  async function reset() {
+    if (busyRef.current) return;
+    pause();
+    if (
+      !window.confirm(
+        '이 영상의 두 학습 모드에 저장된 답안, 제출 기록, 정답 보기, 건너뛰기와 진도를 모두 삭제할까요? 되돌릴 수 없으며 첫 구절부터 다시 시작합니다.'
+      )
+    )
+      return;
+    await perform(async () => {
+      // 대기 중인 저장을 끝낸 뒤 초기화해야 이전 답안이 다시 저장되지 않는다.
+      await enqueue({ action: 'reset' });
+      resetPlayback(segments[0]?.start ?? 0);
+      setStates([]);
+      setIndex(0);
+      setMode('full');
+      setFeedback(null);
+      setSaveStatus('저장됨');
     });
   }
   async function submit() {
@@ -582,6 +603,19 @@ export function Study({ initial }: { initial: Lesson }) {
           </Panel>
         )}
       </div>
+      <Panel>
+        <h2>학습 기록 초기화</h2>
+        <p className={styles.muted}>
+          이 영상의 두 모드 답안과 모든 학습 기록을 삭제하고 처음부터
+          시작합니다. 다른 영상과 다른 사용자의 기록은 유지됩니다.
+        </p>
+        <Button
+          variant='secondary'
+          disabled={busy}
+          onClick={() => void reset()}>
+          이 영상 기록 초기화
+        </Button>
+      </Panel>
     </>
   );
 }

@@ -119,6 +119,13 @@ export function useYouTubePlayer(
     if (bounds.current) seek(bounds.current.start, true);
   }, [seek]);
   const pause = useCallback(() => player.current?.pauseVideo(), []);
+  const resetPlayback = useCallback(
+    (start: number) => {
+      engaged.current = false;
+      seek(start, false);
+    },
+    [seek]
+  );
   const prepareNext = useCallback(() => {
     engaged.current = true;
     player.current?.pauseVideo();
@@ -158,6 +165,7 @@ export function useYouTubePlayer(
     toggle,
     rewind,
     pause,
+    resetPlayback,
     prepareNext,
   };
 }
