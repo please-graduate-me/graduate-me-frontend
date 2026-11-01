@@ -1,18 +1,37 @@
 'use client';
 import { useState } from 'react';
 import { Button } from '@/components/ui/primitives/Button';
-import { setVideoLike } from '@/domains/videos/api/videos';
+import { setVideoLike, setVideoFavorite } from '@/domains/videos/api/videos';
 import type { Lesson } from '@/domains/videos/model/contracts';
 import * as styles from './VideoInfo.css';
 
 /** 학습 진도와 독립된 영상 정보와 서비스 내 좋아요를 표시한다. */
-export function VideoInfo({ video }: { video: Lesson['video'] }) {
+export function VideoInfo({
+  video,
+  initialFavorite,
+}: {
+  video: Lesson['video'];
+  initialFavorite: boolean;
+}) {
+  const [favorite, setFavorite] = useState(initialFavorite);
   const [reaction, setReaction] = useState({
     liked: video.liked,
     likeCount: video.likeCount,
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  async function toggleFavorite() {
+    setBusy(true);
+    setError('');
+    try {
+      await setVideoFavorite(video.id, !favorite);
+      setFavorite(!favorite);
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
   async function toggleLike() {
     setBusy(true);
     setError('');
@@ -53,6 +72,16 @@ export function VideoInfo({ video }: { video: Lesson['video'] }) {
       </Button>
       <p className={styles.description}>
         이 서비스에서 학습에 도움이 된 영상에 좋아요를 남겨 주세요.
+      </p>
+      <Button
+        variant='secondary'
+        aria-pressed={favorite}
+        disabled={busy}
+        onClick={() => void toggleFavorite()}>
+        {favorite ? '관심 영상 해제' : '관심 영상으로 표시'}
+      </Button>
+      <p className={styles.description}>
+        관심 영상 표시는 내 목록에서만 사용합니다.
       </p>
       {error && <p role='alert'>{error}</p>}
     </div>

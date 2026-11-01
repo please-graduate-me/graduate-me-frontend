@@ -2,41 +2,20 @@
 import { Button } from '@/components/ui/primitives/Button';
 import { Panel } from '@/components/ui/layouts/Panel';
 import * as styles from './Dashboard.css';
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { recommendations, jobLabels } from '@/domains/videos/config/catalog';
-import { listVideos, registerVideo } from '@/domains/videos/api/videos';
+import { recommendations } from '@/domains/videos/config/catalog';
+import { registerVideo } from '@/domains/videos/api/videos';
 import { videoPaths } from '@/domains/videos/config/paths';
-import type { VideoHistory } from '@/domains/videos/model/contracts';
+import { MyVideos } from './MyVideos';
 /** 영상 선택과 등록 후 이동을 홈 화면에서 조율한다. */
 export function Dashboard() {
   const router = useRouter();
   const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [history, setHistory] = useState<VideoHistory | null>(null);
   const [topic, setTopic] = useState('');
   const [level, setLevel] = useState('');
-  const [historyError, setHistoryError] = useState('');
-  const [reload, setReload] = useState(0);
-  function refreshHistory() {
-    setHistoryError('');
-    setReload((value) => value + 1);
-  }
-  useEffect(() => {
-    let disposed = false;
-    listVideos()
-      .then((value) => {
-        if (!disposed) setHistory(value);
-      })
-      .catch((error) => {
-        if (!disposed) setHistoryError(error.message);
-      });
-    return () => {
-      disposed = true;
-    };
-  }, [reload]);
   async function register(value: string) {
     setError('');
     setBusy(true);
@@ -148,42 +127,7 @@ export function Dashboard() {
           </p>
         )}
       </section>
-      <section>
-        <h2>내 학습</h2>
-        {historyError ? (
-          <p
-            role='alert'
-            className={styles.error}>
-            {historyError}{' '}
-            <Button
-              variant='secondary'
-              onClick={refreshHistory}>
-              다시 불러오기
-            </Button>
-          </p>
-        ) : history === null ? (
-          <p role='status'>학습 기록을 불러오는 중…</p>
-        ) : history.length === 0 ? (
-          <p className={styles.muted}>
-            아직 학습한 영상이 없어요. 위에서 첫 영상을 선택해 보세요.
-          </p>
-        ) : (
-          <ul className={styles.history}>
-            {history.map((item) => (
-              <li key={item.videoId}>
-                <Link href={videoPaths.lesson(item.videoId)}>{item.title}</Link>
-                <span className={[styles.muted, styles.small].join(' ')}>
-                  {jobLabels[item.status]}
-                  {` · ${item.category ?? '미분류'}`}
-                  {` · 좋아요 ${item.likeCount}`}
-                  {item.count > 0 &&
-                    ` · ${Math.min(item.currentIndex, item.count)}/${item.count} 구절 진행`}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <MyVideos />
     </>
   );
 }

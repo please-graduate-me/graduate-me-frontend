@@ -27,6 +27,9 @@ export function Study({ initial }: { initial: Lesson }) {
   const [index, setIndex] = useState(initial.progress.currentIndex);
   const [mode, setMode] = useState<Mode>(initial.progress.mode);
   const [states, setStates] = useState(initial.states);
+  const [difficultSegmentIds, setDifficultSegmentIds] = useState(
+    initial.difficultSegmentIds
+  );
   const [feedback, setFeedback] = useState<Grade | null>(null);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
@@ -195,7 +198,7 @@ export function Study({ initial }: { initial: Lesson }) {
     pause();
     if (
       !window.confirm(
-        '이 영상의 두 학습 모드에 저장된 답안, 제출 기록, 정답 보기, 건너뛰기와 진도를 모두 삭제할까요? 되돌릴 수 없으며 첫 구절부터 다시 시작합니다.'
+        '이 영상의 두 학습 모드에 저장된 답안, 제출 기록, 정답 보기, 건너뛰기, 안 들리는 구절 표시와 진도를 모두 삭제할까요? 되돌릴 수 없으며 첫 구절부터 다시 시작합니다.'
       )
     )
       return;
@@ -204,6 +207,7 @@ export function Study({ initial }: { initial: Lesson }) {
       await enqueue({ action: 'reset' });
       resetPlayback(segments[0]?.start ?? 0);
       setStates([]);
+      setDifficultSegmentIds([]);
       setIndex(0);
       setMode('full');
       setFeedback(null);
@@ -226,6 +230,16 @@ export function Study({ initial }: { initial: Lesson }) {
         prepareNext();
         setIndex(result.nextIndex!);
       }
+    });
+  }
+  async function toggleDifficulty() {
+    if (!segment) return;
+    const marked = !difficultSegmentIds.includes(segment.id);
+    await perform(async () => {
+      await enqueue({ action: 'difficulty', segmentId: segment.id, marked });
+      setDifficultSegmentIds((ids) =>
+        marked ? [...ids, segment.id] : ids.filter((id) => id !== segment.id)
+      );
     });
   }
   async function skip() {
@@ -330,10 +344,14 @@ export function Study({ initial }: { initial: Lesson }) {
           )}
         </p>
       )}
-      <VideoInfo video={video} />
+      <VideoInfo
+        video={video}
+        initialFavorite={initial.progress.favorite}
+      />
       <SegmentSelect
         segments={segments}
         states={states}
+        difficultSegmentIds={difficultSegmentIds}
         mode={mode}
         index={index}
         disabled={busy}
@@ -456,6 +474,15 @@ export function Study({ initial }: { initial: Lesson }) {
               value={index}
               aria-label='학습 진행'
             />
+            <Button
+              variant='secondary'
+              disabled={busy}
+              aria-pressed={difficultSegmentIds.includes(segment.id)}
+              onClick={() => void toggleDifficulty()}>
+              {difficultSegmentIds.includes(segment.id)
+                ? '안 들리는 구절 표시 해제'
+                : '안 들리는 구절로 표시'}
+            </Button>
             <p className={[styles.muted, styles.small].join(' ')}>
               {segment.start.toFixed(1)}초 ~ {segment.end.toFixed(1)}초 · 듣고
               빈칸에 입력해 주세요.
@@ -617,8 +644,9 @@ export function Study({ initial }: { initial: Lesson }) {
       <Panel>
         <h2>학습 기록 초기화</h2>
         <p className={styles.muted}>
-          이 영상의 두 모드 답안과 모든 학습 기록을 삭제하고 처음부터
-          시작합니다. 다른 영상과 다른 사용자의 기록은 유지됩니다.
+          이 영상의 두 모드 답안, 안 들리는 구절 표시와 모든 학습 기록을
+          삭제하고 처음부터 시작합니다. 다른 영상과 다른 사용자의 기록은
+          유지됩니다.
         </p>
         <Button
           variant='secondary'
