@@ -149,7 +149,12 @@ const architecture = {
           if (currentLayer < 0) return;
           if (domain(file) && specifier.startsWith('next/'))
             report(node, 'domains는 Next.js에 의존하지 않는다.');
-          if (specifier.startsWith('@prisma/'))
+          if (
+            specifier === 'typeorm' ||
+            specifier.startsWith('typeorm/') ||
+            specifier.startsWith('@nestjs/typeorm') ||
+            specifier.startsWith('@prisma/')
+          )
             report(node, '프론트엔드에서 DB 패키지를 사용하지 않는다.');
           const target = resolveImport(file, specifier);
 
