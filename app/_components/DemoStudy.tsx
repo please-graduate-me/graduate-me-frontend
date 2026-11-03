@@ -7,6 +7,7 @@ import { getDemoLesson } from '@/domains/videos/api/demo';
 import { demoYoutubeId, type DemoLesson } from '@/domains/videos/model/demo';
 import { useYouTubePlayer } from './useYouTubePlayer';
 import * as styles from './DemoStudy.css';
+import { VideoTranscript } from './VideoTranscript';
 
 /** 공개 체험의 답안과 채점은 브라우저에만 두고 계정 기록에 저장하지 않는다. */
 export function DemoStudy() {
@@ -78,10 +79,14 @@ export function DemoStudy() {
     <Panel>
       <h2>로그인 없이 체험하기</h2>
       <p>짧은 구절을 듣고 직접 입력해 보세요. 체험 기록은 저장되지 않습니다.</p>
-      <div
-        className={styles.player}
-        ref={mount}
-      />
+      <VideoTranscript
+        segments={lesson?.segments ?? []}
+        currentId={segment?.id}>
+        <div
+          className={styles.player}
+          ref={mount}
+        />
+      </VideoTranscript>
       {playbackError && <p role='alert'>{playbackError}</p>}
       {error && <p role='alert'>{error}</p>}
       {!segment && (

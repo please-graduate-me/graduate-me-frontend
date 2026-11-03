@@ -17,6 +17,7 @@ import { type Grade, type Mode } from '@/domains/videos/model/contracts';
 import { isTextInput } from '@/lib/dom/isTextInput';
 import type { LearningAction } from '@/domains/videos/model/contracts';
 import { useYouTubePlayer } from '../../../../_components/useYouTubePlayer';
+import { VideoTranscript } from '../../../../_components/VideoTranscript';
 import { SegmentSelect } from './SegmentSelect';
 import { VideoInfo } from './VideoInfo';
 import { PlaybackStatus } from './PlaybackStatus';
@@ -36,6 +37,7 @@ export function Study({ initial }: { initial: Lesson }) {
     change: changeSettings,
   } = useLearningSettings(initial.settings);
 
+  const [transcriptVersion, setTranscriptVersion] = useState(0);
   const [compactVideo, setCompactVideo] = useState(false);
   const [index, setIndex] = useState(initial.progress.currentIndex);
   const [mode, setMode] = useState<Mode>(initial.progress.mode);
@@ -255,6 +257,7 @@ export function Study({ initial }: { initial: Lesson }) {
       setDifficultSegmentIds([]);
       setIndex(0);
       setMode('blank');
+      setTranscriptVersion((value) => value + 1);
       setFeedback(null);
       setSaveStatus('저장됨');
     });
@@ -448,14 +451,20 @@ export function Study({ initial }: { initial: Lesson }) {
               {compactVideo ? '크게 보기' : '작게 보기'}
             </Button>
           </div>
-          <div
-            id='lesson-video-player'
-            className={[
-              styles.videoFrame,
-              compactVideo ? styles.compactVideo : '',
-            ].join(' ')}
-            ref={mount}
-          />
+          <VideoTranscript
+            resetVersion={transcriptVersion}
+            segments={segments}
+            currentId={segment?.id}
+            initialVisitedIds={states.map((item) => item.segmentId)}>
+            <div
+              id='lesson-video-player'
+              className={[
+                styles.videoFrame,
+                compactVideo ? styles.compactVideo : '',
+              ].join(' ')}
+              ref={mount}
+            />
+          </VideoTranscript>
           {playerError && (
             <p
               role='alert'

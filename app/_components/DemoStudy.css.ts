@@ -6,7 +6,6 @@ export const player = style({
   aspectRatio: '16 / 9',
   width: '100%',
   background: vars.color.video,
-  marginBlock: vars.space.md,
 });
 
 /** 좁은 화면에서는 학습 조작을 다음 줄로 배치한다. */
