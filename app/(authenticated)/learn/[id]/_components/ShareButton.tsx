@@ -16,22 +16,28 @@ export function ShareButton({
   const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+
   async function share() {
     if (busy) return;
     setBusy(true);
     setMessage('');
+
     try {
       let link = url;
+
       if (!link) {
         requestId.current ??= crypto.randomUUID();
+
         const result = await createShare({
           videoId,
           segmentId,
           requestId: requestId.current,
         });
+
         link = new URL(result.path, window.location.origin).href;
         setUrl(link);
       }
+
       try {
         await navigator.clipboard.writeText(link);
         setMessage('공유 링크를 복사했습니다.');
@@ -44,6 +50,7 @@ export function ShareButton({
       setBusy(false);
     }
   }
+
   return (
     <div className={styles.container}>
       <Button

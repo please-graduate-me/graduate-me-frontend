@@ -1,4 +1,5 @@
 import { style } from '@vanilla-extract/css';
+
 /** 영상과 구절 미리보기의 비율을 작은 화면에서도 유지한다. */
 export const player = style({
   width: '100%',

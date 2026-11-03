@@ -1,5 +1,6 @@
 import { style, globalStyle } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
+
 /** 추천 항목 수와 화면 폭이 달라도 읽는 순서를 유지한다. */
 export const cards = style([
   {
@@ -11,6 +12,7 @@ export const cards = style([
     '@media': { '(max-width: 800px)': { gridTemplateColumns: '1fr' } },
   },
 ]);
+
 /** 실패 메시지를 일반 안내와 시각적으로 구분한다. */
 export const error = style([
   {
@@ -24,6 +26,7 @@ export const error = style([
     background: vars.color.errorBackground,
   },
 ]);
+
 /** 영역의 성격을 제목보다 낮은 위계로 전달한다. */
 export const eyebrow = style([
   {
@@ -33,10 +36,12 @@ export const eyebrow = style([
     marginBottom: '10px',
   },
 ]);
+
 /** 학습 기록에 목록 기본 여백이 중복되지 않게 한다. */
 export const history = style([
   { listStyle: 'none', margin: '0', padding: '0' },
 ]);
+
 /** 보조 설명이 주요 행동보다 먼저 눈에 띄지 않게 한다. */
 export const muted = style([{ color: vars.color.muted }]);
 
@@ -68,8 +73,10 @@ export const sectionHeading = style([
     },
   },
 ]);
+
 /** 부가 정보가 본문과 같은 강조 수준을 갖지 않게 한다. */
 export const small = style([{ fontSize: '13px' }]);
+
 /** URL 입력 영역의 선택자가 다른 폼으로 퍼지지 않게 한다. */
 export const urlForm = style({});
 
@@ -86,6 +93,7 @@ export const card = style({
   flexDirection: 'column',
   alignItems: 'flex-start',
 });
+
 /** 설명 길이가 달라도 추천 선택 버튼의 위치를 맞춘다. */
 export const cardAction = style({ marginTop: 'auto' });
 
@@ -96,6 +104,7 @@ globalStyle(`.${history} li`, {
   justifyContent: 'space-between',
   gap: '16px',
 });
+
 globalStyle(`.${history} a`, { fontWeight: '600' });
 
 globalStyle(`.${history} li`, {

@@ -6,11 +6,13 @@ import { userPaths } from '@/domains/users/config/paths';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
+
 /** 검색 결과와 브라우저에서 서비스 설명을 일관되게 제공한다. */
 export const metadata: Metadata = {
   title: 'graduate me | 유튜브 받아쓰기',
   description: '한 구절씩 듣고, 직접 쓰고, 다시 들어보세요.',
 };
+
 /** 페이지 전환에도 공통 화면 틀과 기본 스타일을 유지한다. */
 export default async function Layout({
   children,
@@ -18,6 +20,7 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   const session = await getSession(await createServerTransport());
+
   return (
     <html lang='ko'>
       <body>

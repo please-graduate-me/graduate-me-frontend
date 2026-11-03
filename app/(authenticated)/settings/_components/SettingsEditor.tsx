@@ -6,6 +6,7 @@ import { useLearningSettings } from '../../../_components/useLearningSettings';
 /** 설정 페이지에서도 학습 중과 동일한 계정 옵션을 편집한다. */
 export function SettingsEditor({ initial }: { initial: LearningSettings }) {
   const { settings, saving, error, change } = useLearningSettings(initial);
+
   return (
     <LearningOptions
       settings={settings}

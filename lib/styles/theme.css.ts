@@ -1,4 +1,5 @@
 import { createGlobalTheme } from '@vanilla-extract/css';
+
 /** 공통 디자인 값이 화면마다 달라지지 않도록 한곳에서 관리한다. */
 export const vars = createGlobalTheme(':root', {
   color: {

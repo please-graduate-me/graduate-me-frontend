@@ -17,6 +17,7 @@ export function PlaybackStatus({
   error: string;
 }) {
   const active = playing && !blocked && !error;
+
   const label = error
     ? '재생할 수 없음'
     : blocked
@@ -30,6 +31,7 @@ export function PlaybackStatus({
             : waiting
               ? '다음 재생 대기'
               : '일시정지';
+
   return (
     <div
       className={`${styles.container} ${active ? styles.active : ''}`}

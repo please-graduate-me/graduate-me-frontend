@@ -2,6 +2,7 @@
 export function rewindTarget(current: number, start: number, end: number) {
   return Math.max(start, Math.min(end, current) - 2);
 }
+
 /** 구절 종료 판정을 재생 제어에서 일관되게 사용한다. */
 export function reachedEnd(current: number, end: number) {
   return current >= end;

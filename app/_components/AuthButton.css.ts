@@ -1,5 +1,6 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
+
 /** 실패 메시지를 일반 안내와 시각적으로 구분한다. */
 export const error = style([
   {

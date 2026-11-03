@@ -9,6 +9,8 @@ import { createServerTransport } from '@/lib/api/server';
 export const requireSession = cache(async () => {
   const transport = await createServerTransport();
   const session = await getSession(transport);
+
   if (!session?.user) redirect(videoPaths.home);
+
   return { session, transport };
 });

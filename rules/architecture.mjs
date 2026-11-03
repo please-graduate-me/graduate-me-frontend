@@ -3,15 +3,18 @@ import path from 'node:path';
 import ts from 'typescript';
 import { fileURLToPath } from 'node:url';
 
-const root = path.dirname(fileURLToPath(import.meta.url));
+const root = fileURLToPath(new URL('../', import.meta.url));
 const relative = (file) => path.relative(root, file).split(path.sep).join('/');
+
 function resolveImport(from, specifier) {
   const base = specifier.startsWith('@/')
     ? path.join(root, specifier.slice(2))
     : specifier.startsWith('.')
       ? path.resolve(path.dirname(from), specifier)
       : null;
+
   if (!base) return null;
+
   return (
     [
       base,
@@ -22,26 +25,34 @@ function resolveImport(from, specifier) {
     ].find((file) => fs.existsSync(file) && fs.statSync(file).isFile()) ?? base
   );
 }
+
 function domain(file) {
   return relative(file).match(/^domains\/([^/]+)\//)?.[1];
 }
+
 function layer(file) {
   const name = relative(file);
+
   if (name.startsWith('lib/') || name.startsWith('components/ui/')) return 0;
   if (name.startsWith('domains/')) return 1;
   if (name.includes('/_components/')) return 2;
   if (name.startsWith('app/')) return 3;
+
   return -1;
 }
+
 function imports(file) {
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return [];
+
   const source = ts.createSourceFile(
     file,
     fs.readFileSync(file, 'utf8'),
     ts.ScriptTarget.Latest,
     true
   );
+
   const result = [];
+
   function visit(node) {
     if (
       (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
@@ -52,6 +63,7 @@ function imports(file) {
       if (ts.isExportDeclaration(node) && node.isTypeOnly) return;
       result.push(node.moduleSpecifier.text);
     }
+
     if (
       ts.isCallExpression(node) &&
       node.expression.kind === ts.SyntaxKind.ImportKeyword &&
@@ -60,27 +72,35 @@ function imports(file) {
       result.push(node.arguments[0].text);
     ts.forEachChild(node, visit);
   }
+
   visit(source);
+
   return result;
 }
+
 function serverDependency(file, seen = new Set()) {
   if (seen.has(file)) return false;
   seen.add(file);
+
   return imports(file).some(
     (specifier) =>
       specifier === 'server-only' ||
       specifier === 'next/headers' ||
       (() => {
         const target = resolveImport(file, specifier);
+
         return target && serverDependency(target, seen);
       })()
   );
 }
+
 function hasCycle(start, file = start, seen = new Set()) {
   if (seen.has(file)) return false;
   seen.add(file);
+
   return imports(file).some((specifier) => {
     const target = resolveImport(file, specifier);
+
     return (
       target &&
       domain(target) &&
@@ -88,6 +108,7 @@ function hasCycle(start, file = start, seen = new Set()) {
     );
   });
 }
+
 function returnsJsx(node) {
   if (!node || typeof node !== 'object') return false;
   if (node.type === 'JSXElement' || node.type === 'JSXFragment') return true;
@@ -99,6 +120,7 @@ function returnsJsx(node) {
     ].includes(node.type)
   )
     return false;
+
   return Object.entries(node).some(
     ([key, value]) =>
       key !== 'parent' &&
@@ -116,11 +138,14 @@ const architecture = {
       },
       create(context) {
         const file = context.filename;
+
         const report = (node, reason) =>
           context.report({ node, messageId: 'invalid', data: { reason } });
+
         function check(node, specifier) {
           if (typeof specifier !== 'string') return;
           const currentLayer = layer(file);
+
           if (currentLayer < 0) return;
           if (domain(file) && specifier.startsWith('next/'))
             report(node, 'domains는 Next.js에 의존하지 않는다.');
@@ -129,23 +154,28 @@ const architecture = {
           if (specifier.startsWith('@prisma/'))
             report(node, '프론트엔드에서 DB 패키지를 사용하지 않는다.');
           const target = resolveImport(file, specifier);
+
           if (!target) return;
           const targetName = relative(target);
+
           if (targetName.startsWith('../backend/'))
             report(node, '백엔드 구현과 DB 코드를 직접 참조하지 않는다.');
           if (layer(target) > currentLayer)
             report(node, '하위 계층은 상위 계층을 import하지 않는다.');
+
           if (targetName.includes('/_components/')) {
             const owner = target.slice(
               0,
               target.lastIndexOf(`${path.sep}_components${path.sep}`)
             );
+
             if (!file.startsWith(owner + path.sep))
               report(
                 node,
                 '_components는 소유 라우트와 그 하위에서만 사용한다.'
               );
           }
+
           if (
             relative(file).startsWith('app/') &&
             targetName.startsWith('app/') &&
@@ -176,6 +206,7 @@ const architecture = {
           )
             report(node, '다른 컴포넌트의 내부 스타일을 직접 참조하지 않는다.');
         }
+
         return {
           ImportDeclaration(node) {
             check(node, node.source.value);
@@ -209,10 +240,12 @@ const architecture = {
       },
       create(context) {
         let count = 0;
+
         function check(node, name) {
           if (!returnsJsx(node.body)) return;
           count++;
           const filename = path.basename(context.filename, '.tsx');
+
           const reserved = [
             'page',
             'layout',
@@ -222,7 +255,9 @@ const architecture = {
             'template',
             'global-error',
           ];
+
           let reason;
+
           if (!name || !/^[A-Z]/.test(name))
             reason =
               'JSX를 반환하는 함수는 대문자로 시작하는 이름의 컴포넌트로 정의한다.';
@@ -232,6 +267,7 @@ const architecture = {
           if (reason)
             context.report({ node, messageId: 'invalid', data: { reason } });
         }
+
         return {
           FunctionDeclaration(node) {
             check(node, node.id?.name);

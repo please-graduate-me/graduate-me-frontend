@@ -14,15 +14,19 @@ export function VideoInfo({
   initialFavorite: boolean;
 }) {
   const [favorite, setFavorite] = useState(initialFavorite);
+
   const [reaction, setReaction] = useState({
     liked: video.liked,
     likeCount: video.likeCount,
   });
+
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+
   async function toggleFavorite() {
     setBusy(true);
     setError('');
+
     try {
       await setVideoFavorite(video.id, !favorite);
       setFavorite(!favorite);
@@ -32,9 +36,11 @@ export function VideoInfo({
       setBusy(false);
     }
   }
+
   async function toggleLike() {
     setBusy(true);
     setError('');
+
     try {
       setReaction(await setVideoLike(video.id, !reaction.liked));
     } catch (error) {
@@ -43,6 +49,7 @@ export function VideoInfo({
       setBusy(false);
     }
   }
+
   return (
     <div className={styles.container}>
       <p className={styles.description}>

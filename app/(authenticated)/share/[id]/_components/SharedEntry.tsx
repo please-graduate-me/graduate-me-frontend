@@ -15,41 +15,51 @@ export function SharedEntry({ id, segment }: { id: string; segment: boolean }) {
   const visitId = useRef<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+
   const getVisitId = useCallback(() => {
     if (visitId.current) return visitId.current;
     const key = `share-visit:${id}`;
     let stored: string | null = null;
+
     try {
       stored = sessionStorage.getItem(key);
     } catch {
       // 저장소 제한 시 현재 화면에서만 중복을 막는다.
     }
+
     visitId.current =
       stored && shareVisitSchema.safeParse({ visitId: stored }).success
         ? stored
         : crypto.randomUUID();
+
     try {
       sessionStorage.setItem(key, visitId.current);
     } catch {
       // 집계 실패로 학습 진입을 막지 않는다.
     }
+
     return visitId.current;
   }, [id]);
+
   useEffect(() => {
     void recordShareVisit(id, getVisitId()).catch(() => undefined);
   }, [id, getVisitId]);
+
   async function start() {
     if (busy) return;
     setBusy(true);
     setError('');
+
     try {
       const result = await startSharedLesson(id, getVisitId());
+
       router.push(videoPaths.lesson(result.videoId));
     } catch (error) {
       setError((error as Error).message);
       setBusy(false);
     }
   }
+
   return (
     <>
       <Button

@@ -8,6 +8,7 @@ import { ShareDashboard } from './_components/ShareDashboard';
 /** 화면 진입 단계에서도 관리 권한을 확인한다. */
 export default async function AdminPage() {
   const { transport } = await requireSession();
+
   if (!(await getAdminAccess(transport)).allowed)
     return (
       <Panel>
@@ -17,6 +18,7 @@ export default async function AdminPage() {
       </Panel>
     );
   const initial = await getAdminShares(1, '', transport);
+
   return (
     <>
       <Link href={videoPaths.home}>← 홈</Link>

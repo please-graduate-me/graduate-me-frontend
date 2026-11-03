@@ -15,11 +15,13 @@ export function ShareDashboard({ initial }: { initial: AdminShares }) {
   const [busy, setBusy] = useState(false);
   const pending = useRef(false);
   const [error, setError] = useState('');
+
   async function load(page: number, q = appliedQuery) {
     if (pending.current) return;
     pending.current = true;
     setBusy(true);
     setError('');
+
     try {
       setData(await getAdminShares(page, q));
       setAppliedQuery(q);
@@ -30,6 +32,7 @@ export function ShareDashboard({ initial }: { initial: AdminShares }) {
       setBusy(false);
     }
   }
+
   async function revoke(id: string) {
     if (
       pending.current ||
@@ -41,6 +44,7 @@ export function ShareDashboard({ initial }: { initial: AdminShares }) {
     pending.current = true;
     setBusy(true);
     setError('');
+
     try {
       await revokeShare(id);
       setData(await getAdminShares(data.page, appliedQuery));
@@ -51,6 +55,7 @@ export function ShareDashboard({ initial }: { initial: AdminShares }) {
       setBusy(false);
     }
   }
+
   return (
     <>
       <div className={styles.summary}>

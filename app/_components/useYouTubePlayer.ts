@@ -5,6 +5,7 @@ import type { LearningSettings } from '@/domains/users/model/settings';
 import { createReplayScheduler } from '@/domains/videos/lib/replayScheduler';
 
 import { loadAPI, type Player } from '@/lib/youtube/player';
+
 /** 외부 플레이어의 수명 주기와 구절 재생을 화면 상태에서 분리한다. */
 export function useYouTubePlayer(
   youtubeId: string,
@@ -14,17 +15,21 @@ export function useYouTubePlayer(
   const container = useRef<HTMLDivElement>(null);
   const player = useRef<Player | null>(null);
   const bounds = useRef(segment);
+
   useEffect(() => {
     bounds.current = segment;
   }, [segment]);
+
   const engaged = useRef(false);
   const settingsRef = useRef(settings);
   const manuallyPaused = useRef(false);
   const [waiting, setWaiting] = useState(false);
   const [scheduler] = useState(() => createReplayScheduler(setWaiting));
+
   useEffect(() => {
     settingsRef.current = settings;
   }, [settings]);
+
   const pendingSeek = useRef<{ target: number; at: number } | null>(null);
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -33,12 +38,14 @@ export function useYouTubePlayer(
   const [blocked, setBlocked] = useState(false);
   const [availableRates, setAvailableRates] = useState<number[]>([1]);
   const [actualRate, setActualRate] = useState(1);
+
   const seek = useCallback(
     (target: number, play: boolean, manual = true) => {
       if (manual) scheduler.reset();
       else scheduler.cancel();
       manuallyPaused.current = !play;
       const p = player.current;
+
       if (!p || typeof p.seekTo !== 'function') return;
       pendingSeek.current = { target, at: Date.now() };
       p.seekTo(target, true);
@@ -50,11 +57,14 @@ export function useYouTubePlayer(
     },
     [scheduler]
   );
+
   const scheduleReplay = useCallback(
     (initial = false) => {
       const range = bounds.current;
       const options = settingsRef.current;
+
       if (!options.autoReplay || !range || manuallyPaused.current) return;
+
       scheduler.schedule(
         () => {
           // 예약 중 이동한 구절을 이전 구절의 예약으로 재생하지 않는다.
@@ -72,14 +82,18 @@ export function useYouTubePlayer(
     },
     [scheduler, seek]
   );
+
   useEffect(() => {
     let disposed = false;
     const containerElement = container.current;
+
     loadAPI()
       .then((api) => {
         if (disposed || !containerElement) return;
         const mount = document.createElement('div');
+
         containerElement.appendChild(mount);
+
         player.current = new api.Player(mount, {
           videoId: youtubeId,
           width: '100%',
@@ -97,6 +111,7 @@ export function useYouTubePlayer(
                 setAvailableRates(
                   player.current?.getAvailablePlaybackRates() ?? [1]
                 );
+
                 setActualRate(player.current?.getPlaybackRate() ?? 1);
                 setReady(true);
               }
@@ -105,12 +120,14 @@ export function useYouTubePlayer(
               if (!disposed) {
                 setPlaying(event.data === 1);
                 setBuffering(event.data === 3);
+
                 if (event.data === 1) {
                   scheduler.cancel();
                   engaged.current = true;
                   manuallyPaused.current = false;
                   setBlocked(false);
                 }
+
                 if (event.data === 0) scheduleReplay();
               }
             },
@@ -138,12 +155,15 @@ export function useYouTubePlayer(
       .catch((error) => {
         if (!disposed) setError(error.message);
       });
+
     const interval = setInterval(() => {
       const p = player.current,
         range = bounds.current;
+
       if (!p || !range || typeof p.getCurrentTime !== 'function') return;
       const current = p.getCurrentTime();
       const pending = pendingSeek.current;
+
       // 탐색 직후의 이전 재생 시각으로 구절 종료를 오판하지 않는다.
       if (pending) {
         if (Math.abs(current - pending.target) <= 0.75)
@@ -155,14 +175,17 @@ export function useYouTubePlayer(
           manuallyPaused.current = true;
           p.pauseVideo();
           setBlocked(true);
+
           return;
         }
       }
+
       if (p.getPlayerState() === 1 && reachedEnd(current, range.end)) {
         p.pauseVideo();
         scheduleReplay();
       }
     }, 50);
+
     return () => {
       // 화면을 떠난 뒤 도착한 SDK 응답이 새 플레이어를 만들지 않게 한다.
       disposed = true;
@@ -173,6 +196,7 @@ export function useYouTubePlayer(
       containerElement?.replaceChildren();
     };
   }, [youtubeId, scheduleReplay, scheduler]);
+
   useEffect(() => {
     if (!ready) return;
     scheduler.reset();
@@ -181,10 +205,13 @@ export function useYouTubePlayer(
       manuallyPaused.current = false;
       if (!engaged.current) scheduleReplay(true);
     } else player.current?.pauseVideo();
+
     return () => scheduler.cancel();
   }, [ready, segment, seek, scheduler, scheduleReplay]);
+
   useEffect(() => {
     scheduler.reset();
+
     if (ready && settings.autoReplay && bounds.current) {
       manuallyPaused.current = false;
       if (player.current?.getPlayerState() !== 1) scheduleReplay(true);
@@ -197,6 +224,7 @@ export function useYouTubePlayer(
     scheduleReplay,
     scheduler,
   ]);
+
   useEffect(() => {
     if (ready)
       player.current?.setPlaybackRate(
@@ -205,14 +233,17 @@ export function useYouTubePlayer(
           : 1
       );
   }, [ready, settings.playbackRate, availableRates]);
+
   const replay = useCallback(() => {
     if (bounds.current) seek(bounds.current.start, true);
   }, [seek]);
+
   const pause = useCallback(() => {
     manuallyPaused.current = true;
     scheduler.cancel();
     player.current?.pauseVideo?.();
   }, [scheduler]);
+
   const resetPlayback = useCallback(
     (start: number) => {
       engaged.current = false;
@@ -220,15 +251,19 @@ export function useYouTubePlayer(
     },
     [seek]
   );
+
   const prepareNext = useCallback(() => {
     scheduler.cancel();
     engaged.current = true;
     player.current?.pauseVideo();
   }, [scheduler]);
+
   const toggle = useCallback(() => {
     const p = player.current,
       range = bounds.current;
+
     if (!p || !range) return;
+
     if (p.getPlayerState() === 1 || scheduler.waiting) {
       manuallyPaused.current = true;
       scheduler.cancel();
@@ -246,15 +281,19 @@ export function useYouTubePlayer(
       p.playVideo();
     }
   }, [seek, scheduler]);
+
   const rewind = useCallback(() => {
     const p = player.current,
       range = bounds.current;
+
     if (p && range)
       seek(rewindTarget(p.getCurrentTime(), range.start, range.end), true);
   }, [seek]);
+
   const mount = useCallback((element: HTMLDivElement | null) => {
     container.current = element;
   }, []);
+
   return {
     mount,
     ready,

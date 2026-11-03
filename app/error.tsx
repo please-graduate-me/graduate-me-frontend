@@ -1,6 +1,7 @@
 'use client';
 import { Button } from '@/components/ui/primitives/Button';
 import { Panel } from '@/components/ui/layouts/Panel';
+
 /** 조회 실패 후 페이지 전체를 떠나지 않고 재시도하게 한다. */
 export default function ErrorPage({ reset }: { reset: () => void }) {
   return (

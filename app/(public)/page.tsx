@@ -6,8 +6,10 @@ import { AuthButton } from '../_components/AuthButton';
 import Link from 'next/link';
 import { videoPaths } from '@/domains/videos/config/paths';
 import { DemoStudy } from '../_components/DemoStudy';
+
 /** 사용자별 세션 화면이 정적 결과로 공유되지 않게 한다. */
 export const dynamic = 'force-dynamic';
+
 /** 세션에 맞는 진입 화면을 서버에서 선택한다. */
 export default async function Home({
   searchParams,
@@ -18,6 +20,7 @@ export default async function Home({
   const configured = await isAuthConfigured(transport);
   const session = configured ? await getSession(transport) : null;
   const { error } = await searchParams;
+
   return (
     <>
       <div className={styles.pageHeading}>

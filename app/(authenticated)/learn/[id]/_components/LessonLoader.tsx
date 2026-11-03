@@ -9,6 +9,7 @@ import { jobLabels, learningConfig } from '@/domains/videos/config/catalog';
 import { videoPaths } from '@/domains/videos/config/paths';
 import type { Lesson } from '@/domains/videos/model/contracts';
 import { Study } from './Study';
+
 /** 준비 상태 조회가 진행 중인 학습 입력을 덮어쓰지 않게 한다. */
 export function LessonLoader({ initial }: { initial: Lesson }) {
   const videoId = initial.video.id;
@@ -16,14 +17,17 @@ export function LessonLoader({ initial }: { initial: Lesson }) {
   const [error, setError] = useState('');
   const [reload, setReload] = useState(0);
   const [retrying, setRetrying] = useState(false);
+
   useEffect(() => {
     if (['ready', 'failed'].includes(initial.job?.status ?? '') && reload === 0)
       return;
     let disposed = false;
     let timer: ReturnType<typeof setTimeout>;
+
     async function refresh() {
       try {
         const result = await getLesson(videoId);
+
         if (disposed) return;
         setLesson(result);
         setError('');
@@ -33,15 +37,19 @@ export function LessonLoader({ initial }: { initial: Lesson }) {
         if (!disposed) setError((error as Error).message);
       }
     }
+
     void refresh();
+
     return () => {
       disposed = true;
       clearTimeout(timer);
     };
   }, [videoId, reload, initial.job?.status]);
+
   async function retry() {
     setRetrying(true);
     setError('');
+
     try {
       await retryVideo(videoId);
       setReload((value) => value + 1);
@@ -51,6 +59,7 @@ export function LessonLoader({ initial }: { initial: Lesson }) {
       setRetrying(false);
     }
   }
+
   if (lesson?.job?.status === 'ready')
     return (
       <Study
@@ -58,6 +67,7 @@ export function LessonLoader({ initial }: { initial: Lesson }) {
         initial={lesson}
       />
     );
+
   return (
     <>
       <Link href={videoPaths.library}>← 영상 목록</Link>

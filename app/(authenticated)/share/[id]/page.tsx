@@ -16,10 +16,12 @@ export default async function SharedVideo({
 }) {
   const { id } = await params;
   const { transport } = await requireSession();
+
   const lesson = await getSharedLesson(id, transport).catch((error) => {
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   });
+
   const query = new URLSearchParams({
     rel: '0',
     ...(lesson.segment
@@ -29,6 +31,7 @@ export default async function SharedVideo({
         }
       : {}),
   });
+
   return (
     <>
       <Link href={videoPaths.home}>← 홈</Link>

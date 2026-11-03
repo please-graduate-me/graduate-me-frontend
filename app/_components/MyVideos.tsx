@@ -22,8 +22,10 @@ export function MyVideos() {
   const [category, setCategory] = useState('');
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('recent');
+
   useEffect(() => {
     let disposed = false;
+
     listVideos()
       .then((items) => {
         if (!disposed) {
@@ -34,15 +36,19 @@ export function MyVideos() {
       .catch((error) => {
         if (!disposed) setError(error.message);
       });
+
     return () => {
       disposed = true;
     };
   }, [reload]);
+
   async function favorite(item: VideoHistory[number]) {
     setBusy(item.videoId);
     setError('');
+
     try {
       await setVideoFavorite(item.videoId, !item.favorite);
+
       setHistory(
         (items) =>
           items?.map((row) =>
@@ -57,6 +63,7 @@ export function MyVideos() {
       setBusy(null);
     }
   }
+
   async function remove(item: VideoHistory[number]) {
     if (
       !window.confirm(
@@ -66,8 +73,10 @@ export function MyVideos() {
       return;
     setBusy(item.videoId);
     setError('');
+
     try {
       await removeVideoFromLibrary(item.videoId);
+
       setHistory(
         (items) => items?.filter((row) => row.videoId !== item.videoId) ?? null
       );
@@ -77,9 +86,11 @@ export function MyVideos() {
       setBusy(null);
     }
   }
+
   const categories = [
     ...new Set((history ?? []).map((item) => item.category ?? '미분류')),
   ].sort();
+
   const items = (history ?? [])
     .filter(
       (item) =>
@@ -95,6 +106,7 @@ export function MyVideos() {
         ? a.title.localeCompare(b.title, 'ko')
         : Date.parse(b.updatedAt) - Date.parse(a.updatedAt)
     );
+
   return (
     <section>
       <h2>내 영상</h2>

@@ -23,6 +23,7 @@ export function DemoStudy() {
   const [feedback, setFeedback] = useState('');
   const [revealed, setRevealed] = useState(false);
   const segment = lesson?.segments[index];
+
   const {
     mount,
     error: playbackError,
@@ -39,12 +40,15 @@ export function DemoStudy() {
     replayCount: 1,
     playbackRate: 1,
   });
+
   useEffect(() => {
     let disposed = false;
     let timer: ReturnType<typeof setTimeout>;
+
     async function refresh() {
       try {
         const result = await getDemoLesson();
+
         if (disposed) return;
         setLesson(result);
         setError('');
@@ -56,19 +60,24 @@ export function DemoStudy() {
         }
       }
     }
+
     void refresh();
+
     return () => {
       disposed = true;
       clearTimeout(timer);
     };
   }, []);
+
   function reset() {
     setDraft('');
     setAnswers([]);
     setFeedback('');
     setRevealed(false);
   }
+
   const blanks = segment ? blankIndices(segment.text) : [];
+
   return (
     <Panel>
       <h2>로그인 없이 체험하기</h2>
@@ -139,11 +148,13 @@ export function DemoStudy() {
           <form
             onSubmit={(event) => {
               event.preventDefault();
+
               const result = gradeAnswer(
                 segment.text,
                 mode,
                 mode === 'full' ? draft : answers
               );
+
               setFeedback(
                 result.correct
                   ? '정답입니다! 다음 구절도 들어보세요.'
@@ -172,6 +183,7 @@ export function DemoStudy() {
                   .split(/\s+/)
                   .map((word, i) => {
                     const position = blanks.indexOf(i);
+
                     return position < 0 ? (
                       <span key={i}>{word} </span>
                     ) : (
@@ -182,6 +194,7 @@ export function DemoStudy() {
                         value={answers[position] ?? ''}
                         onChange={(event) => {
                           const next = [...answers];
+
                           next[position] = event.target.value;
                           setAnswers(next);
                           setFeedback('');

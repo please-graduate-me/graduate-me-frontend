@@ -12,6 +12,7 @@ export default async function SettingsPage() {
   const { transport } = await requireSession();
   const initial = await getLearningSettings(transport);
   const access = await getAdminAccess(transport);
+
   return (
     <>
       <Link href={videoPaths.library}>← 내 영상으로</Link>

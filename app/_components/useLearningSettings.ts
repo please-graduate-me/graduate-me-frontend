@@ -9,17 +9,21 @@ export function useLearningSettings(initial: LearningSettings) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const pending = useRef(false);
+
   async function change(next: LearningSettings) {
     if (pending.current) return;
     pending.current = true;
     const previous = settings;
+
     setSettings(next);
     setSaving(true);
     setError('');
+
     try {
       setSettings(await saveLearningSettings(next));
     } catch {
       setSettings(previous);
+
       setError(
         '옵션을 저장하지 못해 이전 설정으로 돌아갔습니다. 다시 선택해 주세요.'
       );
@@ -28,5 +32,6 @@ export function useLearningSettings(initial: LearningSettings) {
       setSaving(false);
     }
   }
+
   return { settings, saving, error, change };
 }

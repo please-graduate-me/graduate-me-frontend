@@ -2,6 +2,7 @@
 export function createReplayScheduler(onWaiting: (waiting: boolean) => void) {
   let timer: ReturnType<typeof setTimeout> | undefined;
   let repeats = 0;
+
   return {
     get waiting() {
       return timer !== undefined;
@@ -16,6 +17,7 @@ export function createReplayScheduler(onWaiting: (waiting: boolean) => void) {
       if (countAsRepeat && repeatCount !== null && repeats >= repeatCount)
         return;
       onWaiting(true);
+
       timer = setTimeout(() => {
         timer = undefined;
         if (countAsRepeat) repeats += 1;

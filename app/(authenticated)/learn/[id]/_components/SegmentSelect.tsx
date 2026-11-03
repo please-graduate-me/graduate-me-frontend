@@ -8,6 +8,7 @@ import { useState } from 'react';
 
 function formatTime(seconds: number) {
   const wholeSeconds = Math.floor(seconds);
+
   return `${Math.floor(wholeSeconds / 60)
     .toString()
     .padStart(2, '0')}:${(wholeSeconds % 60).toString().padStart(2, '0')}`;
@@ -32,17 +33,20 @@ export function SegmentSelect({
   onNavigate: (index: number) => void;
 }) {
   const [onlyDifficult, setOnlyDifficult] = useState(false);
+
   const options = segments
     .map((segment, position) => ({ segment, position }))
     .filter(
       ({ segment }) =>
         !onlyDifficult || difficultSegmentIds.includes(segment.id)
     );
+
   const statuses = new Map(
     states
       .filter((state) => state.mode === mode)
       .map((state) => [state.segmentId, state.status])
   );
+
   return (
     <div className={styles.container}>
       <label className={styles.label}>
@@ -67,12 +71,14 @@ export function SegmentSelect({
           </option>
           {options.map(({ segment, position }) => {
             const status = statuses.get(segment.id);
+
             const label =
               status === 'correct'
                 ? '정답'
                 : status === 'skipped'
                   ? '건너뛰기'
                   : '미완료';
+
             return (
               <option
                 key={segment.id}

@@ -3,6 +3,7 @@ import {
   learningSettingsSchema,
   type LearningSettings,
 } from '../model/settings';
+
 /** 화면 진입 시 저장된 계정 옵션을 복원한다. */
 export const getLearningSettings = (transport?: Transport) =>
   request('/api/me/settings', learningSettingsSchema, undefined, transport);

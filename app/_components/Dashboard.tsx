@@ -8,6 +8,7 @@ import { recommendations } from '@/domains/videos/config/catalog';
 import { registerVideo } from '@/domains/videos/api/videos';
 import { videoPaths } from '@/domains/videos/config/paths';
 import { MyVideos } from './MyVideos';
+
 /** 영상 선택과 등록 후 이동을 홈 화면에서 조율한다. */
 export function Dashboard() {
   const router = useRouter();
@@ -16,17 +17,21 @@ export function Dashboard() {
   const [error, setError] = useState('');
   const [topic, setTopic] = useState('');
   const [level, setLevel] = useState('');
+
   async function register(value: string) {
     setError('');
     setBusy(true);
+
     try {
       const result = await registerVideo(value);
+
       router.push(videoPaths.lesson(result.videoId));
     } catch (error) {
       setError((error as Error).message);
       setBusy(false);
     }
   }
+
   return (
     <>
       <Panel>
