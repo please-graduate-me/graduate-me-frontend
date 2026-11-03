@@ -201,7 +201,8 @@ export function useYouTubePlayer(
     if (!ready) return;
     scheduler.reset();
     if (segment) {
-      seek(segment.start, engaged.current);
+      // 첫 재생 전 탐색과 일시정지는 YouTube의 썸네일을 검은 화면으로 바꾼다.
+      if (engaged.current) seek(segment.start, true);
       manuallyPaused.current = false;
       if (!engaged.current) scheduleReplay(true);
     } else player.current?.pauseVideo();
