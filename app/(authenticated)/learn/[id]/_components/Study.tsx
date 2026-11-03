@@ -254,7 +254,7 @@ export function Study({ initial }: { initial: Lesson }) {
       setStates([]);
       setDifficultSegmentIds([]);
       setIndex(0);
-      setMode('full');
+      setMode('blank');
       setFeedback(null);
       setSaveStatus('저장됨');
     });

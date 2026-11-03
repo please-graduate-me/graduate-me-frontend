@@ -13,7 +13,7 @@ export function DemoStudy() {
   const [lesson, setLesson] = useState<DemoLesson | null>(null);
   const [error, setError] = useState('');
   const [index, setIndex] = useState(0);
-  const [mode, setMode] = useState<'full' | 'blank'>('full');
+  const [mode, setMode] = useState<'full' | 'blank'>('blank');
   const [draft, setDraft] = useState('');
   const [answers, setAnswers] = useState<string[]>([]);
   const [feedback, setFeedback] = useState('');
