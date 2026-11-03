@@ -6,7 +6,6 @@ const backend = process.env.API_INTERNAL_URL || 'http://127.0.0.1:4000';
 const config: NextConfig = {
   poweredByHeader: false,
   agentRules: false,
-  transpilePackages: ['@graduate-me/shared'],
   async rewrites() {
     return [{ source: '/api/:path*', destination: `${backend}/api/:path*` }];
   },

@@ -149,8 +149,6 @@ const architecture = {
           if (currentLayer < 0) return;
           if (domain(file) && specifier.startsWith('next/'))
             report(node, 'domains는 Next.js에 의존하지 않는다.');
-          if (specifier === '@graduate-me/shared' && !domain(file))
-            report(node, '공유 업무 계약은 도메인을 통해 사용한다.');
           if (specifier.startsWith('@prisma/'))
             report(node, '프론트엔드에서 DB 패키지를 사용하지 않는다.');
           const target = resolveImport(file, specifier);

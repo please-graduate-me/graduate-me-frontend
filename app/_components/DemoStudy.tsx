@@ -1,14 +1,10 @@
 'use client';
+import { blankIndices, gradeAnswer } from '@/domains/videos/lib/grading';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/primitives/Button';
 import { Panel } from '@/components/ui/layouts/Panel';
 import { getDemoLesson } from '@/domains/videos/api/demo';
-import {
-  blankIndices,
-  gradeAnswer,
-  demoYoutubeId,
-  type DemoLesson,
-} from '@/domains/videos/model/demo';
+import { demoYoutubeId, type DemoLesson } from '@/domains/videos/model/demo';
 import { useYouTubePlayer } from './useYouTubePlayer';
 import * as styles from './DemoStudy.css';
 
