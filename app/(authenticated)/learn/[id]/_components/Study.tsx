@@ -28,18 +28,23 @@ import { useLearningSettings } from '../../../../_components/useLearningSettings
 export function Study({ initial }: { initial: Lesson }) {
   const router = useRouter();
   const { video, segments } = initial;
+
   const {
     settings,
     saving: savingSettings,
     error: settingsError,
     change: changeSettings,
   } = useLearningSettings(initial.settings);
+
+  const [compactVideo, setCompactVideo] = useState(false);
   const [index, setIndex] = useState(initial.progress.currentIndex);
   const [mode, setMode] = useState<Mode>(initial.progress.mode);
   const [states, setStates] = useState(initial.states);
+
   const [difficultSegmentIds, setDifficultSegmentIds] = useState(
     initial.difficultSegmentIds
   );
+
   const [feedback, setFeedback] = useState<Grade | null>(null);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
@@ -52,6 +57,7 @@ export function Study({ initial }: { initial: Lesson }) {
   const blanksContainer = useRef<HTMLDivElement>(null);
   const segment = segments[index];
   const complete = !segment;
+
   const {
     mount,
     ready: playerReady,
@@ -68,9 +74,11 @@ export function Study({ initial }: { initial: Lesson }) {
     resetPlayback,
     prepareNext,
   } = useYouTubePlayer(video.youtubeId, segment, settings);
+
   const state = states.find(
     (item) => item.segmentId === segment?.id && item.mode === mode
   );
+
   const draft =
     mode === 'full'
       ? typeof state?.draft === 'string'
@@ -79,26 +87,34 @@ export function Study({ initial }: { initial: Lesson }) {
       : (segment?.blanks.map((_, position) =>
           Array.isArray(state?.draft) ? (state.draft[position] ?? '') : ''
         ) ?? []);
+
   const enqueue = useCallback(
     (body: LearningAction): Promise<ActionResult> => {
       // 저장 실패 후에도 재시도 요청을 큐에 넣을 수 있어야 한다.
       const task = queue.current
         .catch(() => undefined)
         .then(() => applyLearningAction(video.id, body));
+
       queue.current = task;
+
       return task;
     },
     [video.id]
   );
+
   const flushDraft = useCallback(async () => {
     clearTimeout(timer.current);
     const body = unsaved.current;
+
     if (!body) {
       await queue.current.catch(() => undefined);
+
       return;
     }
+
     try {
       await enqueue(body);
+
       // 응답을 기다리는 동안 입력한 새 답안을 저장 완료로 지우지 않는다.
       if (unsaved.current === body) {
         unsaved.current = null;
@@ -109,6 +125,7 @@ export function Study({ initial }: { initial: Lesson }) {
       throw error;
     }
   }, [enqueue]);
+
   useEffect(() => {
     function beforeUnload(event: BeforeUnloadEvent) {
       if (unsaved.current || busyRef.current) {
@@ -116,9 +133,11 @@ export function Study({ initial }: { initial: Lesson }) {
         event.returnValue = '';
       }
     }
+
     function followLink(event: MouseEvent) {
       const link =
         event.target instanceof Element ? event.target.closest('a') : null;
+
       if (
         !link ||
         event.ctrlKey ||
@@ -130,20 +149,24 @@ export function Study({ initial }: { initial: Lesson }) {
       event.preventDefault();
       event.stopPropagation();
       if (busyRef.current) return;
+
       void flushDraft()
         .then(() => {
           router.push(link.href);
         })
         .catch((error) => setError(error.message));
     }
+
     window.addEventListener('beforeunload', beforeUnload);
     document.addEventListener('click', followLink, true);
+
     return () => {
       window.removeEventListener('beforeunload', beforeUnload);
       document.removeEventListener('click', followLink, true);
       clearTimeout(timer.current);
     };
   }, [flushDraft, router]);
+
   function updateState(
     patch: Partial<SegmentState>,
     segmentId = segment.id,
@@ -153,6 +176,7 @@ export function Study({ initial }: { initial: Lesson }) {
       const existing = previous.find(
         (item) => item.segmentId === segmentId && item.mode === selectedMode
       );
+
       const next: SegmentState = {
         segmentId,
         mode: selectedMode,
@@ -162,6 +186,7 @@ export function Study({ initial }: { initial: Lesson }) {
         ...existing,
         ...patch,
       };
+
       return [
         ...previous.filter(
           (item) =>
@@ -171,21 +196,25 @@ export function Study({ initial }: { initial: Lesson }) {
       ];
     });
   }
+
   function changeDraft(answer: string | string[]) {
     updateState({ draft: answer });
     setFeedback(null);
     setSaveStatus('저장 중…');
     unsaved.current = { action: 'draft', segmentId: segment.id, mode, answer };
     clearTimeout(timer.current);
+
     timer.current = setTimeout(() => {
       void flushDraft().catch((error) => setError(error.message));
     }, learningConfig.draftDelay);
   }
+
   async function perform(operation: () => Promise<void>) {
     if (busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
     setError('');
+
     try {
       // 구절 이동과 제출이 마지막 입력의 저장보다 앞서지 않게 한다.
       await flushDraft();
@@ -197,6 +226,7 @@ export function Study({ initial }: { initial: Lesson }) {
       setBusy(false);
     }
   }
+
   async function navigate(next: number, nextMode = mode) {
     await perform(async () => {
       await enqueue({ action: 'navigate', index: next, mode: nextMode });
@@ -206,6 +236,7 @@ export function Study({ initial }: { initial: Lesson }) {
       setFeedback(null);
     });
   }
+
   async function reset() {
     if (busyRef.current) return;
     pause();
@@ -215,6 +246,7 @@ export function Study({ initial }: { initial: Lesson }) {
       )
     )
       return;
+
     await perform(async () => {
       // 대기 중인 저장을 끝낸 뒤 초기화해야 이전 답안이 다시 저장되지 않는다.
       await enqueue({ action: 'reset' });
@@ -227,8 +259,10 @@ export function Study({ initial }: { initial: Lesson }) {
       setSaveStatus('저장됨');
     });
   }
+
   async function submit() {
     if (!segment) return;
+
     await perform(async () => {
       const result = await enqueue({
         action: 'submit',
@@ -237,7 +271,9 @@ export function Study({ initial }: { initial: Lesson }) {
         answer: draft,
         requestId: crypto.randomUUID(),
       });
+
       setFeedback(result.grade!);
+
       if (result.grade?.correct) {
         updateState({ status: 'correct' });
         prepareNext();
@@ -245,16 +281,20 @@ export function Study({ initial }: { initial: Lesson }) {
       }
     });
   }
+
   async function toggleDifficulty() {
     if (!segment) return;
     const marked = !difficultSegmentIds.includes(segment.id);
+
     await perform(async () => {
       await enqueue({ action: 'difficulty', segmentId: segment.id, marked });
+
       setDifficultSegmentIds((ids) =>
         marked ? [...ids, segment.id] : ids.filter((id) => id !== segment.id)
       );
     });
   }
+
   async function skip() {
     await perform(async () => {
       const result = await enqueue({
@@ -262,24 +302,29 @@ export function Study({ initial }: { initial: Lesson }) {
         segmentId: segment.id,
         mode,
       });
+
       updateState({
         status: state?.status === 'correct' ? 'correct' : 'skipped',
       });
+
       pause();
       setIndex(result.nextIndex!);
       setFeedback(null);
     });
   }
+
   async function reveal() {
     await perform(async () => {
       await enqueue({ action: 'reveal', segmentId: segment.id, mode });
       updateState({ revealed: true });
     });
   }
+
   useEffect(() => {
     if (!busy && segment) {
       if (mode === 'full' && input.current) {
         input.current.focus();
+
         input.current.setSelectionRange(
           input.current.value.length,
           input.current.value.length
@@ -287,13 +332,16 @@ export function Study({ initial }: { initial: Lesson }) {
       } else blanksContainer.current?.querySelector('input')?.focus();
     }
   }, [index, mode, busy, segment]);
+
   useEffect(() => {
     function keydown(event: KeyboardEvent) {
       if (event.isComposing || !segment || busyRef.current) return;
       const target = event.target;
+
       const answerFocused =
         target instanceof HTMLElement &&
         Boolean(target.closest('[data-answer]'));
+
       if (event.ctrlKey && event.key.toLowerCase() === 'r' && answerFocused) {
         event.preventDefault();
         replay();
@@ -309,18 +357,24 @@ export function Study({ initial }: { initial: Lesson }) {
         toggle();
       }
     }
+
     window.addEventListener('keydown', keydown);
+
     return () => window.removeEventListener('keydown', keydown);
   }, [segment, replay, rewind, toggle]);
+
   const correct = states.filter(
     (item) => item.mode === mode && item.status === 'correct'
   ).length;
+
   const skipped = states.filter(
     (item) => item.mode === mode && item.status === 'skipped'
   ).length;
+
   const revealed = states.filter(
     (item) => item.mode === mode && item.revealed
   ).length;
+
   return (
     <>
       <Link
@@ -328,6 +382,7 @@ export function Study({ initial }: { initial: Lesson }) {
         onClick={(event) => {
           if (unsaved.current || busyRef.current) {
             event.preventDefault();
+
             void perform(async () => {
               router.push(videoPaths.library);
             });
@@ -383,8 +438,22 @@ export function Study({ initial }: { initial: Lesson }) {
             blocked={blocked}
             error={playerError}
           />
+          <div className={styles.videoSizeControls}>
+            <Button
+              type='button'
+              variant='secondary'
+              aria-controls='lesson-video-player'
+              aria-pressed={compactVideo}
+              onClick={() => setCompactVideo((value) => !value)}>
+              {compactVideo ? '크게 보기' : '작게 보기'}
+            </Button>
+          </div>
           <div
-            className={styles.videoFrame}
+            id='lesson-video-player'
+            className={[
+              styles.videoFrame,
+              compactVideo ? styles.compactVideo : '',
+            ].join(' ')}
             ref={mount}
           />
           {playerError && (
@@ -561,6 +630,7 @@ export function Study({ initial }: { initial: Lesson }) {
                   data-answer>
                   {segment.text.split(/\s+/).map((word, wordIndex) => {
                     const position = segment.blanks.indexOf(wordIndex);
+
                     return position < 0 ? (
                       <span key={wordIndex}>{word} </span>
                     ) : (
@@ -580,6 +650,7 @@ export function Study({ initial }: { initial: Lesson }) {
                           const next = Array.isArray(draft)
                             ? [...draft]
                             : segment.blanks.map(() => '');
+
                           next[position] = event.target.value;
                           changeDraft(next);
                         }}
