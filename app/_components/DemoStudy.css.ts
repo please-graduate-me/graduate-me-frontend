@@ -3,19 +3,10 @@ import { vars } from '@/lib/styles/theme.css';
 
 /** 체험도 개인 학습과 같은 작업 공간으로 보여준다. */
 export const root = style({
-  marginTop: '40px',
+  marginTop: '24px',
   paddingBlock: '24px',
   borderTop: `1px solid ${vars.color.line}`,
   fontSize: '14px',
-});
-
-/** 제목과 상태를 한 줄에 묶어 입력 시작점을 위로 올린다. */
-export const heading = style({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '20px',
-  marginBottom: '28px',
 });
 
 /** 체험 안내는 학습 제목보다 낮은 위계로 전달한다. */
@@ -203,14 +194,6 @@ export const showVideo = style({
   '@media': { '(max-width: 900px)': { display: 'inline-block' } },
 });
 
-globalStyle(`.${heading} h2`, { margin: '0 0 8px', fontSize: '24px' });
-
-globalStyle(`.${heading} p`, {
-  margin: 0,
-  fontSize: '12px',
-  color: vars.color.muted,
-});
-
 globalStyle(`.${progressHeading} strong`, {
   fontSize: '19px',
   color: vars.color.ink,
@@ -294,10 +277,6 @@ globalStyle(`.${root}[data-focused] .${media}`, {
 });
 
 globalStyle(`.${root}[data-focused] .${help}`, {
-  '@media': { '(max-width: 900px)': { display: 'none' } },
-});
-
-globalStyle(`.${root}[data-focused] .${heading}`, {
   '@media': { '(max-width: 900px)': { display: 'none' } },
 });
 

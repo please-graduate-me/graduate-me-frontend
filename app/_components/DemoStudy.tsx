@@ -97,19 +97,6 @@ export function DemoStudy() {
       id='demo-study'
       aria-label='로그인 없이 체험하기'
       data-focused={focused || undefined}>
-      <header className={styles.heading}>
-        <div>
-          <h2>로그인 없이 체험하기</h2>
-          <p>
-            짧은 구절을 듣고 직접 입력해 보세요. 체험 기록은 저장되지 않습니다.
-          </p>
-        </div>
-        <span
-          className={styles.status}
-          role='status'>
-          {buffering ? '불러오는 중' : playing ? '재생 중' : '듣기 연습'}
-        </span>
-      </header>
       <div className={styles.progressHeading}>
         <strong>
           구절 {String(index + 1).padStart(2, '0')}{' '}
@@ -254,9 +241,7 @@ export function DemoStudy() {
                 : '체험 영상의 학습 자료를 준비하고 있습니다.'}
             </p>
           )}
-          <p className={styles.note}>
-            Google 계정으로 로그인하면 내 영상의 답안과 진도를 저장할 수 있어요.
-          </p>
+          <p className={styles.note}>체험 기록은 저장되지 않습니다.</p>
         </div>
         <div className={styles.media}>
           <div
@@ -312,6 +297,13 @@ export function DemoStudy() {
               </button>
             )}
           </div>
+          {(buffering || playing) && (
+            <span
+              className={styles.status}
+              role='status'>
+              {buffering ? '불러오는 중' : '재생 중'}
+            </span>
+          )}
           {playbackError && <p role='alert'>{playbackError}</p>}
           {blocked && <p>영상의 재생 버튼을 눌러 주세요.</p>}
         </div>
