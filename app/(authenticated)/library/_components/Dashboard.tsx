@@ -9,7 +9,7 @@ import { registerVideo } from '@/domains/videos/api/videos';
 import { videoPaths } from '@/domains/videos/config/paths';
 import { MyVideos } from './MyVideos';
 
-/** 영상 선택과 등록 후 이동을 홈 화면에서 조율한다. */
+/** 영상 선택과 등록 후 이동을 목록 화면에서 조율한다. */
 export function Dashboard() {
   const router = useRouter();
   const [url, setUrl] = useState('');
@@ -33,9 +33,13 @@ export function Dashboard() {
   }
 
   return (
-    <>
-      <Panel>
+    <div className={styles.workspace}>
+      <div className={styles.library}>
+        <MyVideos />
+      </div>
+      <Panel className={styles.add}>
         <h2>학습할 영상 추가</h2>
+        <p className={styles.muted}>원하는 영상으로 듣기를 연습하세요.</p>
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -53,7 +57,11 @@ export function Dashboard() {
               onChange={(event) => setUrl(event.target.value)}
               disabled={busy}
             />
-            <Button disabled={busy}>{busy ? '등록 중…' : '학습 시작'}</Button>
+            <Button
+              className={styles.submit}
+              disabled={busy}>
+              {busy ? '등록 중…' : '학습 시작'}
+            </Button>
           </div>
           <p className={[styles.muted, styles.small].join(' ')}>
             공개된 15분 이하 영어 영상의 링크를 입력해 주세요.
@@ -67,10 +75,10 @@ export function Dashboard() {
           </p>
         )}
       </Panel>
-      <section>
+      <section className={styles.recommend}>
         <div className={styles.sectionHeading}>
           <h2>추천 영상</h2>
-          <div className={styles.row}>
+          <div className={styles.filters}>
             <select
               aria-label='난이도'
               value={level}
@@ -99,15 +107,14 @@ export function Dashboard() {
                 (!topic || item.topic === topic)
             )
             .map((item) => (
-              <Panel
-                as='article'
+              <article
                 className={styles.card}
 
                 key={item.youtubeId}>
-                <p className={styles.eyebrow}>
+                <h3>{item.title}</h3>
+                <p className={styles.muted}>
                   {item.level} · {item.topic}
                 </p>
-                <h3>{item.title}</h3>
                 <p className={styles.muted}>{item.description}</p>
                 <Button
                   variant='secondary'
@@ -120,7 +127,7 @@ export function Dashboard() {
                   }>
                   이 영상 선택
                 </Button>
-              </Panel>
+              </article>
             ))}
         </div>
         {!recommendations.some(
@@ -132,7 +139,6 @@ export function Dashboard() {
           </p>
         )}
       </section>
-      <MyVideos />
-    </>
+    </div>
   );
 }

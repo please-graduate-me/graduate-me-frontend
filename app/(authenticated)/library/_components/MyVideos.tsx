@@ -108,8 +108,8 @@ export function MyVideos() {
     );
 
   return (
-    <section>
-      <h2>내 영상</h2>
+    <section className={styles.root}>
+      <h2>내 영상 목록</h2>
       <div className={styles.controls}>
         <label>
           제목 검색
@@ -117,7 +117,7 @@ export function MyVideos() {
             type='search'
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder='영상 제목'
+            placeholder='영상 제목으로 찾기'
           />
         </label>
         <label>
@@ -132,16 +132,6 @@ export function MyVideos() {
           </select>
         </label>
         <label>
-          표시
-          <select
-            value={filter}
-            onChange={(event) => setFilter(event.target.value)}>
-            <option value='all'>모든 영상</option>
-            <option value='favorite'>관심 영상</option>
-            <option value='difficult'>안 들리는 구절이 있는 영상</option>
-          </select>
-        </label>
-        <label>
           정렬
           <select
             value={sort}
@@ -151,8 +141,36 @@ export function MyVideos() {
           </select>
         </label>
       </div>
+      <div
+        className={styles.filters}
+        role='group'
+        aria-label='표시할 영상'>
+        {[
+          ['all', '모든 영상'],
+          ['favorite', '관심 영상'],
+          ['difficult', '안 들리는 구절이 있는 영상'],
+        ].map(([value, label]) => (
+          <Button
+            key={value}
+            variant='secondary'
+            className={styles.filterButton}
+            aria-pressed={filter === value}
+            onClick={() => setFilter(value)}>
+            {label}
+          </Button>
+        ))}
+      </div>
+      {history !== null && (
+        <p
+          className={styles.count}
+          aria-live='polite'>
+          {items.length}개 영상
+        </p>
+      )}
       {error && (
-        <p role='alert'>
+        <p
+          className={styles.error}
+          role='alert'>
           {error}{' '}
           <Button
             variant='secondary'
@@ -162,7 +180,9 @@ export function MyVideos() {
         </p>
       )}
       {history === null ? (
-        <p role='status'>내 영상을 불러오는 중…</p>
+        error ? null : (
+          <p role='status'>내 영상을 불러오는 중…</p>
+        )
       ) : items.length === 0 ? (
         <p>
           조건에 맞는 영상이 없습니다. 검색 조건을 바꾸거나 영상을 추가해
@@ -174,16 +194,58 @@ export function MyVideos() {
             <li
               key={item.videoId}
               className={styles.item}>
-              <Link href={videoPaths.lesson(item.videoId)}>{item.title}</Link>
+              <div className={styles.titleRow}>
+                <h3>
+                  <Link href={videoPaths.lesson(item.videoId)}>
+                    {item.title}
+                  </Link>
+                </h3>
+                <span
+                  className={
+                    styles.status[
+                      item.status === 'ready'
+                        ? 'ready'
+                        : item.status === 'failed'
+                          ? 'failed'
+                          : 'working'
+                    ]
+                  }>
+                  {jobLabels[item.status]}
+                </span>
+              </div>
               <p className={styles.description}>
-                {jobLabels[item.status]} · {item.category ?? '미분류'} · 좋아요{' '}
-                {item.likeCount} · 안 들리는 구절 {item.difficultCount}개
-                {item.count > 0 &&
-                  ` · ${Math.min(item.currentIndex, item.count)}/${item.count} 구절 진행`}
+                {item.category ?? '미분류'} · 좋아요 {item.likeCount} · 안
+                들리는 구절 {item.difficultCount}개
               </p>
-              <div className={styles.controls}>
+              {item.count > 0 ? (
+                <>
+                  <div
+                    className={styles.progress}
+                    aria-hidden='true'>
+                    <span
+                      style={{
+                        width: `${(Math.min(item.currentIndex, item.count) / item.count) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <span className={styles.count}>
+                    {Math.min(item.currentIndex, item.count)} / {item.count}{' '}
+                    구절 진행
+                  </span>
+                </>
+              ) : (
+                <p className={styles.pending}>
+                  {item.status === 'failed'
+                    ? '영상에서 처리 상태를 확인해 주세요.'
+                    : item.status === 'ready'
+                      ? '학습할 구절이 없습니다. 영상에서 상태를 확인해 주세요.'
+                      : '영상이 준비되면 학습을 시작할 수 있습니다.'}
+                </p>
+              )}
+              <div className={styles.actions}>
                 <Button
                   variant='secondary'
+                  className={styles.actionButton}
                   aria-pressed={item.favorite}
                   disabled={busy !== null}
                   onClick={() => void favorite(item)}>
@@ -191,6 +253,7 @@ export function MyVideos() {
                 </Button>
                 <Button
                   variant='secondary'
+                  className={styles.removeButton}
                   disabled={busy !== null}
                   onClick={() => void remove(item)}>
                   내 목록에서 제거
