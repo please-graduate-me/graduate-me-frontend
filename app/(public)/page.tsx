@@ -25,7 +25,6 @@ export default async function Home({
     <>
       <div className={styles.pageHeading}>
         <div>
-          <p className={styles.eyebrow}>영어 청해 훈련</p>
           <h1>
             들리는 만큼 쓰고,
             <br />안 들린 부분은 다시.

@@ -8,9 +8,11 @@ import * as styles from './ShareButton.css';
 export function ShareButton({
   videoId,
   segmentId,
+  className,
 }: {
   videoId: string;
   segmentId?: string;
+  className?: string;
 }) {
   const requestId = useRef<string | null>(null);
   const [url, setUrl] = useState('');
@@ -54,6 +56,7 @@ export function ShareButton({
   return (
     <div className={styles.container}>
       <Button
+        className={className}
         variant='secondary'
         disabled={busy}
         onClick={() => void share()}>

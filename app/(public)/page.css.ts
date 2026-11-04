@@ -18,16 +18,6 @@ export const error = style([
   },
 ]);
 
-/** 영역의 성격을 제목보다 낮은 위계로 전달한다. */
-export const eyebrow = style([
-  {
-    color: vars.color.accent,
-    fontWeight: '700',
-    fontSize: '13px',
-    marginBottom: '10px',
-  },
-]);
-
 /** 보조 설명이 주요 행동보다 먼저 눈에 띄지 않게 한다. */
 export const muted = style([{ color: vars.color.muted }]);
 

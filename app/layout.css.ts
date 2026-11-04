@@ -16,8 +16,10 @@ export const siteHeader = style([
     display: 'flex',
     alignItems: 'center',
     gap: '24px',
-    padding: '20px max(24px, calc((100vw - 1160px) / 2))',
+    padding: '20px max(24px, calc((100vw - 1344px) / 2))',
     borderBottom: `1px solid ${vars.color.line}`,
+    borderTop: `4px solid ${vars.color.accent}`,
+    flexWrap: 'wrap',
     background: vars.color.surface,
   },
 ]);
@@ -25,8 +27,8 @@ export const siteHeader = style([
 /** 넓은 화면에서 본문이 지나치게 길어지지 않게 한다. */
 export const main = style([
   {
-    maxWidth: '1208px',
-    padding: '36px 24px 60px',
+    maxWidth: '1440px',
+    padding: '24px 64px 60px',
     margin: 'auto',
     minHeight: '80vh',
   },

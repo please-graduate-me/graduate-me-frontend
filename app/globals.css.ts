@@ -1,5 +1,19 @@
-import { globalStyle } from '@vanilla-extract/css';
+import { globalFontFace, globalStyle } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
+
+globalFontFace('DM Sans', {
+  src: 'url(/fonts/dm-sans.woff2) format("woff2")',
+  fontStyle: 'normal',
+  fontWeight: '100 1000',
+  fontDisplay: 'swap',
+});
+
+globalFontFace('Noto Sans KR', {
+  src: 'url(/fonts/noto-sans-kr.woff2) format("woff2")',
+  fontStyle: 'normal',
+  fontWeight: '100 900',
+  fontDisplay: 'swap',
+});
 
 globalStyle('*', { boxSizing: 'border-box' });
 
