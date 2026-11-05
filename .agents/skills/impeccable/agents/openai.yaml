@@ -1,0 +1,4 @@
+interface:
+  display_name: Impeccable
+  short_description: 이 저장소 프론트엔드의 UI 설계, 검토와 개선
+  default_prompt: Impeccable을 사용해 이 저장소 frontend 내부 UI를 검토하고 개선해줘.

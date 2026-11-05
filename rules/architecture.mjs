@@ -161,7 +161,7 @@ const architecture = {
           if (!target) return;
           const targetName = relative(target);
 
-          if (targetName.startsWith('../backend/'))
+          if (targetName.startsWith('../graduate-me-backend/'))
             report(node, '백엔드 구현과 DB 코드를 직접 참조하지 않는다.');
           if (layer(target) > currentLayer)
             report(node, '하위 계층은 상위 계층을 import하지 않는다.');
