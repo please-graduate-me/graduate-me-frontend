@@ -7,6 +7,7 @@ import {
   startSharedLesson,
 } from '@/domains/shares/api/shares';
 import { videoPaths } from '@/domains/videos/config/paths';
+import * as styles from './SharedEntry.css';
 import { shareVisitSchema } from '@/domains/shares/model/contracts';
 
 /** 새로고침 중에도 같은 탭의 방문을 중복 집계하지 않는다. */
@@ -61,8 +62,9 @@ export function SharedEntry({ id, segment }: { id: string; segment: boolean }) {
   }
 
   return (
-    <>
+    <div className={styles.entry}>
       <Button
+        className={styles.start}
         disabled={busy}
         onClick={() => void start()}>
         {busy
@@ -72,12 +74,19 @@ export function SharedEntry({ id, segment }: { id: string; segment: boolean }) {
             : '내 학습에 추가하고 시작'}
       </Button>
       {segment && (
-        <p>
-          이 구절부터 학습을 누르면 해당 구절로 이동합니다. 기존 답안은
-          유지됩니다.
+        <p className={styles.note}>
+          해당 구절로 이동합니다.
+          <br />
+          기존 답안은 유지됩니다.
         </p>
       )}
-      {error && <p role='alert'>{error}</p>}
-    </>
+      {error && (
+        <p
+          className={styles.error}
+          role='alert'>
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
