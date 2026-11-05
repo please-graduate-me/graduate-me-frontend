@@ -1,5 +1,5 @@
 'use client';
-import { useAnswerViewport } from '../../../../_components/useAnswerViewport';
+import { useAnswerViewport } from './useAnswerViewport';
 import { Button } from '@/components/ui/primitives/Button';
 import { Panel } from '@/components/ui/layouts/Panel';
 import * as styles from './Study.css';
@@ -10,6 +10,7 @@ import type {
   SegmentState,
   ActionResult,
 } from '@/domains/videos/model/contracts';
+import { applyDemoLearningAction } from '@/domains/videos/lib/demoLesson';
 import { applyLearningAction } from '@/domains/videos/api/videos';
 import { learningConfig, answerLimits } from '@/domains/videos/config/catalog';
 import { videoPaths } from '@/domains/videos/config/paths';
@@ -17,18 +18,24 @@ import { useRouter } from 'next/navigation';
 import { type Grade, type Mode } from '@/domains/videos/model/contracts';
 import { isTextInput } from '@/lib/dom/isTextInput';
 import type { LearningAction } from '@/domains/videos/model/contracts';
-import { useYouTubePlayer } from '../../../../_components/useYouTubePlayer';
+import { useYouTubePlayer } from './useYouTubePlayer';
 import { LearningModeSwitch } from '@/domains/videos/ui/LearningModeSwitch';
 import { SegmentList } from '@/domains/videos/ui/SegmentList';
 import { SegmentSelect } from './SegmentSelect';
 import { VideoInfo } from './VideoInfo';
 import { PlaybackStatus } from './PlaybackStatus';
 import { ShareButton } from './ShareButton';
-import { LearningOptions } from '../../../../_components/LearningOptions';
-import { useLearningSettings } from '../../../../_components/useLearningSettings';
+import { LearningOptions } from './LearningOptions';
+import { useLearningSettings } from './useLearningSettings';
 
 /** 저장과 제출 및 구절 이동의 순서를 한 화면에서 조율한다. */
-export function Study({ initial }: { initial: Lesson }) {
+export function Study({
+  initial,
+  demo = false,
+}: {
+  initial: Lesson;
+  demo?: boolean;
+}) {
   const router = useRouter();
   const { video, segments } = initial;
 
@@ -37,7 +44,7 @@ export function Study({ initial }: { initial: Lesson }) {
     saving: savingSettings,
     error: settingsError,
     change: changeSettings,
-  } = useLearningSettings(initial.settings);
+  } = useLearningSettings(initial.settings, !demo);
 
   const [compactVideo, setCompactVideo] = useState(false);
   const [answerFocused, setAnswerFocused] = useState(false);
@@ -54,7 +61,11 @@ export function Study({ initial }: { initial: Lesson }) {
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [error, setError] = useState('');
-  const [saveStatus, setSaveStatus] = useState('저장됨');
+
+  const [saveStatus, setSaveStatus] = useState(
+    demo ? '체험 중에만 유지됨' : '저장됨'
+  );
+
   const unsaved = useRef<LearningAction | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
@@ -98,13 +109,17 @@ export function Study({ initial }: { initial: Lesson }) {
       // 저장 실패 후에도 재시도 요청을 큐에 넣을 수 있어야 한다.
       const task = queue.current
         .catch(() => undefined)
-        .then(() => applyLearningAction(video.id, body));
+        .then(() =>
+          demo
+            ? applyDemoLearningAction(initial, body)
+            : applyLearningAction(video.id, body)
+        );
 
       queue.current = task;
 
       return task;
     },
-    [video.id]
+    [video.id, demo, initial]
   );
 
   const flushDraft = useCallback(async () => {
@@ -123,13 +138,13 @@ export function Study({ initial }: { initial: Lesson }) {
       // 응답을 기다리는 동안 입력한 새 답안을 저장 완료로 지우지 않는다.
       if (unsaved.current === body) {
         unsaved.current = null;
-        setSaveStatus('저장됨');
+        setSaveStatus(demo ? '체험 중에만 유지됨' : '저장됨');
       }
     } catch (error) {
       setSaveStatus('저장 실패');
       throw error;
     }
-  }, [enqueue]);
+  }, [enqueue, demo]);
 
   useEffect(() => {
     function beforeUnload(event: BeforeUnloadEvent) {
@@ -205,7 +220,7 @@ export function Study({ initial }: { initial: Lesson }) {
   function changeDraft(answer: string | string[]) {
     updateState({ draft: answer });
     setFeedback(null);
-    setSaveStatus('저장 중…');
+    setSaveStatus(demo ? '체험 중에만 유지됨' : '저장 중…');
     unsaved.current = { action: 'draft', segmentId: segment.id, mode, answer };
     clearTimeout(timer.current);
 
@@ -261,7 +276,7 @@ export function Study({ initial }: { initial: Lesson }) {
       setIndex(0);
       setMode('blank');
       setFeedback(null);
-      setSaveStatus('저장됨');
+      setSaveStatus(demo ? '체험 중에만 유지됨' : '저장됨');
     });
   }
 
@@ -385,19 +400,23 @@ export function Study({ initial }: { initial: Lesson }) {
     <div
       className={styles.study}
       data-answer-focused={answerFocused || undefined}>
-      <Link
-        href={videoPaths.library}
-        onClick={(event) => {
-          if (unsaved.current || busyRef.current) {
-            event.preventDefault();
+      {demo ? (
+        <p>체험 모드 · 답안과 진도는 페이지를 떠나면 사라집니다.</p>
+      ) : (
+        <Link
+          href={videoPaths.library}
+          onClick={(event) => {
+            if (unsaved.current || busyRef.current) {
+              event.preventDefault();
 
-            void perform(async () => {
-              router.push(videoPaths.library);
-            });
-          }
-        }}>
-        ← 영상 목록
-      </Link>
+              void perform(async () => {
+                router.push(videoPaths.library);
+              });
+            }
+          }}>
+          ← 영상 목록
+        </Link>
+      )}
       <div className={styles.sectionHeading}>
         <h1 className={styles.lessonTitle}>{video.title}</h1>
         <span
@@ -430,10 +449,12 @@ export function Study({ initial }: { initial: Lesson }) {
             ? `${segment.start.toFixed(0)}초 ~ ${segment.end.toFixed(0)}초`
             : '학습 완료'}
         </span>
-        <ShareButton
-          className={styles.quietButton}
-          videoId={video.id}
-        />
+        {!demo && (
+          <ShareButton
+            className={styles.quietButton}
+            videoId={video.id}
+          />
+        )}
       </div>
       <div className={styles.studyGrid}>
         <section
@@ -556,6 +577,7 @@ export function Study({ initial }: { initial: Lesson }) {
             </div>
             <LearningOptions
               settings={settings}
+              temporary={demo}
               saving={savingSettings}
               error={settingsError}
               actualRate={actualRate}
@@ -789,12 +811,14 @@ export function Study({ initial }: { initial: Lesson }) {
                   ? '안 들리는 구절 표시 해제'
                   : '안 들리는 구절로 표시'}
               </Button>
-              <ShareButton
-                className={styles.quietButton}
-                key={segment.id}
-                videoId={video.id}
-                segmentId={segment.id}
-              />
+              {!demo && (
+                <ShareButton
+                  className={styles.quietButton}
+                  key={segment.id}
+                  videoId={video.id}
+                  segmentId={segment.id}
+                />
+              )}
             </div>
             {feedback && (
               <div
@@ -857,16 +881,17 @@ export function Study({ initial }: { initial: Lesson }) {
       </div>
       <details className={styles.videoDetails}>
         <summary>영상 정보와 학습 기록 관리</summary>
-        <VideoInfo
-          video={video}
-          initialFavorite={initial.progress.favorite}
-        />
+        {!demo && (
+          <VideoInfo
+            video={video}
+            initialFavorite={initial.progress.favorite}
+          />
+        )}
         <Panel>
           <h2>학습 기록 초기화</h2>
           <p className={styles.muted}>
             이 영상의 두 모드 답안, 안 들리는 구절 표시와 모든 학습 기록을
-            삭제하고 처음부터 시작합니다. 다른 영상과 다른 사용자의 기록은
-            유지됩니다.
+            삭제하고 처음부터 시작합니다.
           </p>
           <Button
             variant='secondary'

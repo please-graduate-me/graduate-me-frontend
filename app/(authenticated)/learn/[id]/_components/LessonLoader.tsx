@@ -8,7 +8,7 @@ import { getLesson, retryVideo } from '@/domains/videos/api/videos';
 import { jobLabels, learningConfig } from '@/domains/videos/config/catalog';
 import { videoPaths } from '@/domains/videos/config/paths';
 import type { Lesson } from '@/domains/videos/model/contracts';
-import { Study } from './Study';
+import { Study } from '../../../../_components/Study';
 
 /** 준비 상태 조회가 진행 중인 학습 입력을 덮어쓰지 않게 한다. */
 export function LessonLoader({ initial }: { initial: Lesson }) {

@@ -4,7 +4,7 @@ import { saveLearningSettings } from '@/domains/users/api/settings';
 import type { LearningSettings } from '@/domains/users/model/settings';
 
 /** 두 화면의 즉시 적용과 저장 실패 복구를 같은 규칙으로 처리한다. */
-export function useLearningSettings(initial: LearningSettings) {
+export function useLearningSettings(initial: LearningSettings, persist = true) {
   const [settings, setSettings] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -20,7 +20,7 @@ export function useLearningSettings(initial: LearningSettings) {
     setError('');
 
     try {
-      setSettings(await saveLearningSettings(next));
+      if (persist) setSettings(await saveLearningSettings(next));
     } catch {
       setSettings(previous);
 

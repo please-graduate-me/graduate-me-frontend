@@ -4,6 +4,7 @@ import * as styles from './LearningOptions.css';
 /** 다른 영상에서도 유지되는 계정 옵션임을 학습 화면에서 알린다. */
 export function LearningOptions({
   settings,
+  temporary = false,
   saving,
   error,
   actualRate = 1,
@@ -11,6 +12,7 @@ export function LearningOptions({
   onChange,
 }: {
   settings: LearningSettings;
+  temporary?: boolean;
   saving: boolean;
   error: string;
   actualRate?: number;
@@ -102,7 +104,10 @@ export function LearningOptions({
       </div>
       <p className={styles.description}>
         처음 한 번 들은 뒤 선택한 횟수만큼 더 반복합니다. 일시정지를 누르면
-        반복도 멈춥니다. 이 설정은 다른 영상에도 적용됩니다.
+        반복도 멈춥니다.{' '}
+        {temporary
+          ? '체험을 마치면 설정이 초기화됩니다.'
+          : '이 설정은 다른 영상에도 적용됩니다.'}
       </p>
       {ready && actualRate !== settings.playbackRate && (
         <p className={styles.description}>
@@ -113,7 +118,9 @@ export function LearningOptions({
       <p
         className={styles.description}
         role='status'>
-        {saving ? '옵션 저장 중…' : error || '계정에 저장됨'}
+        {saving
+          ? '옵션 저장 중…'
+          : error || (temporary ? '체험 중에만 적용됨' : '계정에 저장됨')}
       </p>
     </fieldset>
   );
