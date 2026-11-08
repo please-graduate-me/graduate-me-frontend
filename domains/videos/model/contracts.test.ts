@@ -27,7 +27,6 @@ describe('학습 계약', () => {
         youtubeId: 'youtube',
         title: '영상',
         duration: null,
-        downloadedAt: null,
         category: null,
         liked: false,
         likeCount: 0,

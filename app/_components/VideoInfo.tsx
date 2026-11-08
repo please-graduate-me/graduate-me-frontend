@@ -55,21 +55,6 @@ export function VideoInfo({
       <p className={styles.description}>
         YouTube 카테고리: {video.category ?? '미분류'}
       </p>
-      <p className={styles.description}>
-        음성 받은 시각:{' '}
-        {video.downloadedAt ? (
-          <time dateTime={video.downloadedAt}>
-            {new Intl.DateTimeFormat('ko-KR', {
-              dateStyle: 'medium',
-              timeStyle: 'short',
-              timeZone: 'Asia/Seoul',
-            }).format(new Date(video.downloadedAt))}{' '}
-            (한국 시간)
-          </time>
-        ) : (
-          '기록 없음'
-        )}
-      </p>
       <Button
         variant='secondary'
         aria-pressed={reaction.liked}

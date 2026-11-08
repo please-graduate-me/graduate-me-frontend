@@ -6,7 +6,7 @@
 - 로컬 서비스 실행과 환경변수 주입은 Docker Compose에서 담당한다.
 - 파일을 수정한 작업은 완료 보고와 커밋 전에 반드시 `pnpm check`를 실행한다. Prettier 포맷 적용, ESLint 검사, 타입 검사를 순서대로 수행하며, 실패하면 수정 후 다시 실행한다. 포맷으로 변경된 내용도 검토한다.
 - 코드 수정 후 변경 범위에 맞는 테스트와 빌드를 추가로 확인한다.
-- Python 음성 처리기는 별도 `audio-processor` 저장소에서 unittest로 검증한다. 백엔드 저장소의 NestJS 작업 관리자는 Vitest를 사용한다. DB 통합 테스트에는 이름이 `_test`로 끝나는 별도 DB만 사용한다.
+- 백엔드 저장소의 NestJS 작업 관리자는 Vitest를 사용한다. DB 통합 테스트에는 이름이 `_test`로 끝나는 별도 DB만 사용한다.
 
 ## 주석
 
@@ -16,6 +16,5 @@
 
 - 프론트엔드: `../graduate-me-frontend`
 - 백엔드와 NestJS 작업 관리자: `../graduate-me-backend`
-- Python 음성 처리기: `../audio-processor`
 - API 변경 시 상대 저장소의 계약과 사용처도 확인한다. 다른 저장소 소스를 직접 import하지 않는다.
 - 개발 서버는 `pnpm dev`로 Docker Compose에서 실행한다. `dev:app`은 컨테이너 내부 실행 명령이다.

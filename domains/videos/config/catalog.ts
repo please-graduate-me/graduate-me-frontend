@@ -29,8 +29,8 @@ export const answerLimits = { full: 2000, blank: 100, blanks: 3 } as const;
 /** 처리 상태의 사용자 문구를 화면마다 중복하지 않는다. */
 export const jobLabels: Record<string, string> = {
   queued: '처리 대기',
-  extracting: '오디오 추출 중',
-  transcribing: '음성 인식 중',
+  preparing: '영상 정보 확인 중',
+  transcribing: '영상 분석 중',
   ready: '학습 준비 완료',
   failed: '처리 실패',
 };

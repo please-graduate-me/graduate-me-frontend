@@ -16,7 +16,6 @@ export function createDemoLesson(demo: DemoLesson): Lesson {
       youtubeId: demo.youtubeId,
       title: '체험 영상',
       duration: null,
-      downloadedAt: null,
       category: null,
       liked: false,
       likeCount: 0,

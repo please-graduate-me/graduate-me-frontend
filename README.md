@@ -7,15 +7,14 @@ Next.js 웹 화면과 프론트엔드 API 계약을 관리합니다.
 ```text
 codding/
 ├── graduate-me-frontend/
-├── graduate-me-backend/
-└── audio-processor/
+└── graduate-me-backend/
 ```
 
 각 저장소는 자신의 소스와 의존성만으로 설치하고 빌드합니다. 상대 저장소의 코드를 직접 import하지 않습니다. API 계약을 변경하면 양쪽의 타입, 검증, 사용처를 함께 확인합니다.
 
 ## 로컬 개발
 
-실행 순서는 `audio-processor` → `graduate-me-backend` → `graduate-me-frontend`입니다. Python 처리기는 자신의 README에 따라 먼저 실행합니다. 백엔드가 `graduate-me-app` 네트워크를 만들고 프론트엔드가 여기에 연결됩니다. 백엔드 작업 관리자는 처리기의 `graduate-me-processing` 네트워크에도 연결됩니다.
+백엔드 → 프론트엔드 순서로 실행합니다. 백엔드가 `graduate-me-app` 네트워크를 만들고 프론트엔드가 여기에 연결됩니다. 영상 분석은 백엔드 worker가 Gemini API를 직접 호출합니다.
 
 ```sh
 pnpm install --frozen-lockfile

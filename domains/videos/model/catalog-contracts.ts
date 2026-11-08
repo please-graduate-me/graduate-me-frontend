@@ -21,7 +21,6 @@ export const publicVideoListSchema = z.object({
       title: z.string(),
       duration: z.number().nullable(),
       category: z.string().nullable(),
-      downloadedAt: z.string().nullable(),
       likeCount: z.number().int().nonnegative(),
     })
   ),
