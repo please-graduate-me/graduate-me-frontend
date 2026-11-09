@@ -7,7 +7,12 @@ export function safeReturnPath(
     !value ||
     !value.startsWith('/') ||
     value.startsWith('//') ||
-    /[\\\r\n]/u.test(value)
+    value.includes('\\') ||
+    Array.from(value).some((character) => {
+      const code = character.charCodeAt(0);
+
+      return code < 32 || code === 127;
+    })
   )
     return fallback;
 

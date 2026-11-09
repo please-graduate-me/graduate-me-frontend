@@ -14,6 +14,7 @@ export function SessionRecovery() {
         화면에 남아 있습니다.
       </p>
       <Button
+        type='button'
         variant='secondary'
         size='small'
         onClick={() =>

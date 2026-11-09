@@ -14,6 +14,7 @@ describe('로그인 후 학습 위치 복귀', () => {
       '//example.com',
       '/\\example.com',
       '/\nexample',
+      '/\t/evil.example',
       null,
     ])
       expect(safeReturnPath(value)).toBe('/library');
