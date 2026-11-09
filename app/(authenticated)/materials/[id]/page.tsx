@@ -16,6 +16,7 @@ export default async function MaterialPage({
     quote?: string;
     rect?: string;
     version?: string;
+    ocrId?: string;
   }>;
 }) {
   const { transport } = await requireSession();
@@ -56,13 +57,14 @@ export default async function MaterialPage({
     materialId: material.id,
     page,
     quote: search.quote,
+    ocrId: search.ocrId,
     version: Number(search.version ?? 1),
     rects,
   });
 
   return (
     <PdfStudy
-      key={`${material.id}:${material.version ?? 1}:${page}:${search.quote ?? ''}`}
+      key={`${material.id}:${material.version ?? 1}:${page}:${search.ocrId ?? ''}:${search.quote ?? ''}`}
       selection={
         selection.success &&
         (selection.data.version ?? 1) === (material.version ?? 1)

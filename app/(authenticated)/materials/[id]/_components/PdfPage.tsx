@@ -2,6 +2,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy, RenderTask, TextLayer } from 'pdfjs-dist';
 import { loadPdfEngine } from '@/domains/materials/lib/pdf';
+import type { OcrPage } from '@/domains/materials/model/ocr';
+import { readPdfSelection } from '@/domains/materials/lib/pdfSelection';
+import { PdfOcrLayer } from './PdfOcrLayer';
 import * as styles from './PdfPage.css';
 
 /** 실제 PDF 캔버스와 선택 가능한 텍스트 층을 같은 좌표로 렌더링한다. */
@@ -13,8 +16,10 @@ export function PdfPage({
   onSelection,
   highlights = [],
   onRendered,
+  ocr,
 }: {
   document: PDFDocumentProxy;
+  ocr?: OcrPage;
   number: number;
   scale: number;
   interactive?: boolean;
@@ -80,7 +85,7 @@ export function PdfPage({
       await render.promise;
       if (disposed) return;
 
-      if (interactive) {
+      if (interactive && !ocr) {
         const engine = await loadPdfEngine();
         const content = await page.getTextContent();
 
@@ -111,36 +116,14 @@ export function PdfPage({
       render?.cancel();
       text?.cancel();
     };
-  }, [document, number, scale, interactive]);
+  }, [document, number, scale, interactive, ocr]);
 
   function selected() {
     if (!interactive) return;
 
-    const selection = window.getSelection();
+    const selection = readPdfSelection(layer.current, window.getSelection());
 
-    if (
-      !selection ||
-      !selection.rangeCount ||
-      !layer.current?.contains(selection.anchorNode) ||
-      !layer.current.contains(selection.focusNode)
-    )
-      return;
-
-    const quote = selection.toString().replace(/\s+/g, ' ').trim();
-
-    const bounds = layer.current.getBoundingClientRect();
-
-    const rects = Array.from(selection.getRangeAt(0).getClientRects())
-      .filter((rect) => rect.width > 0 && rect.height > 0)
-      .slice(0, 200)
-      .map((rect) => ({
-        x: Math.max(0, Math.min(1, (rect.left - bounds.left) / bounds.width)),
-        y: Math.max(0, Math.min(1, (rect.top - bounds.top) / bounds.height)),
-        width: Math.max(0, Math.min(1, rect.width / bounds.width)),
-        height: Math.max(0, Math.min(1, rect.height / bounds.height)),
-      }));
-
-    if (quote) onSelection?.(quote.slice(0, 5000), rects);
+    if (selection) onSelection?.(selection.quote, selection.rects);
   }
 
   return (
@@ -159,6 +142,15 @@ export function PdfPage({
         onPointerUp={selected}
         onKeyUp={selected}
       />
+      {ocr && (
+        <PdfOcrLayer
+          item={ocr}
+          width={size.width}
+          height={size.height}
+          interactive={interactive}
+          onSelection={onSelection}
+        />
+      )}
       <div
         className={styles.highlights}
         aria-hidden='true'>

@@ -18,6 +18,8 @@ import type { Annotation } from '@/domains/materials/model/records';
 import { MaterialPreparation } from './MaterialPreparation';
 import { AnnotationList } from '../../../../_components/AnnotationList';
 import { SourceActions } from '../../../../_components/SourceActions';
+import type { OcrPage } from '@/domains/materials/model/ocr';
+import { PdfOcrPanel } from './PdfOcrPanel';
 import { PdfPage } from './PdfPage';
 import { PdfToolbar } from './PdfToolbar';
 import { PdfThumbnail } from './PdfThumbnail';
@@ -43,6 +45,19 @@ export function PdfStudy({
   const [memo, setMemo] = useState(initial.memo);
   const [savedMemo, setSavedMemo] = useState(initial.memo);
   const [quote, setQuote] = useState(selection?.quote ?? '');
+
+  const [usingOcr, setUsingOcr] = useState(
+    selection?.kind === 'pdf' && Boolean(selection.ocrId)
+  );
+
+  const [ocrSelectionId, setOcrSelectionId] = useState(
+    selection?.kind === 'pdf' ? selection.ocrId : undefined
+  );
+
+  const [ocr, setOcr] = useState<OcrPage | null>(null);
+
+  const currentOcr =
+    ocr?.page === page && ocr.version === (initial.version ?? 1) ? ocr : null;
 
   const [rects, setRects] = useState<
     { x: number; y: number; width: number; height: number }[]
@@ -190,6 +205,9 @@ export function PdfStudy({
 
       setPage(next);
       setQuote('');
+      setOcr(null);
+      setUsingOcr(false);
+      setOcrSelectionId(undefined);
       setRects([]);
       setPageImage(undefined);
       setSaveStatus('학습 위치 저장 중…');
@@ -273,6 +291,7 @@ export function PdfStudy({
   const source = {
     kind: 'pdf' as const,
     materialId: initial.id,
+    ocrId: ocrSelectionId,
     page,
     quote,
     rects,
@@ -389,7 +408,14 @@ export function PdfStudy({
               document={document}
               number={page}
               scale={scale}
-              interactive={selectionMode}
+              interactive={
+                selectionMode && (!usingOcr || currentOcr?.status === 'ready')
+              }
+              ocr={
+                usingOcr && currentOcr?.status === 'ready'
+                  ? currentOcr
+                  : undefined
+              }
               onRendered={() => {
                 const target = rects[0];
 
@@ -418,6 +444,7 @@ export function PdfStudy({
               ]}
               onSelection={(selected, selectedRects) => {
                 setQuote(selected);
+                setOcrSelectionId(usingOcr ? currentOcr?.id : undefined);
                 setRects(selectedRects);
                 const canvas = scroll.current?.querySelector('canvas');
 
@@ -448,6 +475,25 @@ export function PdfStudy({
         <aside
           className={styles.sidebar}
           aria-label={memoOpen ? '개인 메모' : '선택한 구절 학습'}>
+          <PdfOcrPanel
+            key={`${initial.id}:${initial.version ?? 1}:${page}`}
+            id={initial.id}
+            version={initial.version ?? 1}
+            page={page}
+            owned={initial.owned ?? false}
+            historical={historical}
+            usingOcr={usingOcr}
+            hasNativeText={Boolean(initial.pages[page - 1]?.trim())}
+            onResult={(item) => setOcr(item)}
+            onMode={(value) => {
+              if (value === usingOcr) return;
+              setUsingOcr(value);
+              setQuote('');
+              setRects([]);
+              setPageImage(undefined);
+              setOcrSelectionId(undefined);
+            }}
+          />
           <MaterialPreparation
             id={initial.id}
             page={page}
@@ -498,7 +544,9 @@ export function PdfStudy({
               </div>
               {quote ? (
                 <>
-                  <Badge tone='brand'>PDF · {page}페이지</Badge>
+                  <Badge tone='brand'>
+                    PDF · {page}페이지{ocrSelectionId ? ' · OCR' : ''}
+                  </Badge>
                   <blockquote className={styles.quote}>{quote}</blockquote>
                   <div className={styles.section}>
                     <h3>이 원문으로 학습하기</h3>
@@ -507,7 +555,7 @@ export function PdfStudy({
                       도우미에게 질문해 보세요.
                     </p>
                     <SourceActions
-                      key={`${page}:${quote}`}
+                      key={`${page}:${ocrSelectionId ?? 'native'}:${quote}`}
                       source={source}
                       language={initial.language}
                       image={pageImage}
@@ -527,7 +575,9 @@ export function PdfStudy({
                   description={
                     initial.pages[page - 1]?.trim()
                       ? '선택한 문장을 저장하거나 담당 도우미에게 질문할 수 있어요.'
-                      : '이 페이지에는 선택할 수 있는 텍스트가 없습니다. 스캔본 OCR은 제공하지 않습니다.'
+                      : currentOcr?.status === 'ready'
+                        ? '인식한 글자 선택을 누른 뒤 원본 위에서 단어나 문장을 선택해 보세요.'
+                        : '이 페이지에는 선택 가능한 텍스트가 없습니다. 위의 페이지 글자 인식에서 저장 결과를 조회하거나 영어 페이지의 인식을 요청할 수 있어요.'
                   }
                 />
               )}
