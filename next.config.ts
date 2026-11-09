@@ -6,6 +6,8 @@ const backend = process.env.API_INTERNAL_URL || 'http://127.0.0.1:4000';
 const config: NextConfig = {
   poweredByHeader: false,
   agentRules: false,
+  // PDF 원본의 base64와 추출 텍스트가 프록시에서 잘리지 않게 한다.
+  experimental: { proxyClientMaxBodySize: '32mb' },
   async rewrites() {
     return [{ source: '/api/:path*', destination: `${backend}/api/:path*` }];
   },
