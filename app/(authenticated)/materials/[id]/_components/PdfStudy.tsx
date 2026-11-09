@@ -81,6 +81,7 @@ export function PdfStudy({
 
   const saveQueue = useRef<Promise<unknown>>(Promise.resolve());
   const pageVersion = useRef(0);
+  const openedReading = useRef(false);
 
   const saveMaterial = useCallback(
     (patch: { currentPage?: number; memo?: string }) => {
@@ -95,6 +96,21 @@ export function PdfStudy({
     },
     [initial.id]
   );
+
+  useEffect(() => {
+    if (historical || openedReading.current || pageVersion.current !== 0)
+      return;
+    openedReading.current = true;
+
+    // 첫 페이지 열기도 기록하되 이후 페이지 이동보다 앞서 큐에 넣는다.
+    void saveMaterial({ currentPage: initial.currentPage }).catch((error) => {
+      if (pageVersion.current !== 0) return;
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
+      setSaveStatus('학습 위치 저장 실패');
+      setError((error as Error).message);
+    });
+  }, [historical, initial.currentPage, saveMaterial]);
 
   useEffect(() => {
     let active = true;
