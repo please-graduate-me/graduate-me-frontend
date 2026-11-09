@@ -1,4 +1,7 @@
 import { requireSession } from '../../requireSession';
+import { getArchivedVideoSource } from '@/domains/videos/api/archive';
+import { sourceInputSchema } from '@/domains/materials/model/source';
+import { ArchivedVideoSource } from './_components/ArchivedVideoSource';
 import { getLesson } from '@/domains/videos/api/videos';
 import { ApiError } from '@/lib/api/request';
 import { notFound } from 'next/navigation';
@@ -10,7 +13,7 @@ export default async function Learn({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ segment?: string }>;
+  searchParams: Promise<{ segment?: string; version?: string; quote?: string }>;
 }) {
   const { transport } = await requireSession();
   const [{ id }, search] = await Promise.all([params, searchParams]);
@@ -26,10 +29,46 @@ export default async function Learn({
 
   if (requestedIndex >= 0) initial.progress.currentIndex = requestedIndex;
 
+  const segment = initial.segments[requestedIndex];
+  const requestedVersion = Number(search.version);
+
+  if (
+    segment &&
+    Number.isInteger(requestedVersion) &&
+    requestedVersion > 0 &&
+    requestedVersion !== (segment.version ?? 1)
+  ) {
+    const archive = await getArchivedVideoSource(
+      id,
+      segment.id,
+      requestedVersion,
+      transport
+    ).catch((error) => {
+      if (error instanceof ApiError && error.status === 404) notFound();
+      throw error;
+    });
+
+    return (
+      <ArchivedVideoSource
+        value={archive}
+        quote={search.quote}
+      />
+    );
+  }
+
+  const selection = sourceInputSchema.safeParse({
+    kind: 'video',
+    videoId: id,
+    segmentId: search.segment,
+    quote: search.quote,
+    version: segment?.version ?? 1,
+  });
+
   return (
     <LessonLoader
       key={`${id}:${search.segment ?? ''}`}
       initial={initial}
+      selection={selection.success ? selection.data : undefined}
     />
   );
 }

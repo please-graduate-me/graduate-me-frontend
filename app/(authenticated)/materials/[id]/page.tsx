@@ -21,7 +21,15 @@ export default async function MaterialPage({
   const { transport } = await requireSession();
   const [{ id }, search] = await Promise.all([params, searchParams]);
 
-  const material = await getMaterial(id, transport).catch((error) => {
+  const requestedVersion = Number(search.version);
+
+  const material = await getMaterial(
+    id,
+    transport,
+    Number.isInteger(requestedVersion) && requestedVersion > 0
+      ? requestedVersion
+      : undefined
+  ).catch((error) => {
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   });
@@ -54,7 +62,7 @@ export default async function MaterialPage({
 
   return (
     <PdfStudy
-      key={`${material.id}:${page}:${search.quote ?? ''}`}
+      key={`${material.id}:${material.version ?? 1}:${page}:${search.quote ?? ''}`}
       selection={
         selection.success &&
         (selection.data.version ?? 1) === (material.version ?? 1)

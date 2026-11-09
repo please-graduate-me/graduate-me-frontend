@@ -1,4 +1,5 @@
 'use client';
+import { Select } from '@/components/ui/primitives/Select';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { MaterialSummary } from '@/domains/materials/model/contracts';
@@ -27,7 +28,13 @@ export function MaterialLibrary({
   const [videos, setVideos] = useState<VideoHistory>([]);
   const [kind, setKind] = useState<'all' | 'pdf' | 'video'>('all');
   const [query, setQuery] = useState('');
+  const [language, setLanguage] = useState<'all' | 'en' | 'th'>('all');
   const [adding, setAdding] = useState(initiallyAdding);
+
+  const [replacement, setReplacement] = useState<MaterialSummary | undefined>(
+    undefined
+  );
+
   const [error, setError] = useState('');
   const [removing, setRemoving] = useState<string | null>(null);
 
@@ -71,10 +78,22 @@ export function MaterialLibrary({
     title.toLowerCase().includes(query.toLowerCase());
 
   const pdfs =
-    kind === 'video' ? [] : materials.filter((item) => matching(item.title));
+    kind === 'video'
+      ? []
+      : materials.filter(
+          (item) =>
+            matching(item.title) &&
+            (language === 'all' || item.language === language)
+        );
 
   const filteredVideos =
-    kind === 'pdf' ? [] : videos.filter((item) => matching(item.title));
+    kind === 'pdf'
+      ? []
+      : videos.filter(
+          (item) =>
+            matching(item.title) &&
+            (language === 'all' || (item.language ?? 'en') === language)
+        );
 
   return (
     <div className={styles.page}>
@@ -117,6 +136,19 @@ export function MaterialLibrary({
         ))}
       </div>
       <div className={styles.filters}>
+        <label>
+          학습 언어{' '}
+          <Select
+            aria-label='학습 언어 필터'
+            value={language}
+            onChange={(event) =>
+              setLanguage(event.target.value as typeof language)
+            }>
+            <option value='all'>모든 언어</option>
+            <option value='en'>영어</option>
+            <option value='th'>태국어</option>
+          </Select>
+        </label>
         <Input
           aria-label='자료 이름 검색'
           placeholder='자료 이름으로 찾기'
@@ -173,8 +205,13 @@ export function MaterialLibrary({
                         {material.title}
                       </Link>
                       <p className={styles.meta}>
-                        {material.language === 'en' ? '영어' : '태국어'} · 나만
-                        보기
+                        {material.language === 'en' ? '영어' : '태국어'} ·{' '}
+                        {material.visibility === 'public'
+                          ? '공개 자료'
+                          : material.visibility === 'accounts'
+                            ? '지정 계정 공유'
+                            : '나만 보기'}{' '}
+                        · v{material.version ?? 1}
                       </p>
                     </div>
                   </div>
@@ -188,12 +225,22 @@ export function MaterialLibrary({
                   {formatDate(material.updatedAt)}
                 </td>
                 <td>
-                  <IconButton
-                    name='x'
-                    label={`${material.title} 삭제`}
-                    disabled={removing === material.id}
-                    onClick={() => void remove(material)}
-                  />
+                  {material.owned && (
+                    <Button
+                      variant='ghost'
+                      size='small'
+                      onClick={() => setReplacement(material)}>
+                      새 PDF 버전 등록
+                    </Button>
+                  )}
+                  {material.owned && (
+                    <IconButton
+                      name='x'
+                      label={`${material.title} 삭제`}
+                      disabled={removing === material.id}
+                      onClick={() => void remove(material)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}
@@ -210,7 +257,10 @@ export function MaterialLibrary({
                         href={`/learn/${encodeURIComponent(video.videoId)}`}>
                         {video.title}
                       </Link>
-                      <p className={styles.meta}>영어 · 영상 학습</p>
+                      <p className={styles.meta}>
+                        {video.language === 'th' ? '태국어' : '영어'} · 영상
+                        학습
+                      </p>
                     </div>
                   </div>
                 </td>
@@ -251,6 +301,12 @@ export function MaterialLibrary({
         </table>
       )}
       {adding && <MaterialRegistration onClose={() => setAdding(false)} />}
+      {replacement && (
+        <MaterialRegistration
+          replacement={replacement}
+          onClose={() => setReplacement(undefined)}
+        />
+      )}
     </div>
   );
 }

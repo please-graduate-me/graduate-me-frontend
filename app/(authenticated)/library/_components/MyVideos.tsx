@@ -1,4 +1,5 @@
 'use client';
+import { Select } from '@/components/ui/primitives/Select';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/primitives/Button';
@@ -32,6 +33,7 @@ export function MyVideos({
   summaryLoading: boolean;
 }) {
   const [history, setHistory] = useState<VideoHistory | null>(null);
+  const [language, setLanguage] = useState<'all' | 'en' | 'th'>('all');
   const [error, setError] = useState('');
   const [reload, setReload] = useState(0);
   const [busy, setBusy] = useState<string | null>(null);
@@ -102,10 +104,14 @@ export function MyVideos({
 
   const videos = history ?? [];
 
+  const matchesLanguage = (item: { language?: string }) =>
+    language === 'all' || (item.language ?? 'en') === language;
+
   const recent = [
     ...materials,
     ...videos.filter((item) => item.status === 'ready' && item.count > 0),
   ]
+    .filter(matchesLanguage)
     .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
     .slice(0, 2);
 
@@ -113,6 +119,7 @@ export function MyVideos({
     ...(filter !== 'video' ? materials : []),
     ...(filter !== 'pdf' ? videos : []),
   ]
+    .filter(matchesLanguage)
     .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
     .slice(0, 4);
 
@@ -120,6 +127,19 @@ export function MyVideos({
 
   return (
     <>
+      <label>
+        학습 언어{' '}
+        <Select
+          aria-label='학습 언어 필터'
+          value={language}
+          onChange={(event) =>
+            setLanguage(event.target.value as typeof language)
+          }>
+          <option value='all'>모든 언어</option>
+          <option value='en'>영어</option>
+          <option value='th'>태국어</option>
+        </Select>
+      </label>
       <section
         className={styles.root}
         aria-labelledby='resume-title'>

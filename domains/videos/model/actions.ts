@@ -29,12 +29,14 @@ export const actionSchema = z.discriminatedUnion('action', [
     action: z.literal('draft'),
     segmentId: z.string(),
     mode: modeSchema,
+    sourceVersion: z.number().int().positive().optional(),
     answer: answerSchema,
   }),
   z.object({
     action: z.literal('submit'),
     segmentId: z.string(),
     mode: modeSchema,
+    sourceVersion: z.number().int().positive().optional(),
     answer: answerSchema,
     requestId: z.uuid(),
   }),
@@ -42,6 +44,7 @@ export const actionSchema = z.discriminatedUnion('action', [
     action: z.enum(['reveal', 'skip', 'hint']),
     segmentId: z.string(),
     mode: modeSchema,
+    sourceVersion: z.number().int().positive().optional(),
   }),
 ]);
 

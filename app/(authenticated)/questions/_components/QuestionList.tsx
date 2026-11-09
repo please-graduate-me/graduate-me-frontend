@@ -1,4 +1,5 @@
 'use client';
+import { Select } from '@/components/ui/primitives/Select';
 import { useState } from 'react';
 import Link from 'next/link';
 import type { QuestionSummary } from '@/domains/questions/model/contracts';
@@ -12,11 +13,13 @@ import * as styles from '@/lib/styles/workspace.css';
 /** 학생의 질문만 검색하고 공개 답변 상세로 연결한다. */
 export function QuestionList({ initial }: { initial: QuestionSummary[] }) {
   const [query, setQuery] = useState('');
+  const [language, setLanguage] = useState<'all' | 'en' | 'th'>('all');
   const [status, setStatus] = useState<'all' | 'waiting' | 'answered'>('all');
 
   const items = initial.filter(
     (item) =>
       (status === 'all' || item.status === status) &&
+      (language === 'all' || item.source.language === language) &&
       item.title.toLowerCase().includes(query.toLowerCase())
   );
 
@@ -58,6 +61,19 @@ export function QuestionList({ initial }: { initial: QuestionSummary[] }) {
         ))}
       </div>
       <div className={styles.filters}>
+        <label>
+          학습 언어{' '}
+          <Select
+            aria-label='학습 언어 필터'
+            value={language}
+            onChange={(event) =>
+              setLanguage(event.target.value as typeof language)
+            }>
+            <option value='all'>모든 언어</option>
+            <option value='en'>영어</option>
+            <option value='th'>태국어</option>
+          </Select>
+        </label>
         <Input
           aria-label='내 질문 제목 검색'
           placeholder='질문 제목으로 찾기'

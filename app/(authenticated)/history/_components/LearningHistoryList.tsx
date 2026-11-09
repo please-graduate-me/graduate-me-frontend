@@ -1,4 +1,5 @@
 'use client';
+import { Select } from '@/components/ui/primitives/Select';
 import { useState } from 'react';
 import Link from 'next/link';
 import type { LearningHistory } from '@/domains/learning/model/history';
@@ -8,13 +9,30 @@ import { Icon } from '@/components/ui/primitives/Icon';
 import { EmptyState } from '@/components/ui/composites/EmptyState';
 import * as styles from '@/lib/styles/workspace.css';
 
-/** 자가점검과 질문 및 자료 등록의 실제 활동을 구분해 보여준다. */
+const labels = {
+  practice: '자가점검',
+  question: '질문',
+  material: '자료',
+  exercise: '적용 문제',
+  video: '받아쓰기',
+  annotation: '하이라이트·메모',
+  explanation: 'AI 설명',
+  conversation: 'AI 대화',
+} as const;
+
+/** 저장된 학습 활동과 실제 정오 판정을 별도로 보여준다. */
 export function LearningHistoryList({ items }: { items: LearningHistory }) {
+  const [language, setLanguage] = useState<'all' | 'en' | 'th'>('all');
+
   const [kind, setKind] = useState<'all' | LearningHistory[number]['kind']>(
     'all'
   );
 
-  const filtered = items.filter((item) => kind === 'all' || item.kind === kind);
+  const filtered = items.filter(
+    (item) =>
+      (kind === 'all' || item.kind === kind) &&
+      (language === 'all' || item.language === language)
+  );
 
   return (
     <div className={styles.page}>
@@ -27,6 +45,26 @@ export function LearningHistoryList({ items }: { items: LearningHistory }) {
         </div>
         <Badge tone='neutral'>실제 저장된 활동</Badge>
       </div>
+      <p className={styles.meta}>
+        서버에 저장된 개별 활동을 최근 순으로 표시합니다. 받아쓰기는 구절별
+        제출, 적용 문제는 저장 문제별 제출이며 자가점검은 본인 판단입니다. 도움
+        사용과 정오 판정은 각 활동의 상세 기록에서 확인할 수 있습니다.
+      </p>
+      <div className={styles.filters}>
+        <label>
+          학습 언어{' '}
+          <Select
+            aria-label='학습 언어 필터'
+            value={language}
+            onChange={(event) =>
+              setLanguage(event.target.value as typeof language)
+            }>
+            <option value='all'>모든 언어</option>
+            <option value='en'>영어</option>
+            <option value='th'>태국어</option>
+          </Select>
+        </label>
+      </div>
       <div className={styles.tabs}>
         {(
           [
@@ -34,6 +72,11 @@ export function LearningHistoryList({ items }: { items: LearningHistory }) {
             ['practice', '자가점검'],
             ['question', '질문'],
             ['material', '자료'],
+            ['exercise', '적용 문제'],
+            ['video', '받아쓰기'],
+            ['annotation', '위치 메모'],
+            ['explanation', 'AI 설명'],
+            ['conversation', 'AI 대화'],
           ] as const
         ).map(([value, label]) => (
           <button
@@ -84,11 +127,7 @@ export function LearningHistoryList({ items }: { items: LearningHistory }) {
                       }
                       size={16}
                     />
-                    {item.kind === 'practice'
-                      ? '자가점검'
-                      : item.kind === 'question'
-                        ? '질문'
-                        : '자료 등록'}
+                    {labels[item.kind]}
                   </Badge>
                 </td>
                 <td>

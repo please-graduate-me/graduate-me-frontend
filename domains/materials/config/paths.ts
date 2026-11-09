@@ -20,5 +20,5 @@ export const materialPaths = {
   source: (source: SourceInput) =>
     source.kind === 'pdf'
       ? `/materials/${encodeURIComponent(source.materialId)}?${selectionQuery(source)}`
-      : `/learn/${encodeURIComponent(source.videoId)}?segment=${encodeURIComponent(source.segmentId)}`,
+      : `/learn/${encodeURIComponent(source.videoId)}?segment=${encodeURIComponent(source.segmentId)}&${selectionQuery(source)}`,
 };

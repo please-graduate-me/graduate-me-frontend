@@ -5,7 +5,17 @@ export const learningHistorySchema = z.object({
   items: z.array(
     z.object({
       id: z.string(),
-      kind: z.enum(['practice', 'question', 'material']),
+      kind: z.enum([
+        'practice',
+        'question',
+        'material',
+        'exercise',
+        'video',
+        'annotation',
+        'explanation',
+        'conversation',
+      ]),
+      language: z.enum(['en', 'th']).nullable().optional(),
       title: z.string(),
       detail: z.string(),
       createdAt: z.string(),

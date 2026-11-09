@@ -1,4 +1,5 @@
 'use client';
+import type { SourceInput } from '@/domains/materials/model/source';
 import { useState } from 'react';
 import type {
   Mode,
@@ -13,6 +14,7 @@ import * as styles from './VideoScript.css';
 
 /** 확인한 스크립트와 원문 출처를 영상 오른쪽에서 연결한다. */
 export function VideoScript({
+  selection: initialSelection,
   segments,
   states,
   index,
@@ -33,10 +35,39 @@ export function VideoScript({
   demo: boolean;
   language?: 'en' | 'th';
   scriptViewed?: boolean;
+  selection?: SourceInput;
   onNavigate: (index: number) => void;
 }) {
   const [query, setQuery] = useState('');
+
+  const [selection, setSelection] = useState<{
+    id: string;
+    quote: string;
+  } | null>(
+    initialSelection?.kind === 'video'
+      ? { id: initialSelection.segmentId, quote: initialSelection.quote }
+      : null
+  );
+
   const segment = segments[index];
+
+  const selectedQuote =
+    selection?.id === segment?.id ? selection.quote : segment?.text;
+
+  function selectQuote(event: React.SyntheticEvent<HTMLParagraphElement>) {
+    const selected = window.getSelection();
+
+    if (
+      !segment ||
+      !selected ||
+      !event.currentTarget.contains(selected.anchorNode) ||
+      !event.currentTarget.contains(selected.focusNode)
+    )
+      return;
+    const quote = selected.toString().trim();
+
+    if (quote) setSelection({ id: segment.id, quote: quote.slice(0, 5000) });
+  }
 
   const visible = (id: string) =>
     scriptViewed ||
@@ -106,12 +137,33 @@ export function VideoScript({
       </ol>
       {segment && visible(segment.id) && !demo && (
         <div className={styles.actions}>
+          <p className={styles.description}>
+            단어나 여러 단어 표현을 선택해 문맥의 뜻을 살펴보세요.
+          </p>
+          <p
+            className={styles.selectable}
+            tabIndex={0}
+            onPointerUp={selectQuote}
+            onKeyUp={selectQuote}>
+            {segment.text}
+          </p>
+          {selectedQuote !== segment.text && (
+            <p className={styles.description}>
+              선택한 표현: {selectedQuote}{' '}
+              <button
+                type='button'
+                onClick={() => setSelection(null)}>
+                문장 전체로
+              </button>
+            </p>
+          )}
           <SourceActions
+            key={`${segment.id}:${selectedQuote}`}
             source={{
               kind: 'video',
               videoId,
               segmentId: segment.id,
-              quote: segment.text,
+              quote: selectedQuote ?? segment.text,
               version: segment.version ?? 1,
             }}
             language={language}

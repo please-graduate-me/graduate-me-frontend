@@ -1,7 +1,7 @@
 import { request, jsonBody, type Transport } from '@/lib/api/request';
 import { learningHistorySchema, practiceResultSchema } from '../model/history';
 
-/** 자료 등록과 질문 및 자가점검의 저장 이력을 가져온다. */
+/** 자료·질문·AI 학습·받아쓰기의 실제 저장 활동을 가져온다. */
 export const getLearningHistory = (transport?: Transport) =>
   request('/api/learning/history', learningHistorySchema, undefined, transport);
 

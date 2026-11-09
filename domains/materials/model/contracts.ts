@@ -5,6 +5,8 @@ export const materialSummarySchema = z.object({
   id: z.string(),
   version: z.number().int().positive().optional(),
   title: z.string(),
+  owned: z.boolean().optional(),
+  visibility: z.enum(['private', 'public', 'accounts']).optional(),
   language: z.enum(['en', 'th']),
   filename: z.string(),
   pageCount: z.number().int().positive(),
@@ -24,6 +26,7 @@ export const materialSchema = materialSummarySchema.extend({
     generatedPractice: z.boolean(),
   }),
   aiConfigured: z.boolean().optional(),
+  latestVersion: z.number().int().positive().optional(),
 });
 
 /** 개인 자료 목록의 외부 응답을 검증한다. */
@@ -45,6 +48,11 @@ export const materialInputSchema = z.object({
       (pages) =>
         pages.reduce((total, page) => total + page.length, 0) <= 2000000
     ),
+});
+
+/** 새 원본 등록 시 목록에서 확인한 버전과의 충돌을 검사한다. */
+export const materialVersionInputSchema = materialInputSchema.extend({
+  expectedVersion: z.number().int().positive().optional(),
 });
 
 /** 자료 목록의 검증 결과를 화면에 전달한다. */

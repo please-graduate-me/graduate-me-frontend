@@ -2,6 +2,7 @@ import { request, jsonBody, type Transport } from '@/lib/api/request';
 import { okSchema } from '@/lib/api/contracts';
 import {
   materialInputSchema,
+  materialVersionInputSchema,
   materialSchema,
   materialsSchema,
 } from '../model/contracts';
@@ -21,8 +22,25 @@ export const registerMaterial = (input: unknown) =>
   );
 
 /** 개인 자료의 페이지와 메모를 복원한다. */
-export const getMaterial = (id: string, transport?: Transport) =>
-  request(endpoint(id), materialSchema, undefined, transport);
+export const getMaterial = (
+  id: string,
+  transport?: Transport,
+  version?: number
+) =>
+  request(
+    endpoint(id) + (version ? '?version=' + version : ''),
+    materialSchema,
+    undefined,
+    transport
+  );
+
+/** 원본 교체를 새 버전으로 저장하고 이전 출처와 제출 이력을 보존한다. */
+export const registerMaterialVersion = (id: string, input: unknown) =>
+  request(
+    endpoint(id) + '/versions',
+    materialSchema,
+    jsonBody(materialVersionInputSchema.parse(input))
+  );
 
 /** 학습 위치와 비공개 메모를 변경한다. */
 export const updateMaterial = (

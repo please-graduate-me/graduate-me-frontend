@@ -13,11 +13,13 @@ export function MaterialPreparation({
   page,
   total,
   version,
+  historical = false,
 }: {
   id: string;
   page: number;
   total: number;
   version: number;
+  historical?: boolean;
 }) {
   const [from, setFrom] = useState(String(page));
   const [to, setTo] = useState(String(Math.min(total, page + 9)));
@@ -94,6 +96,12 @@ export function MaterialPreparation({
           결과는 재사용하고 최초 준비에 실패한 페이지는 자동·수동 재분석하지
           않습니다.
         </p>
+        {historical && (
+          <p className={styles.notice}>
+            보관된 원본은 저장 결과를 조회합니다. 새 기본 준비는 현재 원본에서
+            요청해 주세요.
+          </p>
+        )}
         <div className={styles.row}>
           <label>
             시작
@@ -121,7 +129,7 @@ export function MaterialPreparation({
         <Button
           size='small'
           loading={busy}
-          disabled={busy || Number(from) > Number(to)}>
+          disabled={historical || busy || Number(from) > Number(to)}>
           선택 범위 준비 요청
         </Button>
         {message && (

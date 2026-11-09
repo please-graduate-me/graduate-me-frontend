@@ -8,10 +8,17 @@ import { getLesson } from '@/domains/videos/api/videos';
 import { jobLabels, learningConfig } from '@/domains/videos/config/catalog';
 import { videoPaths } from '@/domains/videos/config/paths';
 import type { Lesson } from '@/domains/videos/model/contracts';
+import type { SourceInput } from '@/domains/materials/model/source';
 import { Study } from '../../../../_components/Study';
 
 /** 준비 상태 조회가 진행 중인 학습 입력을 덮어쓰지 않게 한다. */
-export function LessonLoader({ initial }: { initial: Lesson }) {
+export function LessonLoader({
+  initial,
+  selection,
+}: {
+  initial: Lesson;
+  selection?: SourceInput;
+}) {
   const videoId = initial.video.id;
   const [lesson, setLesson] = useState<Lesson>(initial);
   const [error, setError] = useState('');
@@ -55,6 +62,7 @@ export function LessonLoader({ initial }: { initial: Lesson }) {
       <Study
         key={videoId}
         initial={lesson}
+        selection={selection}
       />
     );
 

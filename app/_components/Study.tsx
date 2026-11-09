@@ -1,4 +1,6 @@
 'use client';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from './SessionRecovery';
 import { useAnswerViewport } from './useAnswerViewport';
 import { Button } from '@/components/ui/primitives/Button';
 import { Panel } from '@/components/ui/layouts/Panel';
@@ -30,15 +32,18 @@ import { IconButton } from '@/components/ui/primitives/IconButton';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { Select } from '@/components/ui/primitives/Select';
 import { TextArea } from '@/components/ui/primitives/TextArea';
+import type { SourceInput } from '@/domains/materials/model/source';
 import { VideoScript } from './VideoScript';
 
 /** 저장과 제출 및 구절 이동의 순서를 한 화면에서 조율한다. */
 export function Study({
   initial,
   demo = false,
+  selection,
 }: {
   initial: Lesson;
   demo?: boolean;
+  selection?: SourceInput;
 }) {
   const router = useRouter();
   const { video } = initial;
@@ -53,20 +58,9 @@ export function Study({
     initial.progress.scriptViewed ?? false
   );
 
-  useEffect(() => {
-    let active = true;
-
-    // 상태 조회의 후속 준비 결과만 반영해 작성 중인 답안과 모드를 유지한다.
-    queueMicrotask(() => {
-      if (!active) return;
-      setPreparation(initial.preparation);
-      setSegments(initial.segments);
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [initial.preparation, initial.segments]);
+  const loadedVersions = useRef(
+    JSON.stringify(initial.segments.map((item) => [item.id, item.version ?? 1]))
+  );
 
   const [hint, setHint] = useState('');
   const blankAvailable = preparation?.blanks === 'ready' || !preparation;
@@ -99,6 +93,7 @@ export function Study({
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const [saveStatus, setSaveStatus] = useState(
     demo ? '체험 중에만 유지됨' : '저장됨'
@@ -107,10 +102,54 @@ export function Study({
   const unsaved = useRef<LearningAction | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
+  const submission = useRef<{ key: string; requestId: string } | null>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const blanksContainer = useRef<HTMLDivElement>(null);
   const segment = segments[index];
   const complete = !segment;
+
+  const currentStates = states.filter((item) =>
+    segments.some(
+      (value) =>
+        value.id === item.segmentId &&
+        (value.version ?? 1) === (item.sourceVersion ?? 1)
+    )
+  );
+
+  useEffect(() => {
+    let active = true;
+
+    const nextVersions = JSON.stringify(
+      initial.segments.map((item) => [item.id, item.version ?? 1])
+    );
+
+    const changed = loadedVersions.current !== nextVersions;
+
+    // 상태 조회의 후속 준비 결과만 반영해 작성 중인 답안과 모드를 유지한다.
+    queueMicrotask(() => {
+      if (!active) return;
+      loadedVersions.current = nextVersions;
+      setPreparation(initial.preparation);
+      setSegments(initial.segments);
+
+      if (changed) {
+        setStates(initial.states);
+        setScriptViewed(initial.progress.scriptViewed ?? false);
+        setFeedback(null);
+        setHint('');
+        setSaveStatus('원문 버전이 변경되어 현재 버전의 상태를 불러왔습니다.');
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [
+    initial.preparation,
+    initial.segments,
+    initial.states,
+    initial.progress.scriptViewed,
+  ]);
 
   const {
     mount,
@@ -129,7 +168,7 @@ export function Study({
     prepareNext,
   } = useYouTubePlayer(video.youtubeId, segment, settings, scriptView);
 
-  const state = states.find(
+  const state = currentStates.find(
     (item) =>
       item.segmentId === segment?.id &&
       item.mode === mode &&
@@ -147,20 +186,31 @@ export function Study({
 
   const enqueue = useCallback(
     (body: LearningAction): Promise<ActionResult> => {
+      const action =
+        'segmentId' in body && body.action !== 'difficulty'
+          ? {
+              ...body,
+              sourceVersion:
+                body.sourceVersion ??
+                segments.find((item) => item.id === body.segmentId)?.version ??
+                1,
+            }
+          : body;
+
       // 저장 실패 후에도 재시도 요청을 큐에 넣을 수 있어야 한다.
       const task = queue.current
         .catch(() => undefined)
         .then(() =>
           demo
-            ? applyDemoLearningAction(initial, body)
-            : applyLearningAction(video.id, body)
+            ? applyDemoLearningAction(initial, action)
+            : applyLearningAction(video.id, action)
         );
 
       queue.current = task;
 
       return task;
     },
-    [video.id, demo, initial]
+    [video.id, demo, initial, segments]
   );
 
   const flushDraft = useCallback(async () => {
@@ -182,6 +232,8 @@ export function Study({
         setSaveStatus(demo ? '체험 중에만 유지됨' : '저장됨');
       }
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setSaveStatus('저장 실패');
       throw error;
     }
@@ -237,6 +289,8 @@ export function Study({
       const existing = previous.find(
         (item) =>
           item.segmentId === segmentId &&
+          (item.sourceVersion ?? 1) ===
+            (segments.find((value) => value.id === segmentId)?.version ?? 1) &&
           item.mode === selectedMode &&
           (selectedMode !== 'blank' || (item.blankRatio ?? 20) === blankRatio)
       );
@@ -244,6 +298,8 @@ export function Study({
       const next: SegmentState = {
         segmentId,
         mode: selectedMode,
+        sourceVersion:
+          segments.find((item) => item.id === segmentId)?.version ?? 1,
         draft: selectedMode === 'full' ? '' : [],
         status: 'pending',
         revealed: false,
@@ -271,7 +327,15 @@ export function Study({
     updateState({ draft: answer });
     setFeedback(null);
     setSaveStatus(demo ? '체험 중에만 유지됨' : '저장 중…');
-    unsaved.current = { action: 'draft', segmentId: segment.id, mode, answer };
+
+    unsaved.current = {
+      action: 'draft',
+      segmentId: segment.id,
+      mode,
+      answer,
+      sourceVersion: segment.version ?? 1,
+    };
+
     clearTimeout(timer.current);
 
     timer.current = setTimeout(() => {
@@ -289,7 +353,10 @@ export function Study({
       // 구절 이동과 제출이 마지막 입력의 저장보다 앞서지 않게 한다.
       await flushDraft();
       await operation();
+      setSessionExpired(false);
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       busyRef.current = false;
@@ -337,14 +404,26 @@ export function Study({
     if (!segment) return;
 
     await perform(async () => {
+      const key = JSON.stringify([
+        segment.id,
+        segment.version,
+        mode,
+        blankRatio,
+        draft,
+      ]);
+
+      if (submission.current?.key !== key)
+        submission.current = { key, requestId: crypto.randomUUID() };
+
       const result = await enqueue({
         action: 'submit',
         segmentId: segment.id,
         mode,
         answer: draft,
-        requestId: crypto.randomUUID(),
+        requestId: submission.current.requestId,
       });
 
+      submission.current = null;
       setFeedback(result.grade!);
 
       if (result.grade?.correct) {
@@ -438,6 +517,7 @@ export function Study({
       setPreparation(lesson.preparation);
       setSegments(lesson.segments);
       setStates(lesson.states);
+      setScriptViewed(lesson.progress.scriptViewed ?? false);
       setSaveStatus('자료 준비 상태 확인됨');
     });
   }
@@ -487,16 +567,16 @@ export function Study({
   }, [segment, replay, rewind, toggle]);
 
   const correct = new Set(
-    states
+    currentStates
       .filter((item) => item.status === 'correct')
       .map((item) => item.segmentId)
   ).size;
 
-  const skipped = states.filter(
+  const skipped = currentStates.filter(
     (item) => item.mode === mode && item.status === 'skipped'
   ).length;
 
-  const revealed = states.filter(
+  const revealed = currentStates.filter(
     (item) => item.mode === mode && item.revealed
   ).length;
 
@@ -526,6 +606,7 @@ export function Study({
           학습 종료
         </Link>
       </header>
+      {sessionExpired && <SessionRecovery />}
       {demo && (
         <p className={styles.notice}>
           체험 모드 · 답안과 진도는 페이지를 떠나면 사라집니다.
@@ -1036,7 +1117,7 @@ export function Study({
             </p>
             <SegmentSelect
               segments={segments}
-              states={states}
+              states={currentStates}
               difficultSegmentIds={difficultSegmentIds}
               mode={mode}
               index={index}
@@ -1065,8 +1146,9 @@ export function Study({
           </details>
         </main>
         <VideoScript
+          selection={selection}
           segments={segments}
-          states={states}
+          states={currentStates}
           index={index}
           mode={mode}
           busy={busy}

@@ -73,3 +73,13 @@ export const actions = style({
 });
 
 globalStyle(`${heading} h2`, { margin: 0, fontSize: 16 });
+
+/** 확인한 원문에서 단어와 복수 단어 표현을 드래그해 선택한다. */
+export const selectable = style({
+  userSelect: 'text',
+  fontSize: 14,
+  lineHeight: 1.9,
+  padding: vars.space.md,
+  borderRadius: vars.radius.control,
+  background: vars.color.canvas,
+});

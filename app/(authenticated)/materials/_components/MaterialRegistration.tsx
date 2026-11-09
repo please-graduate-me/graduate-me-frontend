@@ -6,17 +6,31 @@ import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Icon } from '@/components/ui/primitives/Icon';
 import { Dialog } from '@/components/ui/composites/Dialog';
-import { registerMaterial } from '@/domains/materials/api/materials';
+import type { MaterialSummary } from '@/domains/materials/model/contracts';
+import {
+  registerMaterial,
+  registerMaterialVersion,
+} from '@/domains/materials/api/materials';
 import { encodePdf, extractPdf } from '@/domains/materials/lib/pdf';
 import { registerVideo } from '@/domains/videos/api/videos';
 import * as styles from '@/lib/styles/workspace.css';
 
 /** PDF 원본 등록과 기존 영상 준비를 실제 요청에 연결한다. */
-export function MaterialRegistration({ onClose }: { onClose: () => void }) {
+export function MaterialRegistration({
+  onClose,
+  replacement,
+}: {
+  onClose: () => void;
+  replacement?: MaterialSummary;
+}) {
   const router = useRouter();
   const [kind, setKind] = useState<'pdf' | 'video'>('pdf');
-  const [title, setTitle] = useState('');
-  const [language, setLanguage] = useState<'en' | 'th'>('en');
+  const [title, setTitle] = useState(replacement?.title ?? '');
+
+  const [language, setLanguage] = useState<'en' | 'th'>(
+    replacement?.language ?? 'en'
+  );
+
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
@@ -47,13 +61,20 @@ export function MaterialRegistration({ onClose }: { onClose: () => void }) {
 
         setProgress('내 자료에 저장하고 있어요.');
 
-        const result = await registerMaterial({
+        const input = {
           title: title.trim(),
           language,
           filename: file.name,
           contentBase64,
           pages,
-        });
+        };
+
+        const result = replacement
+          ? await registerMaterialVersion(replacement.id, {
+              ...input,
+              expectedVersion: replacement.version ?? 1,
+            })
+          : await registerMaterial(input);
 
         router.push(`/materials/${encodeURIComponent(result.id)}`);
       }
@@ -74,37 +95,49 @@ export function MaterialRegistration({ onClose }: { onClose: () => void }) {
       onClose={() => {
         if (!busy) onClose();
       }}
-      title='새 학습 자료'
-      description='내가 보고 싶은 원문에서 학습을 시작해 보세요.'>
+      title={replacement ? '새 PDF 버전 등록' : '새 학습 자료'}
+      description={
+        replacement
+          ? '이전 원본과 연결된 발췌·답안·설명은 당시 버전에 보존됩니다.'
+          : '내가 보고 싶은 원문에서 학습을 시작해 보세요.'
+      }>
       <form
         onSubmit={(event) => void submit(event)}
         className={styles.stack}>
-        <div className={styles.tabs}>
-          <button
-            type='button'
-            className={styles.tab}
-            disabled={busy}
-            aria-pressed={kind === 'pdf'}
-            onClick={() => setKind('pdf')}>
-            <Icon
-              name='file-text'
-              size={18}
-            />{' '}
-            PDF 자료
-          </button>
-          <button
-            type='button'
-            className={styles.tab}
-            disabled={busy}
-            aria-pressed={kind === 'video'}
-            onClick={() => setKind('video')}>
-            <Icon
-              name='play'
-              size={18}
-            />{' '}
-            YouTube 영상
-          </button>
-        </div>
+        {!replacement && (
+          <div className={styles.tabs}>
+            <button
+              type='button'
+              className={styles.tab}
+              disabled={busy}
+              aria-pressed={kind === 'pdf'}
+              onClick={() => setKind('pdf')}>
+              <Icon
+                name='file-text'
+                size={18}
+              />{' '}
+              PDF 자료
+            </button>
+            <button
+              type='button'
+              className={styles.tab}
+              disabled={busy}
+              aria-pressed={kind === 'video'}
+              onClick={() => setKind('video')}>
+              <Icon
+                name='play'
+                size={18}
+              />{' '}
+              YouTube 영상
+            </button>
+          </div>
+        )}
+        {replacement && (
+          <p className={styles.notice}>
+            현재 v{replacement.version ?? 1}에서 새 원본 버전을 추가합니다. 기존
+            기록의 원문은 바뀌지 않으며 새 버전의 기본 설명은 별도로 준비합니다.
+          </p>
+        )}
         {kind === 'pdf' ? (
           <>
             <label className={styles.field}>
@@ -212,7 +245,11 @@ export function MaterialRegistration({ onClose }: { onClose: () => void }) {
           <Button
             loading={busy}
             disabled={busy}>
-            {kind === 'pdf' ? '내 자료에 추가' : '영상 등록'}
+            {replacement
+              ? '새 버전으로 저장'
+              : kind === 'pdf'
+                ? '내 자료에 추가'
+                : '영상 등록'}
           </Button>
         </div>
       </form>

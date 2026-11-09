@@ -1,4 +1,6 @@
 'use client';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from '../../../../_components/SessionRecovery';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from 'pdfjs-dist';
 import Link from 'next/link';
@@ -29,6 +31,9 @@ export function PdfStudy({
   initial: Material;
   selection?: SourceInput;
 }) {
+  const historical =
+    (initial.version ?? 1) < (initial.latestVersion ?? initial.version ?? 1);
+
   const [document, setDocument] = useState<PDFDocumentProxy | null>(null);
   const [page, setPage] = useState(initial.currentPage);
   const [zoom, setZoom] = useState<number | 'width' | 'page'>('width');
@@ -53,6 +58,7 @@ export function PdfStudy({
   const [saveStatus, setSaveStatus] = useState('저장됨');
   const [savingMemo, setSavingMemo] = useState(false);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [bounds, setBounds] = useState({ width: 800, height: 850 });
   const [pageSize, setPageSize] = useState({ width: 612, height: 792 });
   const scroll = useRef<HTMLDivElement>(null);
@@ -172,17 +178,26 @@ export function PdfStudy({
       setPageImage(undefined);
       setSaveStatus('학습 위치 저장 중…');
       setError('');
+      setSessionExpired(false);
+
+      if (historical) {
+        setSaveStatus('보관 원본의 읽기 위치 · 현재 버전 진도는 유지됨');
+
+        return;
+      }
 
       try {
         await saveMaterial({ currentPage: next });
         if (pageVersion.current === version) setSaveStatus('저장됨');
       } catch (error) {
+        if (error instanceof ApiError && error.status === 401)
+          setSessionExpired(true);
         if (pageVersion.current !== version) return;
         setSaveStatus('학습 위치 저장 실패');
         setError((error as Error).message);
       }
     },
-    [initial.pageCount, page, saveMaterial]
+    [initial.pageCount, page, saveMaterial, historical]
   );
 
   useEffect(() => {
@@ -201,12 +216,15 @@ export function PdfStudy({
   async function saveMemo() {
     setSavingMemo(true);
     setError('');
+    setSessionExpired(false);
 
     try {
       await saveMaterial({ memo });
       setSavedMemo(memo);
       setSaveStatus('메모 저장됨');
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       setSavingMemo(false);
@@ -247,6 +265,7 @@ export function PdfStudy({
 
   return (
     <div className={styles.root}>
+      {sessionExpired && <SessionRecovery />}
       <header className={styles.header}>
         <Link
           href='/materials'
@@ -267,8 +286,14 @@ export function PdfStudy({
         <div className={styles.title}>
           <h1>{initial.title}</h1>
           <p>
-            내 자료 / {initial.language === 'en' ? '영어' : '태국어'} · 나만
-            보기
+            {initial.owned ? '내 자료' : '공유 자료'} /{' '}
+            {initial.language === 'en' ? '영어' : '태국어'} ·{' '}
+            {initial.visibility === 'public'
+              ? '공개 자료'
+              : initial.visibility === 'accounts'
+                ? '지정 계정 공유'
+                : '나만 보기'}{' '}
+            · 원본 v{initial.version ?? 1}
           </p>
         </div>
         <span
@@ -288,6 +313,15 @@ export function PdfStudy({
           />
         </a>
       </header>
+      {historical && (
+        <p className={styles.meta}>
+          보관된 원본 v{initial.version}입니다. 현재 버전의 진도와 기본 준비는
+          바꾸지 않습니다.{' '}
+          <Link href={`/materials/${encodeURIComponent(initial.id)}`}>
+            현재 원본 v{initial.latestVersion} 열기
+          </Link>
+        </p>
+      )}
       <PdfToolbar
         page={page}
         total={initial.pageCount}
@@ -403,6 +437,7 @@ export function PdfStudy({
             page={page}
             total={initial.pageCount}
             version={initial.version ?? 1}
+            historical={historical}
           />
           {memoOpen ? (
             <>
@@ -411,7 +446,7 @@ export function PdfStudy({
                   name='pencil'
                   size={18}
                 />
-                <h2>내 메모</h2>
+                <h2>문서 공통 개인 메모</h2>
                 <Badge tone='neutral'>나만 보기</Badge>
               </div>
               <p className={styles.description}>
@@ -484,7 +519,10 @@ export function PdfStudy({
           )}
           <AnnotationList
             items={annotations.filter(
-              (item) => item.source.kind === 'pdf' && item.source.page === page
+              (item) =>
+                item.source.kind === 'pdf' &&
+                item.source.page === page &&
+                (item.source.version ?? 1) === (initial.version ?? 1)
             )}
             onChange={(value) =>
               setAnnotations((previous) =>
