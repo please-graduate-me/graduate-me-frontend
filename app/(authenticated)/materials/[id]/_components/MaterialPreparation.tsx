@@ -15,7 +15,7 @@ export function MaterialPreparation({
   version,
   ocrId,
   preparationPages,
-  aiAllowed = true,
+  pageEligibility,
   historical = false,
 }: {
   id: string;
@@ -24,7 +24,7 @@ export function MaterialPreparation({
   version: number;
   ocrId?: string;
   preparationPages?: number;
-  aiAllowed?: boolean;
+  pageEligibility: ({ aiAllowed: boolean; reason?: string } | undefined)[];
   historical?: boolean;
 }) {
   const [from, setFrom] = useState(String(page));
@@ -37,6 +37,25 @@ export function MaterialPreparation({
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [items, setItems] = useState<Explanation[]>([]);
+
+  const fromPage = Number(from);
+  const toPage = Number(to);
+
+  const validRange =
+    Number.isInteger(fromPage) &&
+    Number.isInteger(toPage) &&
+    fromPage >= 1 &&
+    toPage >= fromPage &&
+    toPage <= total &&
+    preparationPages !== undefined &&
+    toPage - fromPage + 1 <= preparationPages;
+
+  const selectedEligibility = pageEligibility.slice(fromPage - 1, toPage);
+
+  // 적합성 정보가 없는 과거 계약은 서버에 맡기고 확인된 부적합 범위만 막는다.
+  const rangeAllowed =
+    validRange &&
+    selectedEligibility.some((value) => value?.aiAllowed !== false);
 
   useEffect(() => {
     let active = true;
@@ -71,12 +90,7 @@ export function MaterialPreparation({
 
   async function prepare(event: React.FormEvent) {
     event.preventDefault();
-    if (
-      !preparationPages ||
-      !aiAllowed ||
-      Number(to) - Number(from) + 1 > preparationPages
-    )
-      return;
+    if (historical || !rangeAllowed) return;
     setBusy(true);
     setError('');
     setMessage('');
@@ -161,16 +175,16 @@ export function MaterialPreparation({
         <Button
           size='small'
           loading={busy}
-          disabled={
-            historical ||
-            busy ||
-            !preparationPages ||
-            !aiAllowed ||
-            Number(from) > Number(to) ||
-            Number(to) - Number(from) + 1 > preparationPages
-          }>
+          disabled={historical || busy || !rangeAllowed}>
           선택 범위 준비 요청
         </Button>
+        {validRange && !rangeAllowed && (
+          <p className={styles.notice}>
+            선택한 범위에 새 AI 준비가 가능한 페이지가 없습니다.{' '}
+            {selectedEligibility.find((value) => value?.reason)?.reason} 원본
+            읽기와 OCR은 계속 이용할 수 있습니다.
+          </p>
+        )}
         {message && (
           <p
             role='status'

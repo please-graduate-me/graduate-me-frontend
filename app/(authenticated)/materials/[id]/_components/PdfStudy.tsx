@@ -59,13 +59,15 @@ export function PdfStudy({
 
   const [ocr, setOcr] = useState<OcrPage | null>(null);
 
+  const [pageEligibility, setPageEligibility] = useState(() =>
+    initial.pages.map((_, index) => initial.pageEligibility?.[index])
+  );
+
   const currentOcr =
     ocr?.page === page && ocr.version === (initial.version ?? 1) ? ocr : null;
 
   const eligibility =
-    currentOcr?.eligibility ??
-    initial.pageEligibility?.[page - 1] ??
-    initial.eligibility;
+    currentOcr?.eligibility ?? pageEligibility[page - 1] ?? initial.eligibility;
 
   const eligibilityPendingAfterOcr =
     currentOcr?.status === 'ready' &&
@@ -518,7 +520,15 @@ export function PdfStudy({
             historical={historical}
             usingOcr={usingOcr}
             hasNativeText={Boolean(initial.pages[page - 1]?.trim())}
-            onResult={(item) => setOcr(item)}
+            onResult={(item) => {
+              setOcr(item);
+              if (item?.eligibility && item.version === (initial.version ?? 1))
+                setPageEligibility((previous) =>
+                  previous.map((value, index) =>
+                    index + 1 === item.page ? item.eligibility : value
+                  )
+                );
+            }}
             onMode={(value) => {
               if (value === usingOcr) return;
               setUsingOcr(value);
@@ -535,9 +545,11 @@ export function PdfStudy({
             total={initial.pageCount}
             ocrId={currentOcr?.id}
             preparationPages={policy?.pdf.preparationPages}
-            aiAllowed={
-              eligibilityPendingAfterOcr ? undefined : eligibility?.aiAllowed
-            }
+            pageEligibility={pageEligibility.map((value, index) =>
+              eligibilityPendingAfterOcr && index === page - 1
+                ? undefined
+                : value
+            )}
             version={initial.version ?? 1}
             historical={historical}
           />
