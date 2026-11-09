@@ -221,16 +221,16 @@ export function ExerciseSolver({
         </span>
         <Badge
           tone={
-            exercise.reviewStatus === 'verified'
-              ? 'success'
-              : exercise.needsReview
-                ? 'warning'
+            exercise.needsReview
+              ? 'warning'
+              : exercise.reviewStatus === 'verified'
+                ? 'success'
                 : 'neutral'
           }>
-          {exercise.reviewStatus === 'verified'
-            ? '이 문제·버전 검토 완료'
-            : exercise.needsReview
-              ? '수정 후 확인 필요'
+          {exercise.needsReview
+            ? '수정 후 확인 필요'
+            : exercise.reviewStatus === 'verified'
+              ? '이 문제·버전 검토 완료'
               : '미검토'}
         </Badge>
       </div>

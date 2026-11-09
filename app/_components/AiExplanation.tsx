@@ -14,16 +14,16 @@ export function AiExplanation({ value }: { value: Explanation }) {
       <div className={styles.row}>
         <Badge
           tone={
-            value.reviewStatus === 'verified'
-              ? 'success'
-              : value.needsReview
-                ? 'warning'
+            value.needsReview
+              ? 'warning'
+              : value.reviewStatus === 'verified'
+                ? 'success'
                 : 'brand'
           }>
-          {value.reviewStatus === 'verified'
-            ? '이 구절·설명 검토 완료'
-            : value.needsReview
-              ? '수정 후 확인 필요'
+          {value.needsReview
+            ? '수정 후 확인 필요'
+            : value.reviewStatus === 'verified'
+              ? '이 구절·설명 검토 완료'
               : 'AI 생성'}
         </Badge>
         <span className={styles.meta}>
