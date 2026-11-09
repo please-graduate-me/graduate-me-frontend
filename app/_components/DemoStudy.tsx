@@ -4,6 +4,7 @@ import { getDemoLesson } from '@/domains/videos/api/demo';
 import type { DemoLesson } from '@/domains/videos/model/demo';
 import { createDemoLesson } from '@/domains/videos/lib/demoLesson';
 import { Study } from './Study';
+import { DemoGuide } from './DemoGuide';
 import * as styles from './DemoStudy.css';
 
 /** 체험 자료만 제한하고 실제 학습과 동일한 화면과 동작을 사용한다. */
@@ -44,6 +45,7 @@ export function DemoStudy() {
       className={styles.root}
       id='demo-study'
       aria-label='로그인 없이 체험하기'>
+      <DemoGuide />
       {error && <p role='alert'>{error}</p>}
       {lesson?.status === 'ready' ? (
         <Study

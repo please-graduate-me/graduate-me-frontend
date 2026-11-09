@@ -8,14 +8,17 @@ import { adminPaths } from '@/domains/admin/config/paths';
 import { AuthButton } from '../../_components/AuthButton';
 import { Icon } from '@/components/ui/primitives/Icon';
 import { Badge } from '@/components/ui/primitives/Badge';
+import { getLearningProfile } from '@/domains/users/api/profile';
+import { ProfileEditor } from './_components/ProfileEditor';
 
 /** 로그인한 계정의 학습 설정과 별도 작업 공간 진입 권한을 표시한다. */
 export default async function SettingsPage() {
   const { session, transport } = await requireSession();
 
-  const [initial, access] = await Promise.all([
+  const [initial, access, profile] = await Promise.all([
     getLearningSettings(transport),
     getWorkspaceAccess(transport),
+    getLearningProfile(transport),
   ]);
 
   return (
@@ -36,6 +39,12 @@ export default async function SettingsPage() {
           <Badge tone='brand'>학생 학습 공간</Badge>
           <AuthButton action='signout' />
         </div>
+      </section>
+      <section
+        className={styles.learning}
+        aria-labelledby='learning-profile-title'>
+        <h2 id='learning-profile-title'>언어와 학습 목표</h2>
+        <ProfileEditor initial={profile} />
       </section>
       <section
         className={styles.learning}
