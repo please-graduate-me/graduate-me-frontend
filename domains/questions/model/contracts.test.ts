@@ -58,6 +58,7 @@ describe('원문 기반 학습 계약', () => {
 
   it('페이지별 제한 이내라도 전체 추출 텍스트가 200만자를 넘으면 등록하지 않는다', () => {
     const input = {
+      learningPurposeConfirmed: true,
       title: '큰 PDF',
       language: 'en',
       filename: 'large.pdf',

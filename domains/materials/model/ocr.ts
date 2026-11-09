@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { learningEligibilitySchema } from './eligibility';
 
 /** 인식 영역은 원본 페이지 안의 비율 좌표로만 표시한다. */
 export const ocrFieldSchema = z.object({
@@ -20,6 +21,7 @@ export const ocrFieldSchema = z.object({
 
 /** OCR은 원본 텍스트와 구분한 페이지별 저장 결과다. */
 export const ocrPageSchema = z.object({
+  eligibility: learningEligibilitySchema.optional(),
   provider: z.enum(['naver', 'anthropic']).default('naver'),
   model: z.string().default('모델 기록 없음'),
   id: z.string().uuid(),

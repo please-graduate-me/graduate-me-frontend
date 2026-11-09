@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { learningEligibilitySchema } from './eligibility';
 
 /** 자료 목록과 원문 이동에 필요한 메타데이터를 검증한다. */
 export const materialSummarySchema = z.object({
@@ -27,6 +28,8 @@ export const materialSchema = materialSummarySchema.extend({
   }),
   aiConfigured: z.boolean().optional(),
   latestVersion: z.number().int().positive().optional(),
+  eligibility: learningEligibilitySchema.optional(),
+  pageEligibility: z.array(learningEligibilitySchema).optional(),
 });
 
 /** 개인 자료 목록의 외부 응답을 검증한다. */
@@ -36,6 +39,7 @@ export const materialsSchema = z.object({
 
 /** PDF 등록 용량과 페이지 수를 요청 전에 확인한다. */
 export const materialInputSchema = z.object({
+  learningPurposeConfirmed: z.literal(true),
   title: z.string().trim().min(1).max(200),
   language: z.enum(['en', 'th']),
   filename: z.string().trim().min(1).max(200),

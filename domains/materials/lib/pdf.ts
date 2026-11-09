@@ -13,10 +13,13 @@ export async function loadPdfEngine() {
 /** PDF 텍스트를 실제 페이지 순서로 추출하며 스캔본에 OCR 결과를 만들지 않는다. */
 export async function extractPdf(
   file: File,
+  limits: { maxBytes: number; maxPages: number },
   onProgress: (page: number, total: number) => void
 ) {
-  if (file.size > 10 * 1024 * 1024)
-    throw new Error('PDF는 10MB 이하로 등록해 주세요.');
+  if (file.size > limits.maxBytes)
+    throw new Error(
+      `PDF는 ${limits.maxBytes / 1024 / 1024}MB 이하로 등록해 주세요.`
+    );
 
   const engine = await loadPdfEngine();
 
@@ -28,8 +31,8 @@ export async function extractPdf(
   try {
     const document = await task.promise;
 
-    if (document.numPages > 200)
-      throw new Error('PDF는 200페이지 이하로 등록해 주세요.');
+    if (document.numPages > limits.maxPages)
+      throw new Error(`PDF는 ${limits.maxPages}페이지 이하로 등록해 주세요.`);
 
     const pages: string[] = [];
     let totalCharacters = 0;

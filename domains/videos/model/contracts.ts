@@ -156,6 +156,7 @@ export type VideoHistory = z.infer<typeof videoHistorySchema>;
 
 /** 영상 등록 입력의 제한을 요청 양쪽에서 맞춘다. */
 export const registerVideoSchema = z.object({
+  learningPurposeConfirmed: z.literal(true),
   url: z.string().max(2048),
   language: z.enum(['en', 'th']).optional(),
 });

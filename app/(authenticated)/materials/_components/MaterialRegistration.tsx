@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
@@ -12,6 +12,8 @@ import {
   registerMaterialVersion,
 } from '@/domains/materials/api/materials';
 import { encodePdf, extractPdf } from '@/domains/materials/lib/pdf';
+import { getLearningPolicy } from '@/domains/learning/api/policy';
+import type { LearningPolicy } from '@/domains/learning/model/policy';
 import { registerVideo } from '@/domains/videos/api/videos';
 import * as styles from '@/lib/styles/workspace.css';
 
@@ -36,6 +38,29 @@ export function MaterialRegistration({
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState('');
   const [error, setError] = useState('');
+  const [policy, setPolicy] = useState<LearningPolicy | null>(null);
+  const [policyError, setPolicyError] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
+  const [policyReload, setPolicyReload] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+
+    void getLearningPolicy()
+      .then((value) => {
+        if (active) {
+          setPolicy(value);
+          setPolicyError('');
+        }
+      })
+      .catch((error) => {
+        if (active) setPolicyError(error.message);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [policyReload]);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -43,8 +68,12 @@ export function MaterialRegistration({
     setError('');
 
     try {
+      if (!policy) throw new Error('등록 정책을 먼저 확인해 주세요.');
+      if (!confirmed)
+        throw new Error('학습 목적과 이용 가능한 자료인지 확인해 주세요.');
+
       if (kind === 'video') {
-        const result = await registerVideo(url.trim(), language);
+        const result = await registerVideo(url.trim(), language, true);
 
         router.push(`/learn/${encodeURIComponent(result.videoId)}`);
       } else {
@@ -53,7 +82,7 @@ export function MaterialRegistration({
           throw new Error('PDF 파일만 등록할 수 있습니다.');
         setProgress('원본 PDF를 읽고 있어요.');
 
-        const pages = await extractPdf(file, (page, total) =>
+        const pages = await extractPdf(file, policy.pdf, (page, total) =>
           setProgress(`${page} / ${total}페이지 텍스트 확인 중`)
         );
 
@@ -62,6 +91,7 @@ export function MaterialRegistration({
         setProgress('내 자료에 저장하고 있어요.');
 
         const input = {
+          learningPurposeConfirmed: true as const,
           title: title.trim(),
           language,
           filename: file.name,
@@ -157,7 +187,10 @@ export function MaterialRegistration({
               />
             </label>
             <p className={styles.meta}>
-              10MB 이하 · 최대 200페이지 · 개인 자료로 저장됩니다.
+              {policy
+                ? `${policy.pdf.maxBytes / 1024 / 1024}MB 이하 · 최대 ${policy.pdf.maxPages}페이지 · 새 PDF 하루 ${policy.pdf.dailyNewLimit}개`
+                : '등록 한도 확인 중…'}{' '}
+              · 개인 자료로 저장됩니다.
             </p>
             <label className={styles.field}>
               자료 이름
@@ -216,11 +249,38 @@ export function MaterialRegistration({
               </Select>
             </label>
             <p className={styles.notice}>
-              등록한 영상은 서버에서 학습 자료를 준비합니다. 준비 상태는 영상
-              학습 화면에서 확인할 수 있어요. 공개된 영어·태국어 영상, 최대
-              30분을 지원하며 분석 실패는 재시도하지 않습니다.
+              {policy
+                ? `영어·태국어 영상 · 최대 ${Math.ceil(policy.video.maxSeconds / 60)}분 · 새 영상 하루 ${policy.video.dailyNewLimit}개. `
+                : '등록 한도 확인 중…'}
+              {policy?.video.transcriptionEnabled === false
+                ? '현재 새 영상 전사는 사용할 수 없습니다. 이미 준비된 영상은 다시 등록해 학습할 수 있습니다.'
+                : '명시적으로 등록한 새 영상만 준비하며 분석 실패는 자동 재시도하지 않습니다.'}
             </p>
           </>
+        )}
+        <label className={styles.row}>
+          <input
+            type='checkbox'
+            checked={confirmed}
+            disabled={busy}
+            onChange={(event) => setConfirmed(event.target.checked)}
+            required
+          />
+          이 자료를 영어·태국어 학습에 사용하며 이용 권한이 있고 제한 자료가
+          아님을 확인합니다.
+        </label>
+        {policyError && (
+          <p
+            className={styles.error}
+            role='alert'>
+            {policyError}
+            <Button
+              type='button'
+              variant='ghost'
+              onClick={() => setPolicyReload((value) => value + 1)}>
+              등록 정책 다시 확인
+            </Button>
+          </p>
         )}
         {progress && (
           <p
@@ -246,7 +306,7 @@ export function MaterialRegistration({
           </Button>
           <Button
             loading={busy}
-            disabled={busy}>
+            disabled={busy || !policy || !confirmed}>
             {replacement
               ? '새 버전으로 저장'
               : kind === 'pdf'
