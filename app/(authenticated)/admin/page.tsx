@@ -1,30 +1,71 @@
 import { requireSession } from '../requireSession';
-import Link from 'next/link';
-import { getAdminAccess, getAdminShares } from '@/domains/admin/api/admin';
-import { videoPaths } from '@/domains/videos/config/paths';
+import { getWorkspaceAccess } from '@/domains/admin/api/admin';
 import { Panel } from '@/components/ui/layouts/Panel';
-import { ShareDashboard } from './_components/ShareDashboard';
+import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
+import { Icon } from '@/components/ui/primitives/Icon';
+import * as styles from './page.css';
 
-/** 화면 진입 단계에서도 관리 권한을 확인한다. */
+/** 답변과 운영 업무는 별도 관리자 앱에서 수행하도록 진입을 안내한다. */
 export default async function AdminPage() {
   const { transport } = await requireSession();
+  const access = await getWorkspaceAccess(transport);
 
-  if (!(await getAdminAccess(transport)).allowed)
+  if (!access.role)
     return (
-      <Panel>
-        <h1>관리자 전용 화면입니다.</h1>
-        <p>접근 권한이 있는 계정으로 로그인해 주세요.</p>
-        <Link href={videoPaths.home}>홈으로</Link>
+      <Panel className={styles.panel}>
+        <Icon
+          name='shield-check'
+          size={32}
+        />
+        <h1>작업 공간 접근 권한이 필요해요</h1>
+        <p>
+          학과 답변 도우미와 운영 관리자로 등록된 계정으로 이용할 수 있습니다.
+        </p>
+        <ButtonLink
+          href='/library'
+          variant='secondary'>
+          내 학습으로 돌아가기
+        </ButtonLink>
       </Panel>
     );
-  const initial = await getAdminShares(1, '', transport);
+
+  const configured = process.env.ADMIN_APP_URL;
+
+  const valid =
+    configured &&
+    URL.canParse(configured) &&
+    ['http:', 'https:'].includes(new URL(configured).protocol);
 
   return (
-    <>
-      <Link href={videoPaths.home}>← 홈</Link>
-      <h1>백오피스 · 공유 분석</h1>
-      <p>모든 시각은 한국 시간 기준입니다.</p>
-      <ShareDashboard initial={initial} />
-    </>
+    <Panel className={styles.panel}>
+      <Icon
+        name='shield-check'
+        size={32}
+      />
+      <h1>답변 도우미·운영 관리</h1>
+      <p>
+        {access.role === 'helper'
+          ? '배정받은 질문 확인과 답변 작성은 별도의 작업 공간에서 진행합니다.'
+          : '질문 배정과 자료, 권한 관리는 별도의 작업 공간에서 진행합니다.'}
+      </p>
+      {valid ? (
+        <ButtonLink href={configured}>
+          관리자 앱으로 이동
+          <Icon
+            name='arrow-up-right'
+            size={16}
+          />
+        </ButtonLink>
+      ) : (
+        <p role='status'>
+          관리자 앱 연결이 준비되지 않았습니다. 운영 담당자에게 문의해 주세요.
+        </p>
+      )}
+      <ButtonLink
+        href='/library'
+        variant='ghost'>
+        내 학습으로 돌아가기
+      </ButtonLink>
+    </Panel>
   );
 }

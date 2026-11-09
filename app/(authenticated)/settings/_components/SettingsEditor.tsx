@@ -2,6 +2,8 @@
 import type { LearningSettings } from '@/domains/users/model/settings';
 import { useLearningSettings } from '../../../_components/useLearningSettings';
 import * as styles from './SettingsEditor.css';
+import { Switch } from '@/components/ui/primitives/Switch';
+import { Select } from '@/components/ui/primitives/Select';
 
 /** 학습 화면과 같은 저장 규칙으로 계정 옵션을 편집한다. */
 export function SettingsEditor({ initial }: { initial: LearningSettings }) {
@@ -14,10 +16,8 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
       disabled={saving}>
       <label className={styles.row}>
         <span className={styles.name}>자동 미리듣기</span>
-        <input
-          className={styles.toggle}
+        <Switch
           aria-label='자동 미리듣기'
-          type='checkbox'
           checked={settings.autoReplay}
           onChange={(event) =>
             void change({ ...settings, autoReplay: event.target.checked })
@@ -26,7 +26,7 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
       </label>
       <label className={styles.row}>
         <span className={styles.name}>반복 간격</span>
-        <select
+        <Select
           disabled={!settings.autoReplay}
           value={settings.replayDelay}
           onChange={(event) =>
@@ -44,11 +44,11 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
               </option>
             )
           )}
-        </select>
+        </Select>
       </label>
       <label className={styles.row}>
         <span className={styles.name}>추가 반복</span>
-        <select
+        <Select
           disabled={!settings.autoReplay}
           value={settings.replayCount ?? 'unlimited'}
           onChange={(event) =>
@@ -68,11 +68,11 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
               {count}회
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className={styles.row}>
         <span className={styles.name}>재생 속도</span>
-        <select
+        <Select
           value={settings.playbackRate}
           onChange={(event) =>
             void change({
@@ -89,7 +89,7 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
               {rate}배{rate === 1 ? ' (기본)' : ''}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <p className={styles.note}>
         처음 한 번 들은 뒤 선택한 횟수만큼 더 반복합니다.
