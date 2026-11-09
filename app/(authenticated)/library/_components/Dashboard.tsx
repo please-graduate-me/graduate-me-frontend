@@ -115,8 +115,10 @@ export function Dashboard() {
                 </Link>
               </h3>
               <p>
-                {question.assignee?.name ?? '담당 도우미'} ·{' '}
-                {formatDate(question.updatedAt)}
+                {question.assignee?.name
+                  ? '담당 ' + question.assignee.name
+                  : '도우미 답변'}{' '}
+                · {formatDate(question.updatedAt)}
               </p>
               <Link
                 className={styles.source}

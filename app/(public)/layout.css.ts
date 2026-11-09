@@ -39,14 +39,6 @@ export const mark = style({
   color: vars.color.surface,
 });
 
-/** 계정 진입을 공개 화면의 보조 행동으로 표시한다. */
-export const login = style({
-  minHeight: 44,
-  padding: '10px 16px',
-  border: '1px solid ' + vars.color.line,
-  borderRadius: vars.radius.control,
-});
-
 globalStyle('.' + header + ' nav', {
   display: 'flex',
   alignItems: 'center',
@@ -58,7 +50,6 @@ globalStyle('.' + header + ' nav a', {
   display: 'inline-flex',
   alignItems: 'center',
   gap: 6,
-  color: vars.color.muted,
   textDecoration: 'none',
 });
 

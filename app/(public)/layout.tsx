@@ -2,9 +2,18 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Icon } from '@/components/ui/primitives/Icon';
 import * as styles from './layout.css';
+import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
+import { AuthButton } from '../_components/AuthButton';
+import { getPublicSession } from './_components/getPublicSession';
 
 /** 공개 화면은 학습 앱과 같은 브랜드를 유지하면서 간결한 진입 탐색을 제공한다. */
-export default function PublicLayout({ children }: { children: ReactNode }) {
+export default async function PublicLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const { configured, session } = await getPublicSession();
+
   return (
     <div className={styles.root}>
       <header className={styles.header}>
@@ -20,11 +29,20 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           graduate me
         </Link>
         <nav aria-label='서비스 소개'>
-          <Link
-            href='/library'
-            className={styles.login}>
-            로그인
-          </Link>
+          {session?.user ? (
+            <ButtonLink
+              href='/library'
+              variant='secondary'>
+              내 학습 공간
+            </ButtonLink>
+          ) : (
+            <AuthButton
+              action='signin'
+              variant='secondary'
+              label='로그인'
+              disabled={!configured}
+            />
+          )}
         </nav>
       </header>
       <main className={styles.main}>{children}</main>

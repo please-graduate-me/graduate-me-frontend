@@ -1,12 +1,11 @@
 import * as styles from './page.css';
-import { createServerTransport } from '@/lib/api/server';
-import { getSession, isAuthConfigured } from '@/domains/auth/api/auth';
 import { AuthButton } from '../_components/AuthButton';
 import Link from 'next/link';
 import { videoPaths } from '@/domains/videos/config/paths';
 import { DemoStudy } from '../_components/DemoStudy';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { Icon } from '@/components/ui/primitives/Icon';
+import { getPublicSession } from './_components/getPublicSession';
 
 /** 사용자별 세션 화면이 정적 결과로 공유되지 않게 한다. */
 export const dynamic = 'force-dynamic';
@@ -17,9 +16,7 @@ export default async function Home({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const transport = await createServerTransport();
-  const configured = await isAuthConfigured(transport);
-  const session = configured ? await getSession(transport) : null;
+  const { configured, session } = await getPublicSession();
   const { error } = await searchParams;
 
   return (
