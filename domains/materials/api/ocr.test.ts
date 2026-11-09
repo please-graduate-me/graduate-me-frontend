@@ -13,6 +13,11 @@ const result = {
   languageSupported: true,
   item: {
     id,
+    eligibility: {
+      status: 'eligible',
+      aiAllowed: true,
+      reason: '학습 언어의 문자 단서가 있습니다.',
+    },
     materialId: id,
     provider: 'anthropic',
     model: 'claude-test-model',

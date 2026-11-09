@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { requireSession } from '../../requireSession';
+import { getLearningPolicy } from '@/domains/learning/api/policy';
 import { getMaterial } from '@/domains/materials/api/materials';
 import { sourceInputSchema } from '@/domains/materials/model/source';
 import { ApiError } from '@/lib/api/request';
@@ -23,6 +24,8 @@ export default async function MaterialPage({
   const [{ id }, search] = await Promise.all([params, searchParams]);
 
   const requestedVersion = Number(search.version);
+
+  const policyPromise = getLearningPolicy(transport).catch(() => null);
 
   const material = await getMaterial(
     id,
@@ -72,6 +75,7 @@ export default async function MaterialPage({
           : undefined
       }
       initial={{ ...material, currentPage: page }}
+      policy={await policyPromise}
     />
   );
 }

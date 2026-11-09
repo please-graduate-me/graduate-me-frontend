@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from 'pdfjs-dist';
 import Link from 'next/link';
 import type { SourceInput } from '@/domains/materials/model/source';
+import type { LearningPolicy } from '@/domains/learning/model/policy';
 import type { Material } from '@/domains/materials/model/contracts';
 import { loadPdfEngine } from '@/domains/materials/lib/pdf';
 import { updateMaterial } from '@/domains/materials/api/materials';
@@ -29,9 +30,11 @@ import * as styles from './PdfStudy.css';
 export function PdfStudy({
   initial,
   selection,
+  policy,
 }: {
   initial: Material;
   selection?: SourceInput;
+  policy: LearningPolicy | null;
 }) {
   const historical =
     (initial.version ?? 1) < (initial.latestVersion ?? initial.version ?? 1);
@@ -58,6 +61,16 @@ export function PdfStudy({
 
   const currentOcr =
     ocr?.page === page && ocr.version === (initial.version ?? 1) ? ocr : null;
+
+  const eligibility =
+    currentOcr?.eligibility ??
+    initial.pageEligibility?.[page - 1] ??
+    initial.eligibility;
+
+  const eligibilityPendingAfterOcr =
+    currentOcr?.status === 'ready' &&
+    !currentOcr.eligibility &&
+    eligibility?.status === 'needs_ocr';
 
   const [rects, setRects] = useState<
     { x: number; y: number; width: number; height: number }[]
@@ -475,6 +488,27 @@ export function PdfStudy({
         <aside
           className={styles.sidebar}
           aria-label={memoOpen ? '개인 메모' : '선택한 구절 학습'}>
+          {eligibility &&
+            !eligibility.aiAllowed &&
+            !eligibilityPendingAfterOcr && (
+              <p className={styles.notice}>
+                새 AI 요청 안내: {eligibility.reason}
+                {eligibility.status === 'needs_ocr'
+                  ? ' 페이지 글자 인식에서 저장 결과를 확인하거나 인식을 요청해 주세요.'
+                  : ''}{' '}
+                원본 읽기와 개인 기록 조회는 계속 이용할 수 있습니다.
+              </p>
+            )}
+          {eligibilityPendingAfterOcr && (
+            <p className={styles.meta}>
+              글자 인식을 저장했습니다. 새 AI 요청 시 인식 결과의 문자 단서를
+              다시 확인합니다.
+            </p>
+          )}
+          <p className={styles.meta}>
+            자료 적합성은 문자의 언어 단서와 등록 시 확인한 학습 목적을 기준으로
+            안내합니다.
+          </p>
           <PdfOcrPanel
             key={`${initial.id}:${initial.version ?? 1}:${page}`}
             id={initial.id}
@@ -495,11 +529,15 @@ export function PdfStudy({
             }}
           />
           <MaterialPreparation
-            key={`${initial.id}:${initial.version ?? 1}:${page}:${currentOcr?.id ?? 'native'}`}
+            key={`${initial.id}:${initial.version ?? 1}:${page}:${currentOcr?.id ?? 'native'}:${policy?.pdf.preparationPages ?? 'unavailable'}`}
             id={initial.id}
             page={page}
             total={initial.pageCount}
             ocrId={currentOcr?.id}
+            preparationPages={policy?.pdf.preparationPages}
+            aiAllowed={
+              eligibilityPendingAfterOcr ? undefined : eligibility?.aiAllowed
+            }
             version={initial.version ?? 1}
             historical={historical}
           />

@@ -14,6 +14,8 @@ export function MaterialPreparation({
   total,
   version,
   ocrId,
+  preparationPages,
+  aiAllowed = true,
   historical = false,
 }: {
   id: string;
@@ -21,10 +23,16 @@ export function MaterialPreparation({
   total: number;
   version: number;
   ocrId?: string;
+  preparationPages?: number;
+  aiAllowed?: boolean;
   historical?: boolean;
 }) {
   const [from, setFrom] = useState(String(page));
-  const [to, setTo] = useState(String(Math.min(total, page + 9)));
+
+  const [to, setTo] = useState(
+    String(Math.min(total, page + (preparationPages ?? 1) - 1))
+  );
+
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -63,6 +71,12 @@ export function MaterialPreparation({
 
   async function prepare(event: React.FormEvent) {
     event.preventDefault();
+    if (
+      !preparationPages ||
+      !aiAllowed ||
+      Number(to) - Number(from) + 1 > preparationPages
+    )
+      return;
     setBusy(true);
     setError('');
     setMessage('');
@@ -104,6 +118,9 @@ export function MaterialPreparation({
         className={styles.stack}
         onSubmit={(event) => void prepare(event)}>
         <p className={styles.meta}>
+          {preparationPages
+            ? `한 번에 최대 ${preparationPages}페이지를 준비합니다. `
+            : '준비 정책을 확인하지 못했습니다. 새 요청은 잠시 후 자료를 다시 열어 확인해 주세요. '}
           원본 읽기와 별도의 요청입니다. 준비할 범위를 정해 주세요. 저장된
           결과는 재사용하고 최초 준비에 실패한 페이지는 자동·수동 재분석하지
           않습니다.
@@ -131,7 +148,10 @@ export function MaterialPreparation({
             <Input
               type='number'
               min={Number(from) || 1}
-              max={total}
+              max={Math.min(
+                total,
+                (Number(from) || 1) + (preparationPages ?? 1) - 1
+              )}
               value={to}
               required
               onChange={(event) => setTo(event.target.value)}
@@ -141,7 +161,14 @@ export function MaterialPreparation({
         <Button
           size='small'
           loading={busy}
-          disabled={historical || busy || Number(from) > Number(to)}>
+          disabled={
+            historical ||
+            busy ||
+            !preparationPages ||
+            !aiAllowed ||
+            Number(from) > Number(to) ||
+            Number(to) - Number(from) + 1 > preparationPages
+          }>
           선택 범위 준비 요청
         </Button>
         {message && (

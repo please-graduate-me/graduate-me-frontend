@@ -225,6 +225,10 @@ export function LearningAiPanel({
           현재 요청 공급자: {aiProviderLabel(capabilities.provider)} · 텍스트{' '}
           {capabilities.models.text} · 이미지 {capabilities.models.image}
           {capabilities.configured ? '' : ' · 연결 설정 필요'}
+          <br />
+          하루 최대 {capabilities.limits.dailyRequests}회 ·{' '}
+          {capabilities.limits.dailyTokens.toLocaleString()}토큰 · 동시{' '}
+          {capabilities.limits.concurrentRequests}개 요청
         </p>
       )}
       <div className={styles.row}>

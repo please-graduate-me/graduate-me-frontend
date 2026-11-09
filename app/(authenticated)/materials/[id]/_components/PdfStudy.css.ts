@@ -156,3 +156,13 @@ globalStyle(`${title} p`, {
 globalStyle(`${panelHeading} h2`, { margin: 0, fontSize: 17 });
 globalStyle(`${section} h3`, { margin: 0, fontSize: 18 });
 globalStyle(`${capability} p`, { margin: 0 });
+
+/** 새 AI 요청 제한은 원본 읽기와 구분해 안내한다. */
+export const notice = style({
+  color: vars.color.warning,
+  background: vars.color.notice,
+  padding: vars.space.md,
+  borderRadius: vars.radius.control,
+  fontSize: 13,
+  lineHeight: 1.7,
+});
