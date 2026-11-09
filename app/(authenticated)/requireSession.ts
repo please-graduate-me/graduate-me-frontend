@@ -1,5 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
+import { headers } from 'next/headers';
+import { safeReturnPath } from '@/domains/auth/lib/returnPath';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/domains/auth/api/auth';
 import { videoPaths } from '@/domains/videos/config/paths';
@@ -10,7 +12,13 @@ export const requireSession = cache(async () => {
   const transport = await createServerTransport();
   const session = await getSession(transport);
 
-  if (!session?.user) redirect(videoPaths.home);
+  if (!session?.user) {
+    const path = safeReturnPath(
+      (await headers()).get('x-graduate-return-path')
+    );
+
+    redirect(videoPaths.home + '?returnTo=' + encodeURIComponent(path));
+  }
 
   return { session, transport };
 });

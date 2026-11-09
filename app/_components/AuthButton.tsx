@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/primitives/Button';
 import * as styles from './AuthButton.css';
 import { getCsrfToken, signIn, signOut } from '@/domains/auth/api/auth';
+import { safeReturnPath } from '@/domains/auth/lib/returnPath';
 import { videoPaths } from '@/domains/videos/config/paths';
 import { useState, type ComponentProps } from 'react';
 
@@ -29,7 +30,11 @@ export function AuthButton({
       const { csrfToken } = await getCsrfToken();
 
       const callbackUrl = new URL(
-        action === 'signin' ? videoPaths.library : videoPaths.home,
+        action === 'signin'
+          ? safeReturnPath(
+              new URLSearchParams(window.location.search).get('returnTo')
+            )
+          : videoPaths.home,
         window.location.origin
       ).href;
 
