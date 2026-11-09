@@ -5,7 +5,7 @@ export const learningProfileSchema = z.object({
   targetLanguage: z.enum(['en', 'th']),
   explanationLanguage: z.enum(['ko', 'en', 'th']),
   level: z.enum(['beginner', 'intermediate', 'advanced']),
-  interests: z.array(z.string().trim().min(1).max(50)).max(10),
+  interests: z.array(z.string().trim().min(1).max(100)).max(20),
 });
 
 /** 사용자 프로필의 입력과 응답에 같은 계약을 사용한다. */

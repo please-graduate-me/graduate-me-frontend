@@ -6,6 +6,7 @@ import type { Question } from '@/domains/questions/model/contracts';
 import {
   addQuestionMessage,
   getQuestion,
+  updateQuestion,
 } from '@/domains/questions/api/questions';
 import { materialPaths } from '@/domains/materials/config/paths';
 import { formatDate, sourceLabel } from '@/domains/learning/lib/format';
@@ -52,6 +53,20 @@ export function QuestionThread({ initial }: { initial: Question }) {
     }
   }
 
+  async function changeState(input: { resolved?: boolean; shared?: boolean }) {
+    setBusy(true);
+    setError('');
+
+    try {
+      setQuestion(await updateQuestion(question.id, input));
+      router.refresh();
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.heading}>
@@ -72,6 +87,38 @@ export function QuestionThread({ initial }: { initial: Question }) {
       </div>
       <div className={styles.questionColumns}>
         <section aria-label='질문과 공개 답변'>
+          <div className={styles.row}>
+            <Badge tone={question.resolvedAt ? 'success' : 'neutral'}>
+              {question.resolvedAt ? '내가 해결한 질문' : '추가 확인 중'}
+            </Badge>
+            <Badge tone={question.revokedAt ? 'warning' : 'brand'}>
+              {question.revokedAt ? '공유 철회됨' : '담당자와 공유 중'}
+            </Badge>
+            <Button
+              size='small'
+              variant='secondary'
+              disabled={busy}
+              onClick={() =>
+                void changeState({ resolved: !question.resolvedAt })
+              }>
+              {question.resolvedAt ? '다시 질문 중으로 표시' : '해결했어요'}
+            </Button>
+            <Button
+              size='small'
+              variant='ghost'
+              disabled={busy}
+              onClick={() => {
+                if (
+                  question.revokedAt ||
+                  window.confirm(
+                    '공유를 철회하면 답변 도우미가 이 질문과 발췌를 열 수 없습니다. 내 기록은 유지됩니다.'
+                  )
+                )
+                  void changeState({ shared: Boolean(question.revokedAt) });
+              }}>
+              {question.revokedAt ? '담당자와 다시 공유' : '질문 공유 철회'}
+            </Button>
+          </div>
           <article className={styles.message}>
             <div className={styles.author}>
               <strong>{question.author.name ?? '질문자'}</strong>
@@ -81,6 +128,17 @@ export function QuestionThread({ initial }: { initial: Question }) {
             </div>
             <p className={styles.prose}>{question.body}</p>
           </article>
+          {question.attachment && (
+            <article className={styles.message}>
+              <h3>
+                내가 공유한 선택 AI 결과 ·{' '}
+                {question.attachment.version
+                  ? `v${question.attachment.version}`
+                  : '선택 답변'}
+              </h3>
+              <p className={styles.prose}>{question.attachment.text}</p>
+            </article>
+          )}
           {question.messages.map((message) => (
             <article
               className={styles.message}

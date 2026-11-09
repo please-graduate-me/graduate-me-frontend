@@ -5,6 +5,7 @@ import type { Expression } from '@/domains/expressions/model/contracts';
 import { sourceLabel, formatDate } from '@/domains/learning/lib/format';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
 import { Input } from '@/components/ui/primitives/Input';
+import { Select } from '@/components/ui/primitives/Select';
 import { Icon } from '@/components/ui/primitives/Icon';
 import { EmptyState } from '@/components/ui/composites/EmptyState';
 import { ExpressionDetail } from './ExpressionDetail';
@@ -16,12 +17,27 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
   const [selectedId, setSelectedId] = useState(initial[0]?.id ?? '');
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<'all' | 'pdf' | 'video'>('all');
+  const [language, setLanguage] = useState('all');
+  const [entryKind, setEntryKind] = useState('all');
+  const [review, setReview] = useState('all');
+  const [sort, setSort] = useState('recent');
 
-  const filtered = items.filter(
-    (item) =>
-      (kind === 'all' || item.source.kind === kind) &&
-      `${item.text} ${item.meaning}`.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = items
+    .filter(
+      (item) =>
+        (kind === 'all' || item.source.kind === kind) &&
+        (language === 'all' || item.source.language === language) &&
+        (entryKind === 'all' || item.kind === entryKind) &&
+        (review === 'all' || item.reviewIncluded === (review === 'included')) &&
+        `${item.text} ${item.meaning} ${item.note} ${item.source.title}`
+          .toLowerCase()
+          .includes(query.toLowerCase())
+    )
+    .sort((a, b) =>
+      sort === 'oldest'
+        ? Date.parse(a.createdAt) - Date.parse(b.createdAt)
+        : Date.parse(b.createdAt) - Date.parse(a.createdAt)
+    );
 
   const selected =
     filtered.find((item) => item.id === selectedId) ?? filtered[0];
@@ -87,6 +103,41 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
                 name='search'
                 size={18}
               />
+            </div>
+            <div className={styles.filters}>
+              <Select
+                aria-label='표현 언어'
+                value={language}
+                onChange={(event) => setLanguage(event.target.value)}>
+                <option value='all'>모든 언어</option>
+                <option value='en'>영어</option>
+                <option value='th'>태국어</option>
+              </Select>
+              <Select
+                aria-label='표현 종류'
+                value={entryKind}
+                onChange={(event) => setEntryKind(event.target.value)}>
+                <option value='all'>모든 종류</option>
+                <option value='word'>단어</option>
+                <option value='phrase'>숙어·표현</option>
+                <option value='sentence'>문장</option>
+                <option value='concept'>개념</option>
+              </Select>
+              <Select
+                aria-label='복습 포함 상태'
+                value={review}
+                onChange={(event) => setReview(event.target.value)}>
+                <option value='all'>모든 복습 상태</option>
+                <option value='included'>복습에 포함</option>
+                <option value='excluded'>잠시 제외</option>
+              </Select>
+              <Select
+                aria-label='표현 저장 순서'
+                value={sort}
+                onChange={(event) => setSort(event.target.value)}>
+                <option value='recent'>최근 저장순</option>
+                <option value='oldest'>오래된 저장순</option>
+              </Select>
             </div>
             <p className={styles.meta}>최근 저장순 · {filtered.length}개</p>
             <ul className={styles.list}>

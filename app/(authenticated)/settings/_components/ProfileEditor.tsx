@@ -104,9 +104,9 @@ export function ProfileEditor({ initial }: { initial: LearningProfile }) {
           관심 주제
           <Input
             value={interests}
-            maxLength={509}
+            maxLength={2039}
             onChange={(event) => setInterests(event.target.value)}
-            placeholder='회화, 언어학, 경제 · 쉼표로 구분해 최대 10개'
+            placeholder='회화, 언어학, 경제 · 쉼표로 구분해 최대 20개'
           />
         </label>
         <p className={styles.meta}>

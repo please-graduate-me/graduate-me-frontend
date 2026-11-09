@@ -71,6 +71,16 @@ export default async function SettingsPage() {
           </Link>
         </section>
       )}
+      <section className={styles.workplace}>
+        <div>
+          <h2>계정과 개인정보</h2>
+          <p>
+            탈퇴 시 개인 기록의 삭제와 공개 기록의 보존 범위를 확인할 수
+            있습니다.
+          </p>
+        </div>
+        <Link href='/settings/account'>계정 탈퇴 안내</Link>
+      </section>
     </div>
   );
 }

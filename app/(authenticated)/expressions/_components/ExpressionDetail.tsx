@@ -11,6 +11,7 @@ import { sourceLabel } from '@/domains/learning/lib/format';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
 import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
+import { Select } from '@/components/ui/primitives/Select';
 import { TextArea } from '@/components/ui/primitives/TextArea';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { Icon } from '@/components/ui/primitives/Icon';
@@ -29,6 +30,7 @@ export function ExpressionDetail({
   const [editing, setEditing] = useState(false);
   const [meaning, setMeaning] = useState(expression.meaning);
   const [note, setNote] = useState(expression.note);
+  const [kind, setKind] = useState(expression.kind);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -38,7 +40,7 @@ export function ExpressionDetail({
     setError('');
 
     try {
-      onChange(await updateExpression(expression.id, { meaning, note }));
+      onChange(await updateExpression(expression.id, { meaning, note, kind }));
       setEditing(false);
     } catch (error) {
       setError((error as Error).message);
@@ -92,6 +94,21 @@ export function ExpressionDetail({
         </Button>
       </div>
       <h2 className={styles.expressionTitle}>{expression.text}</h2>
+      <p className={styles.meta}>
+        {
+          {
+            word: '단어',
+            phrase: '숙어·표현',
+            sentence: '문장',
+            concept: '개념',
+          }[expression.kind]
+        }{' '}
+        · {expression.reviewIncluded ? '복습에 포함' : '복습에서 잠시 제외'} ·
+        원문 v{expression.source.version ?? 1}
+        {expression.explanationVersion !== null
+          ? ` · 저장 당시 AI 설명 v${expression.explanationVersion}`
+          : ''}
+      </p>
       <p className={styles.prose}>
         {expression.meaning || '아직 정리한 뜻이 없어요.'}
       </p>
@@ -112,6 +129,17 @@ export function ExpressionDetail({
         <form
           className={styles.stack}
           onSubmit={(event) => void save(event)}>
+          <label className={styles.field}>
+            저장 종류
+            <Select
+              value={kind}
+              onChange={(event) => setKind(event.target.value as typeof kind)}>
+              <option value='word'>단어</option>
+              <option value='phrase'>숙어·표현</option>
+              <option value='sentence'>문장</option>
+              <option value='concept'>개념</option>
+            </Select>
+          </label>
           <label className={styles.field}>
             내가 정리한 뜻
             <Input
@@ -150,6 +178,24 @@ export function ExpressionDetail({
         </p>
       )}
       <div className={styles.row}>
+        <Button
+          variant='ghost'
+          size='small'
+          disabled={busy}
+          onClick={() => {
+            setBusy(true);
+
+            void updateExpression(expression.id, {
+              reviewIncluded: !expression.reviewIncluded,
+            })
+              .then(onChange)
+              .catch((error) => setError(error.message))
+              .finally(() => setBusy(false));
+          }}>
+          {expression.reviewIncluded
+            ? '복습에서 잠시 제외'
+            : '다시 복습에 포함'}
+        </Button>
         <ButtonLink
           className={styles.link}
           href={`/practice?expressionId=${encodeURIComponent(expression.id)}`}>

@@ -61,8 +61,9 @@ export function ExpressionPractice({
         <Badge tone='brand'>표현 카드 · 자가점검</Badge>
       </div>
       <p className={styles.notice}>
-        AI가 만든 문제와 자동 채점은 아직 제공하지 않습니다. 원문과 저장한 뜻을
-        비교해 직접 확인한 결과가 기록됩니다.
+        이 표현 카드는 자동 채점과 별도의 자가점검입니다. 원문과 저장한 뜻을
+        비교해 직접 확인한 결과가 기록됩니다. AI 적용 연습은 위의 저장 문제를
+        이용해 주세요.
       </p>
       {!expressions.length ? (
         <EmptyState
