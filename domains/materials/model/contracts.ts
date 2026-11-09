@@ -33,9 +33,16 @@ export const materialsSchema = z.object({
 export const materialInputSchema = z.object({
   title: z.string().trim().min(1).max(200),
   language: z.enum(['en', 'th']),
-  filename: z.string().max(255),
-  contentBase64: z.string().min(1),
-  pages: z.array(z.string().max(50000)).min(1).max(200),
+  filename: z.string().trim().min(1).max(200),
+  contentBase64: z.string().min(8).max(13981016),
+  pages: z
+    .array(z.string().max(50000))
+    .min(1)
+    .max(200)
+    .refine(
+      (pages) =>
+        pages.reduce((total, page) => total + page.length, 0) <= 2000000
+    ),
 });
 
 /** 자료 목록의 검증 결과를 화면에 전달한다. */

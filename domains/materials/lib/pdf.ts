@@ -25,13 +25,14 @@ export async function extractPdf(
     useSystemFonts: true,
   });
 
-  const document = await task.promise;
-
   try {
+    const document = await task.promise;
+
     if (document.numPages > 200)
       throw new Error('PDF는 200페이지 이하로 등록해 주세요.');
 
     const pages: string[] = [];
+    let totalCharacters = 0;
 
     for (let number = 1; number <= document.numPages; number++) {
       const page = await document.getPage(number);
@@ -48,11 +49,29 @@ export async function extractPdf(
         throw new Error(
           `${number}페이지의 텍스트가 너무 많습니다. 자료를 나누어 등록해 주세요.`
         );
+      totalCharacters += text.length;
+      if (totalCharacters > 2000000)
+        throw new Error(
+          '추출한 전체 텍스트가 너무 많습니다. PDF를 나누어 등록해 주세요.'
+        );
       pages.push(text);
       onProgress(number, document.numPages);
     }
 
     return pages;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'PasswordException')
+      throw new Error(
+        '암호가 설정된 PDF는 등록할 수 없습니다. 암호를 해제한 파일을 사용해 주세요.'
+      );
+    if (
+      error instanceof Error &&
+      ['InvalidPDFException', 'MissingPDFException'].includes(error.name)
+    )
+      throw new Error(
+        'PDF 원본을 읽지 못했습니다. 파일이 손상되지 않았는지 확인해 주세요.'
+      );
+    throw error;
   } finally {
     await task.destroy();
   }

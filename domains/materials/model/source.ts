@@ -4,14 +4,14 @@ import { z } from 'zod';
 export const sourceInputSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('pdf'),
-    materialId: z.string(),
-    page: z.number().int().positive(),
+    materialId: z.string().uuid(),
+    page: z.number().int().min(1).max(200),
     quote: z.string().trim().min(1).max(5000),
   }),
   z.object({
     kind: z.literal('video'),
-    videoId: z.string(),
-    segmentId: z.string(),
+    videoId: z.string().min(1).max(128),
+    segmentId: z.string().min(1).max(128),
     quote: z.string().trim().min(1).max(5000),
   }),
 ]);
@@ -24,6 +24,7 @@ export const sourceSchema = z.intersection(
     language: z.enum(['en', 'th']),
     start: z.number().optional(),
     end: z.number().optional(),
+    youtubeId: z.string().optional(),
   })
 );
 
