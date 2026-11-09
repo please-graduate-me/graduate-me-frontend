@@ -13,12 +13,14 @@ export function MaterialPreparation({
   page,
   total,
   version,
+  ocrId,
   historical = false,
 }: {
   id: string;
   page: number;
   total: number;
   version: number;
+  ocrId?: string;
   historical?: boolean;
 }) {
   const [from, setFrom] = useState(String(page));
@@ -37,11 +39,17 @@ export function MaterialPreparation({
       page,
       quote: '저장된 페이지 설명 조회',
       version,
+      ocrId,
     })
       .then((value) => {
         if (active)
           setItems(
-            value.items.filter((item) => (item.source.version ?? 1) === version)
+            value.items.filter(
+              (item) =>
+                (item.source.version ?? 1) === version &&
+                item.source.kind === 'pdf' &&
+                (item.source.ocrId ?? null) === (ocrId ?? null)
+            )
           );
       })
       .catch((error) => {
@@ -51,7 +59,7 @@ export function MaterialPreparation({
     return () => {
       active = false;
     };
-  }, [id, page, version]);
+  }, [id, page, version, ocrId]);
 
   async function prepare(event: React.FormEvent) {
     event.preventDefault();
@@ -68,7 +76,11 @@ export function MaterialPreparation({
 
       setItems((previous) => [
         ...value.items.filter(
-          (item) => item.source.kind === 'pdf' && item.source.page === page
+          (item) =>
+            item.source.kind === 'pdf' &&
+            item.source.page === page &&
+            (item.source.version ?? 1) === version &&
+            (item.source.ocrId ?? null) === (ocrId ?? null)
         ),
         ...previous.filter(
           (item) => !value.items.some((value) => value.id === item.id)

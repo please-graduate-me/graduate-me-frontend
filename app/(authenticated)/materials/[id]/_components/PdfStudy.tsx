@@ -495,9 +495,11 @@ export function PdfStudy({
             }}
           />
           <MaterialPreparation
+            key={`${initial.id}:${initial.version ?? 1}:${page}:${currentOcr?.id ?? 'native'}`}
             id={initial.id}
             page={page}
             total={initial.pageCount}
+            ocrId={currentOcr?.id}
             version={initial.version ?? 1}
             historical={historical}
           />
