@@ -46,7 +46,11 @@ export function GeneratedPractice({
 
   const [filter, setFilter] = useState<
     'all' | 'wrong' | 'unanswered' | 'excluded'
-  >('all');
+  >(
+    initial.find((item) => item.id === selectedExerciseId)?.state.excluded
+      ? 'excluded'
+      : 'all'
+  );
 
   const [busy, setBusy] = useState(false);
   const request = useRef<{ key: string; id: string } | null>(null);
@@ -66,6 +70,10 @@ export function GeneratedPractice({
         : filter === 'unanswered'
           ? !item.latestResult
           : true)
+  );
+
+  const unavailable = Boolean(
+    selectedExerciseId && !items.some((item) => item.id === selectedExerciseId)
   );
 
   const current = filtered.find((item) => item.id === selected) || filtered[0];
@@ -137,6 +145,14 @@ export function GeneratedPractice({
         </div>
         <Badge tone='brand'>저장 문제 재풀이는 AI 호출 없음</Badge>
       </div>
+      {unavailable && (
+        <p
+          className={styles.notice}
+          role='status'>
+          요청한 문제는 삭제되었거나 조회할 수 없습니다. 저장된 다른 문제 목록을
+          확인해 주세요.
+        </p>
+      )}
       <section className={styles.panel}>
         <h2>새 적용 문제 요청</h2>
         <div className={styles.filters}>
