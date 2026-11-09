@@ -23,21 +23,27 @@ globalStyle('body', {
   color: vars.color.ink,
   fontFamily: vars.font.body,
   lineHeight: '1.6',
+  minWidth: '1200px',
 });
 
 globalStyle('a', { color: vars.color.accent, textUnderlineOffset: '4px' });
 globalStyle('h1, h2, h3, p', { marginTop: '0' });
 
 globalStyle('h1', {
-  fontSize: 'clamp(28px, 4vw, 42px)',
-  lineHeight: '1.3',
-  letterSpacing: '-1px',
+  fontSize: vars.fontSize.heading2,
+  lineHeight: '34px',
+  letterSpacing: '-0.5px',
   marginBottom: '18px',
 });
 
-globalStyle('h2', { fontSize: '21px' });
-globalStyle('h3', { fontSize: '18px' });
-globalStyle('section', { marginBottom: '32px' });
+globalStyle('h2', { fontSize: vars.fontSize.heading3, lineHeight: '28px' });
+
+globalStyle('h3', {
+  fontSize: vars.fontSize.body,
+  lineHeight: vars.lineHeight.body,
+});
+
+globalStyle('section', { marginBottom: vars.space.xl });
 globalStyle('button, input, textarea, select', { font: 'inherit' });
 
 globalStyle(':focus-visible', {
@@ -47,7 +53,7 @@ globalStyle(':focus-visible', {
 
 globalStyle('input, textarea, select', {
   border: `1px solid ${vars.color.inputBorder}`,
-  borderRadius: '7px',
+  borderRadius: vars.radius.control,
   padding: '10px 12px',
   color: vars.color.ink,
   background: vars.color.surface,
@@ -60,7 +66,7 @@ globalStyle('textarea', {
   minHeight: '155px',
   resize: 'vertical',
   margin: '8px 0 16px',
-  fontSize: '18px',
+  fontSize: vars.fontSize.small,
 });
 
 globalStyle('label', { fontSize: '14px', fontWeight: '600' });

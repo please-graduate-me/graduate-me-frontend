@@ -1,46 +1,17 @@
-import { getSession } from '@/domains/auth/api/auth';
-import { createServerTransport } from '@/lib/api/server';
-import * as styles from './layout.css';
-import { videoPaths } from '@/domains/videos/config/paths';
-import { userPaths } from '@/domains/users/config/paths';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import './globals.css';
 
 /** 검색 결과와 브라우저에서 서비스 설명을 일관되게 제공한다. */
 export const metadata: Metadata = {
-  title: 'graduate me | 유튜브 받아쓰기',
-  description: '한 구절씩 듣고, 직접 쓰고, 다시 들어보세요.',
+  title: 'graduate me | 문맥으로 배우는 언어',
+  description: '읽고, 듣고, 질문하며 나의 언어로 만들어 가세요.',
 };
 
 /** 페이지 전환에도 공통 화면 틀과 기본 스타일을 유지한다. */
-export default async function Layout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const session = await getSession(await createServerTransport());
-
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang='ko'>
-      <body>
-        <header className={styles.siteHeader}>
-          <Link
-            href={videoPaths.home}
-            className={styles.brand}>
-            graduate me
-          </Link>
-          <span>유튜브로 하는 영어 받아쓰기</span>
-          {session?.user && (
-            <>
-              <Link href={videoPaths.library}>내 영상</Link>
-              <Link href={userPaths.settings}>설정</Link>
-            </>
-          )}
-        </header>
-        <main className={styles.main}>{children}</main>
-        <footer className={styles.footer}>한 구절씩, 내 속도로.</footer>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

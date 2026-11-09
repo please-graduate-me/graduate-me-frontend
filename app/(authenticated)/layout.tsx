@@ -1,4 +1,5 @@
 import { requireSession } from './requireSession';
+import { StudentShell } from './_components/StudentShell';
 
 /** 로그인 전용 그룹의 모든 화면에 동일한 진입 조건을 적용한다. */
 export default async function AuthenticatedLayout({
@@ -6,7 +7,9 @@ export default async function AuthenticatedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requireSession();
+  const { session } = await requireSession();
 
-  return children;
+  return (
+    <StudentShell name={session.user.name ?? '학습자'}>{children}</StudentShell>
+  );
 }
