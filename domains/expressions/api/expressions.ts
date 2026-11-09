@@ -15,12 +15,21 @@ export const createExpression = (input: {
   text: string;
   meaning?: string;
   note?: string;
+  kind?: 'word' | 'phrase' | 'sentence' | 'concept';
+  reviewIncluded?: boolean;
+  explanationId?: string | null;
+  explanationVersion?: number | null;
 }) => request('/api/expressions', expressionSchema, jsonBody(input));
 
 /** 뜻과 개인 메모만 변경하고 원문 출처는 유지한다. */
 export const updateExpression = (
   id: string,
-  patch: { meaning?: string; note?: string }
+  patch: {
+    meaning?: string;
+    note?: string;
+    kind?: 'word' | 'phrase' | 'sentence' | 'concept';
+    reviewIncluded?: boolean;
+  }
 ) =>
   request(endpoint(id), expressionSchema, {
     ...jsonBody(patch),

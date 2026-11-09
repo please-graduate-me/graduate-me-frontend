@@ -1,6 +1,15 @@
 import { z } from 'zod';
 import { sourceSchema } from '@/domains/materials/model/source';
 
+/** 학생이 명시적으로 공유한 설명·문제·AI 답변 스냅샷만 표시한다. */
+export const attachmentSchema = z.object({
+  artifactId: z.string().optional(),
+  version: z.number().optional(),
+  kind: z.enum(['explanation', 'practice', 'ai_answer']),
+  text: z.string(),
+  payload: z.record(z.string(), z.unknown()).optional(),
+});
+
 const personSchema = z.object({ id: z.string(), name: z.string().nullable() });
 
 /** 질문자는 본인 질문과 공개된 답변만 받는다. */
@@ -8,6 +17,10 @@ export const questionSummarySchema = z.object({
   id: z.string(),
   title: z.string(),
   body: z.string(),
+  kind: z.enum(['question', 'report']).optional(),
+  resolvedAt: z.string().nullable().optional(),
+  revokedAt: z.string().nullable().optional(),
+  attachment: attachmentSchema.nullable().optional(),
   status: z.enum(['waiting', 'answered']),
   source: sourceSchema,
   createdAt: z.string(),

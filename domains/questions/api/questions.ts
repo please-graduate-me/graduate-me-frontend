@@ -18,6 +18,10 @@ export const createQuestion = (input: {
   body: string;
   source: SourceInput;
   assigneeId?: string;
+  kind?: 'question' | 'report';
+  attachment?:
+    | { artifactId: string; version: number }
+    | { conversationId: string; messageId: string };
 }) => request('/api/questions', questionSchema, jsonBody(input));
 
 /** 공개된 답변과 추가 질문을 복원한다. */
@@ -34,3 +38,13 @@ export const listRecipients = (language: 'en' | 'th', materialId: string) =>
     `/api/questions/recipients?${new URLSearchParams({ language, materialId })}`,
     recipientsSchema
   );
+
+/** 답변 완료와 학생의 해결 여부, 질문 공유 철회를 각각 저장한다. */
+export const updateQuestion = (
+  id: string,
+  input: { resolved?: boolean; shared?: boolean }
+) =>
+  request(endpoint(id), questionSchema, {
+    ...jsonBody(input),
+    method: 'PATCH',
+  });

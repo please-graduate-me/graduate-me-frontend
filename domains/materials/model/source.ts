@@ -1,5 +1,20 @@
 import { z } from 'zod';
 
+const location = {
+  version: z.number().int().positive().optional(),
+  rects: z
+    .array(
+      z.object({
+        x: z.number().min(0).max(1),
+        y: z.number().min(0).max(1),
+        width: z.number().min(0).max(1),
+        height: z.number().min(0).max(1),
+      })
+    )
+    .max(200)
+    .optional(),
+};
+
 /** 질문과 표현이 선택한 원문 위치를 잃지 않도록 입력을 검증한다. */
 export const sourceInputSchema = z.discriminatedUnion('kind', [
   z.object({
@@ -7,12 +22,14 @@ export const sourceInputSchema = z.discriminatedUnion('kind', [
     materialId: z.string().uuid(),
     page: z.number().int().min(1).max(200),
     quote: z.string().trim().min(1).max(5000),
+    ...location,
   }),
   z.object({
     kind: z.literal('video'),
     videoId: z.string().min(1).max(128),
     segmentId: z.string().min(1).max(128),
     quote: z.string().trim().min(1).max(5000),
+    ...location,
   }),
 ]);
 

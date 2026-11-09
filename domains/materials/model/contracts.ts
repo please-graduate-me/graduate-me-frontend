@@ -3,6 +3,7 @@ import { z } from 'zod';
 /** 자료 목록과 원문 이동에 필요한 메타데이터를 검증한다. */
 export const materialSummarySchema = z.object({
   id: z.string(),
+  version: z.number().int().positive().optional(),
   title: z.string(),
   language: z.enum(['en', 'th']),
   filename: z.string(),
@@ -19,9 +20,10 @@ export const materialSchema = materialSummarySchema.extend({
   memo: z.string(),
   fileUrl: z.string(),
   capabilities: z.object({
-    explanation: z.literal(false),
-    generatedPractice: z.literal(false),
+    explanation: z.boolean(),
+    generatedPractice: z.boolean(),
   }),
+  aiConfigured: z.boolean().optional(),
 });
 
 /** 개인 자료 목록의 외부 응답을 검증한다. */
