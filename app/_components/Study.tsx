@@ -20,13 +20,17 @@ import { isTextInput } from '@/lib/dom/isTextInput';
 import type { LearningAction } from '@/domains/videos/model/contracts';
 import { useYouTubePlayer } from './useYouTubePlayer';
 import { LearningModeSwitch } from '@/domains/videos/ui/LearningModeSwitch';
-import { SegmentList } from '@/domains/videos/ui/SegmentList';
 import { SegmentSelect } from './SegmentSelect';
 import { VideoInfo } from './VideoInfo';
 import { PlaybackStatus } from './PlaybackStatus';
-import { ShareButton } from './ShareButton';
 import { LearningOptions } from './LearningOptions';
 import { useLearningSettings } from './useLearningSettings';
+import { Icon } from '@/components/ui/primitives/Icon';
+import { IconButton } from '@/components/ui/primitives/IconButton';
+import { Badge } from '@/components/ui/primitives/Badge';
+import { Select } from '@/components/ui/primitives/Select';
+import { TextArea } from '@/components/ui/primitives/TextArea';
+import { VideoScript } from './VideoScript';
 
 /** 저장과 제출 및 구절 이동의 순서를 한 화면에서 조율한다. */
 export function Study({
@@ -46,7 +50,7 @@ export function Study({
     change: changeSettings,
   } = useLearningSettings(initial.settings, !demo);
 
-  const [compactVideo, setCompactVideo] = useState(false);
+  const [scriptView, setScriptView] = useState(false);
   const [answerFocused, setAnswerFocused] = useState(false);
   const answerForm = useAnswerViewport(answerFocused);
   const [index, setIndex] = useState(initial.progress.currentIndex);
@@ -254,6 +258,7 @@ export function Study({
       setIndex(next);
       setMode(nextMode);
       setFeedback(null);
+      setScriptView(false);
     });
   }
 
@@ -397,36 +402,38 @@ export function Study({
   ).length;
 
   return (
-    <div
-      className={styles.study}
-      data-answer-focused={answerFocused || undefined}>
-      {demo ? (
-        <p>체험 모드 · 답안과 진도는 페이지를 떠나면 사라집니다.</p>
-      ) : (
+    <div className={styles.study}>
+      <header className={styles.header}>
         <Link
           href={videoPaths.library}
-          onClick={(event) => {
-            if (unsaved.current || busyRef.current) {
-              event.preventDefault();
-
-              void perform(async () => {
-                router.push(videoPaths.library);
-              });
-            }
-          }}>
-          ← 영상 목록
+          className={styles.backLink}
+          aria-label='내 학습으로 돌아가기'>
+          <Icon name='arrow-left' />
         </Link>
+        <div className={styles.headerTitle}>
+          <h1>{video.title}</h1>
+          <p>영상 학습 · {segments.length}개 구절</p>
+        </div>
+        <Badge tone='brand'>
+          <Icon
+            name='headphones'
+            size={16}
+          />{' '}
+          {correct} / {segments.length} 구절 완료
+        </Badge>
+        <Link
+          href={videoPaths.library}
+          className={styles.exitLink}>
+          학습 종료
+        </Link>
+      </header>
+      {demo && (
+        <p className={styles.notice}>
+          체험 모드 · 답안과 진도는 페이지를 떠나면 사라집니다.
+        </p>
       )}
-      <div className={styles.sectionHeading}>
-        <h1 className={styles.lessonTitle}>{video.title}</h1>
-        <span
-          className={[styles.muted, styles.small].join(' ')}
-          role='status'>
-          {saveStatus}
-        </span>
-      </div>
       {error && (
-        <p
+        <div
           className={styles.error}
           role='alert'>
           {error}
@@ -437,231 +444,361 @@ export function Study({
               저장 다시 시도
             </Button>
           )}
-        </p>
+        </div>
       )}
-      <div className={styles.lessonToolbar}>
-        <strong>
-          구절 {Math.min(index + 1, segments.length)}{' '}
-          <span className={styles.muted}>/ {segments.length}</span>
-        </strong>
-        <span className={styles.small}>
-          {segment
-            ? `${segment.start.toFixed(0)}초 ~ ${segment.end.toFixed(0)}초`
-            : '학습 완료'}
-        </span>
-        {!demo && (
-          <ShareButton
-            className={styles.quietButton}
-            videoId={video.id}
-          />
-        )}
-      </div>
       <div className={styles.studyGrid}>
-        <section
-          className={styles.playerPanel}
-          hidden={complete}
-          aria-label='영상 플레이어'>
-          <div
-            id='lesson-video-player'
-            className={[
-              styles.videoFrame,
-              compactVideo ? styles.compactVideo : '',
-            ].join(' ')}
-            ref={mount}
-          />
-          {playerError && (
-            <p
-              role='alert'
-              className={styles.error}>
-              {playerError}
-            </p>
+        <main className={styles.main}>
+          {!complete && (
+            <>
+              <section
+                className={styles.playerPanel}
+                aria-label='영상 플레이어'>
+                <div
+                  id='lesson-video-player'
+                  className={styles.videoFrame}
+                  ref={mount}
+                />
+                {playerError && (
+                  <p
+                    role='alert'
+                    className={styles.error}>
+                    {playerError}
+                  </p>
+                )}
+                {blocked && (
+                  <p className={styles.notice}>
+                    재생 버튼을 눌러 구절을 들어 주세요.
+                  </p>
+                )}
+                <div className={styles.playbackToolbar}>
+                  <IconButton
+                    label={playing || waiting ? '일시정지' : '재생'}
+                    name={playing || waiting ? 'pause' : 'play'}
+                    onClick={toggle}
+                    disabled={!playerReady}
+                  />
+                  <IconButton
+                    label='현재 구절 다시 듣기'
+                    name='rotate-ccw'
+                    onClick={replay}
+                    disabled={!playerReady}
+                  />
+                  <span className={styles.time}>
+                    {segment.start.toFixed(0)}초 /{' '}
+                    {video.duration?.toFixed(0) ?? '알 수 없음'}초
+                  </span>
+                  <progress
+                    className={styles.progress}
+                    max={segments.length}
+                    value={index + 1}
+                    aria-label='전체 구절 중 현재 위치'
+                  />
+                  <Icon
+                    name='volume-2'
+                    size={18}
+                  />
+                  <Select
+                    aria-label='재생 속도'
+                    value={settings.playbackRate}
+                    disabled={savingSettings}
+                    onChange={(event) =>
+                      void changeSettings({
+                        ...settings,
+                        playbackRate: Number(
+                          event.target.value
+                        ) as typeof settings.playbackRate,
+                      })
+                    }>
+                    {([0.5, 0.75, 1, 1.25, 1.5] as const).map((rate) => (
+                      <option
+                        key={rate}
+                        value={rate}>
+                        {rate}배
+                      </option>
+                    ))}
+                  </Select>
+                  <label className={styles.repeatControl}>
+                    <input
+                      type='checkbox'
+                      checked={settings.autoReplay}
+                      disabled={savingSettings}
+                      onChange={(event) =>
+                        void changeSettings({
+                          ...settings,
+                          autoReplay: event.target.checked,
+                        })
+                      }
+                    />
+                    자동 반복
+                  </label>
+                </div>
+              </section>
+              <section
+                className={styles.answerPanel}
+                aria-label='받아쓰기'>
+                <div className={styles.answerHeading}>
+                  <Badge tone='brand'>
+                    <Icon
+                      name='headphones'
+                      size={16}
+                    />{' '}
+                    구절 {String(index + 1).padStart(2, '0')}
+                  </Badge>
+                  <span className={styles.small}>
+                    {segment.start.toFixed(0)}초 ~ {segment.end.toFixed(0)}초
+                  </span>
+                  <Button
+                    variant='ghost'
+                    size='small'
+                    onClick={replay}
+                    disabled={!playerReady}>
+                    <Icon
+                      name='repeat-2'
+                      size={16}
+                    />
+                    구절 반복
+                  </Button>
+                  <span
+                    className={styles.saveStatus}
+                    role='status'>
+                    {saveStatus}
+                  </span>
+                </div>
+                <div className={styles.modeRow}>
+                  <LearningModeSwitch
+                    mode={mode}
+                    disabled={busy}
+                    onChange={(next) => {
+                      setScriptView(false);
+                      void navigate(index, next);
+                    }}
+                  />
+                  <button
+                    type='button'
+                    className={styles.scriptTab}
+                    aria-pressed={scriptView}
+                    disabled={busy}
+                    onClick={() => {
+                      setScriptView(true);
+                      if (!state?.revealed) void reveal();
+                    }}>
+                    스크립트
+                  </button>
+                </div>
+                {scriptView ? (
+                  <div className={styles.scriptReading}>
+                    <p className={styles.muted}>
+                      정답을 확인한 구절은 학습 기록에 표시됩니다.
+                    </p>
+                    <p lang='en'>
+                      {state?.revealed
+                        ? segment.text
+                        : '스크립트를 불러오고 있습니다.'}
+                    </p>
+                  </div>
+                ) : (
+                  <form
+                    ref={answerForm}
+                    onFocusCapture={() => setAnswerFocused(true)}
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      void submit();
+                    }}>
+                    {mode === 'full' ? (
+                      <TextArea
+                        className={styles.answerInput}
+                        aria-label='들리는 문장'
+                        ref={input}
+                        data-answer
+                        value={typeof draft === 'string' ? draft : ''}
+                        maxLength={answerLimits.full}
+                        disabled={busy}
+                        autoComplete='off'
+                        autoCorrect='off'
+                        autoCapitalize='off'
+                        spellCheck={false}
+                        placeholder='들은 내용을 영어로 적어 주세요.'
+                        onChange={(event) => changeDraft(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (
+                            event.key === 'Enter' &&
+                            !event.nativeEvent.isComposing
+                          ) {
+                            event.preventDefault();
+                            void submit();
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div
+                        className={styles.blankSentence}
+                        ref={blanksContainer}
+                        data-answer>
+                        {segment.text.split(/\s+/).map((word, wordIndex) => {
+                          const position = segment.blanks.indexOf(wordIndex);
+
+                          return position < 0 ? (
+                            <span key={wordIndex}>{word} </span>
+                          ) : (
+                            <input
+                              key={wordIndex}
+                              aria-label={`빈칸 ${position + 1}`}
+                              maxLength={answerLimits.blank}
+                              disabled={busy}
+                              autoComplete='off'
+                              autoCorrect='off'
+                              autoCapitalize='off'
+                              spellCheck={false}
+                              value={
+                                Array.isArray(draft)
+                                  ? (draft[position] ?? '')
+                                  : ''
+                              }
+                              onChange={(event) => {
+                                const next = Array.isArray(draft)
+                                  ? [...draft]
+                                  : segment.blanks.map(() => '');
+
+                                next[position] = event.target.value;
+                                changeDraft(next);
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                    <div className={styles.answerActions}>
+                      <Button disabled={busy}>
+                        {busy ? '저장 중…' : '제출하기'}
+                      </Button>
+                      <Button
+                        type='button'
+                        variant='secondary'
+                        disabled={busy}
+                        onClick={replay}>
+                        다시 듣기
+                      </Button>
+                      <span className={styles.small}>Enter 제출</span>
+                      <Button
+                        type='button'
+                        variant='ghost'
+                        size='small'
+                        disabled={busy}
+                        onClick={() => void reveal()}>
+                        정답 보기
+                      </Button>
+                    </div>
+                  </form>
+                )}
+                {feedback && (
+                  <div
+                    className={[
+                      styles.notice,
+                      feedback.correct ? styles.success : '',
+                    ].join(' ')}
+                    role='status'>
+                    {feedback.correct ? (
+                      '정답이에요. 다음 구절로 이동했어요.'
+                    ) : (
+                      <>
+                        <p>다른 부분을 확인하고 다시 들어보세요.</p>
+                        <div className={styles.differences}>
+                          {feedback.differences.map((diff, i) => (
+                            <span
+                              key={i}
+                              className={[styles.diff, styles[diff.kind]].join(
+                                ' '
+                              )}>
+                              {diff.kind === 'match'
+                                ? diff.expected
+                                : diff.kind === 'missing'
+                                  ? `누락: ${diff.expected}`
+                                  : diff.kind === 'extra'
+                                    ? `추가: ${diff.actual}`
+                                    : `${diff.actual} → ${diff.expected}`}
+                            </span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+                {!scriptView && state?.revealed && (
+                  <div className={styles.notice}>
+                    <strong>정답</strong>
+                    <p lang='en'>{segment.text}</p>
+                    <p className={styles.small}>
+                      음성 인식 결과에 오류가 있으면 이 구절을 건너뛰거나
+                      도우미에게 질문할 수 있어요.
+                    </p>
+                  </div>
+                )}
+                <div className={styles.secondaryActions}>
+                  <Button
+                    variant='ghost'
+                    size='small'
+                    disabled={busy}
+                    onClick={() => void skip()}>
+                    건너뛰기
+                  </Button>
+                  <Button
+                    variant='ghost'
+                    size='small'
+                    disabled={busy}
+                    aria-pressed={difficultSegmentIds.includes(segment.id)}
+                    onClick={() => void toggleDifficulty()}>
+                    <Icon
+                      name='flag'
+                      size={16}
+                    />
+                    {difficultSegmentIds.includes(segment.id)
+                      ? '안 들리는 구절 표시 해제'
+                      : '안 들리는 구절 표시'}
+                  </Button>
+                  <div className={styles.navigation}>
+                    <IconButton
+                      label='이전 구절'
+                      name='chevron-left'
+                      disabled={busy || index === 0}
+                      onClick={() => void navigate(index - 1)}
+                    />
+                    <IconButton
+                      label='다음 구절'
+                      name='chevron-right'
+                      disabled={busy}
+                      onClick={() => void navigate(index + 1)}
+                    />
+                  </div>
+                </div>
+              </section>
+            </>
           )}
-          {blocked && (
-            <p className={styles.notice}>
-              재생 버튼을 눌러 구절을 들어 주세요.
-            </p>
-          )}
-          <div className={styles.controls}>
-            <Button
-              variant='secondary'
-              className={styles.playbackButton}
-              onClick={rewind}
-              disabled={!playerReady || complete}>
-              2초 전
-            </Button>
-            <Button
-              className={[styles.playbackButton, styles.replayButton].join(' ')}
-              variant='secondary'
-              onClick={replay}
-              disabled={!playerReady || complete}>
-              다시 듣기
-            </Button>
-            <select
-              aria-label='재생 속도'
-              value={settings.playbackRate}
-              disabled={savingSettings}
-              onChange={(event) =>
-                void changeSettings({
-                  ...settings,
-                  playbackRate: Number(
-                    event.target.value
-                  ) as typeof settings.playbackRate,
-                })
-              }>
-              {([0.5, 0.75, 1, 1.25, 1.5] as const).map((rate) => (
-                <option
-                  key={rate}
-                  value={rate}>
-                  {rate}배
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className={styles.playbackMeta}>
-            <button
-              type='button'
-              onClick={toggle}
-              disabled={!playerReady || complete}>
-              {playing || waiting ? '일시정지' : '재생'}
-            </button>
-            <span>
-              자동 반복 {settings.autoReplay ? '켜짐' : '꺼짐'} · 구절 사이{' '}
-              {settings.replayDelay}초
-            </span>
-            {answerFocused && (
-              <button
-                type='button'
-                className={styles.showVideo}
-                onClick={() => setAnswerFocused(false)}>
-                영상 보기
-              </button>
-            )}
-          </div>
-        </section>
-        <aside
-          className={styles.learningAuxiliary}
-          hidden={complete}
-          aria-label='학습 도구'>
-          <SegmentList
-            items={segments.map((item) => ({
-              id: item.id,
-              start: item.start,
-              status: states.find(
-                (entry) => entry.segmentId === item.id && entry.mode === mode
-              )?.status,
-              difficult: difficultSegmentIds.includes(item.id),
-            }))}
-            currentIndex={index}
-            disabled={busy}
-            onSelect={(next) => void navigate(next)}
-          />
-          <details className={styles.learningDetails}>
-            <summary>학습 설정 · {settings.playbackRate}배속</summary>
-            <PlaybackStatus
-              playing={playing}
-              waiting={waiting}
-              ready={playerReady}
-              buffering={buffering}
-              blocked={blocked}
-              error={playerError}
-            />
-            <div className={styles.videoSizeControls}>
-              <Button
-                type='button'
-                variant='secondary'
-                aria-controls='lesson-video-player'
-                aria-pressed={compactVideo}
-                onClick={() => setCompactVideo((value) => !value)}>
-                {compactVideo ? '크게 보기' : '작게 보기'}
-              </Button>
-            </div>
-            <LearningOptions
-              settings={settings}
-              temporary={demo}
-              saving={savingSettings}
-              error={settingsError}
-              actualRate={actualRate}
-              ready={playerReady}
-              onChange={(next) => void changeSettings(next)}
-            />
-          </details>
-          <details>
-            <summary>키보드 단축키</summary>
-            <ul className={styles.shortcutList}>
-              <li>답안 입력 중 Ctrl+R: 다시 듣기</li>
-              <li>입력창 밖 Space: 재생 / 일시정지</li>
-              <li>Shift+←: 현재 구절 안에서 2초 뒤로</li>
-              <li>Enter: 답안 제출 · Tab: 다음 항목으로 이동</li>
-            </ul>
-            <p className={[styles.muted, styles.small].join(' ')}>
-              YouTube 영상 내부에 포커스가 있으면 서비스 단축키가 적용되지
-              않아요.
-            </p>
-          </details>
-          <details className={styles.learningDetails}>
-            <summary>
-              구절 찾기 · {Math.min(index + 1, segments.length)} /{' '}
-              {segments.length}
-            </summary>
-            <SegmentSelect
-              segments={segments}
-              states={states}
-              difficultSegmentIds={difficultSegmentIds}
-              mode={mode}
-              index={index}
-              disabled={busy}
-              onNavigate={(next) => void navigate(next)}
-            />
-          </details>
-          <details className={styles.learningDetails}>
-            <summary>확인한 문장 대본</summary>
-            <ol className={styles.transcript}>
-              {segments
-                .filter((item) =>
-                  states.some(
-                    (entry) =>
-                      entry.segmentId === item.id &&
-                      (entry.revealed || entry.status === 'correct')
-                  )
-                )
-                .map((item) => (
-                  <li key={item.id}>
-                    <span className={styles.small}>
-                      {item.start.toFixed(1)}초
-                    </span>
-                    <p lang='en'>{item.text}</p>
-                  </li>
-                ))}
-            </ol>
-            {!states.some(
-              (entry) => entry.revealed || entry.status === 'correct'
-            ) && (
-              <p className={styles.muted}>
-                정답을 맞히거나 확인한 문장이 여기에 쌓여요.
+          {complete && (
+            <Panel className={styles.completion}>
+              <Badge tone='success'>
+                <Icon
+                  name='check-check'
+                  size={16}
+                />
+                학습 완료
+              </Badge>
+              <h2>마지막 구절까지 도착했어요.</h2>
+              <p>
+                {mode === 'full' ? '문장 전체' : '빈칸 채우기'} · 전체{' '}
+                {segments.length}구절
               </p>
-            )}
-          </details>
-        </aside>
-        {complete ? (
-          <Panel className={[styles.completion].join(' ')}>
-            <h2>마지막 구절까지 도착했어요.</h2>
-            <p>
-              {mode === 'full' ? '풀 타이핑' : '빈칸 채우기'} · 전체{' '}
-              {segments.length}구절
-            </p>
-            <div className={styles.stats}>
-              <span>
-                정답 <strong>{correct}</strong>
-              </span>
-              <span>
-                건너뛰기 <strong>{skipped}</strong>
-              </span>
-              <span>
-                미완료 <strong>{segments.length - correct - skipped}</strong>
-              </span>
-            </div>
-            <p className={styles.muted}>정답을 확인한 구절: {revealed}개</p>
-            <div className={styles.row}>
+              <div className={styles.stats}>
+                <span>
+                  정답 <strong>{correct}</strong>
+                </span>
+                <span>
+                  건너뛰기 <strong>{skipped}</strong>
+                </span>
+                <span>
+                  미완료 <strong>{segments.length - correct - skipped}</strong>
+                </span>
+              </div>
+              <p className={styles.muted}>정답을 확인한 구절: {revealed}개</p>
               <Button
                 disabled={busy}
                 onClick={() => void navigate(0)}>
@@ -675,232 +812,72 @@ export function Study({
                 }>
                 다른 모드로 학습
               </Button>
-            </div>
-          </Panel>
-        ) : (
-          <section
-            className={styles.answerPanel}
-            aria-label='받아쓰기'>
-            <div className={styles.sectionHeading}>
-              <h2>들리는 대로 적어보세요.</h2>
-              <span
-                className={styles.small}
-                role='status'>
-                {saveStatus}
-              </span>
-            </div>
-            <p className={styles.answerHelp}>
-              한 번에 다 듣지 않아도 괜찮아요.
-            </p>
-            <LearningModeSwitch
-              mode={mode}
-              disabled={busy}
-              onChange={(next) => void navigate(index, next)}
+            </Panel>
+          )}
+          <details className={styles.learningDetails}>
+            <summary>학습 설정과 단축키</summary>
+            <PlaybackStatus
+              playing={playing}
+              waiting={waiting}
+              ready={playerReady}
+              buffering={buffering}
+              blocked={blocked}
+              error={playerError}
             />
-            <form
-              ref={answerForm}
-              onFocusCapture={() => setAnswerFocused(true)}
-              onSubmit={(event) => {
-                event.preventDefault();
-                void submit();
-              }}>
-              {mode === 'full' ? (
-                <>
-                  <textarea
-                    className={styles.answerInput}
-                    id='answer'
-                    aria-label='들리는 문장'
-                    ref={input}
-                    data-answer
-                    value={typeof draft === 'string' ? draft : ''}
-                    maxLength={answerLimits.full}
-                    disabled={busy}
-                    autoComplete='off'
-                    autoCorrect='off'
-                    autoCapitalize='off'
-                    spellCheck={false}
-                    placeholder='들은 내용을 영어로 적어 주세요.'
-                    onChange={(event) => changeDraft(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (
-                        event.key === 'Enter' &&
-                        !event.nativeEvent.isComposing
-                      ) {
-                        event.preventDefault();
-                        void submit();
-                      }
-                    }}
-                  />
-                </>
-              ) : (
-                <div
-                  className={styles.blankSentence}
-                  ref={blanksContainer}
-                  data-answer>
-                  {segment.text.split(/\s+/).map((word, wordIndex) => {
-                    const position = segment.blanks.indexOf(wordIndex);
-
-                    return position < 0 ? (
-                      <span key={wordIndex}>{word} </span>
-                    ) : (
-                      <input
-                        key={wordIndex}
-                        aria-label={`빈칸 ${position + 1}`}
-                        maxLength={answerLimits.blank}
-                        disabled={busy}
-                        autoComplete='off'
-                        autoCorrect='off'
-                        autoCapitalize='off'
-                        spellCheck={false}
-                        value={
-                          Array.isArray(draft) ? (draft[position] ?? '') : ''
-                        }
-                        onChange={(event) => {
-                          const next = Array.isArray(draft)
-                            ? [...draft]
-                            : segment.blanks.map(() => '');
-
-                          next[position] = event.target.value;
-                          changeDraft(next);
-                        }}
-                        onKeyDown={(event) => {
-                          if (
-                            event.key === 'Enter' &&
-                            !event.nativeEvent.isComposing
-                          ) {
-                            event.preventDefault();
-                            void submit();
-                          }
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-              <div className={styles.answerActions}>
-                <Button
-                  className={styles.submitButton}
-                  disabled={busy}>
-                  {busy ? '저장 중…' : '확인하기'}
-                </Button>
-                <Button
-                  type='button'
-                  variant='secondary'
-                  disabled={busy}
-                  onClick={() => void reveal()}>
-                  정답 보기
-                </Button>
-              </div>
-            </form>
-            <div className={styles.secondaryActions}>
-              <Button
-                className={styles.quietButton}
-                type='button'
-                variant='secondary'
-                disabled={busy}
-                onClick={() => void skip()}>
-                건너뛰기
-              </Button>
-              <Button
-                className={styles.quietButton}
-                variant='secondary'
-                disabled={busy}
-                aria-pressed={difficultSegmentIds.includes(segment.id)}
-                onClick={() => void toggleDifficulty()}>
-                {difficultSegmentIds.includes(segment.id)
-                  ? '안 들리는 구절 표시 해제'
-                  : '안 들리는 구절로 표시'}
-              </Button>
-              {!demo && (
-                <ShareButton
-                  className={styles.quietButton}
-                  key={segment.id}
-                  videoId={video.id}
-                  segmentId={segment.id}
-                />
-              )}
-            </div>
-            {feedback && (
-              <div
-                className={[
-                  styles.notice,
-                  feedback.correct ? styles.success : '',
-                ].join(' ')}
-                role='status'>
-                {feedback.correct ? (
-                  '정답이에요. 다음 구절로 이동했어요.'
-                ) : (
-                  <>
-                    <p>다른 부분을 확인하고 다시 들어보세요.</p>
-                    <div className={styles.differences}>
-                      {feedback.differences.map((diff, i) => (
-                        <span
-                          key={i}
-                          className={[styles.diff, styles[diff.kind]].join(
-                            ' '
-                          )}>
-                          {diff.kind === 'match'
-                            ? diff.expected
-                            : diff.kind === 'missing'
-                              ? `누락: ${diff.expected}`
-                              : diff.kind === 'extra'
-                                ? `추가: ${diff.actual}`
-                                : `${diff.actual} → ${diff.expected}`}
-                        </span>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
+            <LearningOptions
+              settings={settings}
+              temporary={demo}
+              saving={savingSettings}
+              error={settingsError}
+              actualRate={actualRate}
+              ready={playerReady}
+              onChange={(next) => void changeSettings(next)}
+            />
+            <p className={styles.small}>
+              Ctrl+R: 다시 듣기 · 입력창 밖 Space: 재생 / 일시정지 · Shift+←:
+              2초 전 · Enter: 제출
+            </p>
+            <SegmentSelect
+              segments={segments}
+              states={states}
+              difficultSegmentIds={difficultSegmentIds}
+              mode={mode}
+              index={index}
+              disabled={busy}
+              onNavigate={(next) => void navigate(next)}
+            />
+          </details>
+          <details className={styles.learningDetails}>
+            <summary>영상 정보와 학습 기록 관리</summary>
+            {!demo && (
+              <VideoInfo
+                video={video}
+                initialFavorite={initial.progress.favorite}
+              />
             )}
-            {state?.revealed && (
-              <div className={styles.notice}>
-                <strong>정답</strong>
-                <p lang='en'>{segment.text}</p>
-                <p className={[styles.muted, styles.small].join(' ')}>
-                  음성 인식 결과에 오류가 있으면 이 구절을 건너뛸 수 있어요.
-                </p>
-              </div>
-            )}
-            <div className={[styles.row, styles.navigation].join(' ')}>
-              <Button
-                variant='secondary'
-                disabled={busy || index === 0}
-                onClick={() => void navigate(index - 1)}>
-                이전 구절
-              </Button>
-              <Button
-                variant='secondary'
-                disabled={busy}
-                onClick={() => void navigate(index + 1)}>
-                다음 구절
-              </Button>
-            </div>
-          </section>
-        )}
+            <p className={styles.muted}>
+              이 영상의 두 모드 답안과 구절 표시 및 진도를 삭제하고 처음부터
+              시작합니다.
+            </p>
+            <Button
+              variant='danger'
+              disabled={busy}
+              onClick={() => void reset()}>
+              이 영상 기록 초기화
+            </Button>
+          </details>
+        </main>
+        <VideoScript
+          segments={segments}
+          states={states}
+          index={index}
+          mode={mode}
+          busy={busy}
+          videoId={video.id}
+          demo={demo}
+          onNavigate={(next) => void navigate(next)}
+        />
       </div>
-      <details className={styles.videoDetails}>
-        <summary>영상 정보와 학습 기록 관리</summary>
-        {!demo && (
-          <VideoInfo
-            video={video}
-            initialFavorite={initial.progress.favorite}
-          />
-        )}
-        <Panel>
-          <h2>학습 기록 초기화</h2>
-          <p className={styles.muted}>
-            이 영상의 두 모드 답안, 안 들리는 구절 표시와 모든 학습 기록을
-            삭제하고 처음부터 시작합니다.
-          </p>
-          <Button
-            variant='secondary'
-            disabled={busy}
-            onClick={() => void reset()}>
-            이 영상 기록 초기화
-          </Button>
-        </Panel>
-      </details>
     </div>
   );
 }

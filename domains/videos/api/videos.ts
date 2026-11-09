@@ -82,10 +82,6 @@ export const registerVideo = (url: string) =>
 export const getLesson = (id: string, transport?: Transport) =>
   request(endpoint(id), lessonSchema, undefined, transport);
 
-/** 재처리 요청의 주소와 응답 규칙을 화면에서 숨긴다. */
-export const retryVideo = (id: string) =>
-  request(`${endpoint(id)}/retry`, okSchema, jsonBody({}));
-
 /** 자동 저장과 제출이 같은 요청 검증을 거치게 한다. */
 export const applyLearningAction = (id: string, action: LearningAction) =>
   request(
