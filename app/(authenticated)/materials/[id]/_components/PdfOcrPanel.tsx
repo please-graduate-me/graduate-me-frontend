@@ -5,6 +5,7 @@ import {
   recognizeMaterialPage,
 } from '@/domains/materials/api/ocr';
 import type { MaterialOcr, OcrPage } from '@/domains/materials/model/ocr';
+import { aiProviderLabel } from '@/domains/ai/lib/providerLabel';
 import { ApiError } from '@/lib/api/request';
 import { Button } from '@/components/ui/primitives/Button';
 import { Badge } from '@/components/ui/primitives/Badge';
@@ -139,6 +140,13 @@ export function PdfOcrPanel({
   const item = result?.item;
   const running = busy || item?.status === 'running';
 
+  const unknownConfidenceCount =
+    item?.fields.filter((field) => field.confidence === null).length ?? 0;
+
+  const supportedLanguages = result?.supportedLanguages
+    .map((language) => (language === 'th' ? '태국어' : '영어'))
+    .join(' · ');
+
   return (
     <section
       className={styles.stack}
@@ -165,13 +173,17 @@ export function PdfOcrPanel({
         </Badge>
       </div>
       <p className={styles.meta}>
-        원본 v{version} · {page}페이지 · 영어 OCR 지원. 원본과 인식 결과를 따로
-        보존하며 저장 결과 조회에는 새 인식을 요청하지 않습니다.
+        원본 v{version} · {page}페이지
+        {result
+          ? ` · ${aiProviderLabel(result.provider)} · ${result.model} · 지원 언어: ${supportedLanguages || '없음'}`
+          : ''}
+        . 원본과 인식 결과를 따로 보존하며 저장 결과 조회에는 새 인식을 요청하지
+        않습니다.
       </p>
       {result && !result.languageSupported && (
         <p className={styles.notice}>
-          태국어 글자 인식은 지원하지 않습니다. PDF에 포함된 태국어 텍스트는
-          기존처럼 선택할 수 있습니다.
+          현재 선택된 공급자는 이 자료의 언어를 지원하지 않습니다. PDF에 포함된
+          원본 텍스트는 기존처럼 선택할 수 있습니다.
         </p>
       )}
       {result && !result.configured && (
@@ -195,6 +207,18 @@ export function PdfOcrPanel({
         <p className={styles.notice}>
           {item.error || '이 페이지의 글자를 인식하지 못했습니다.'} 자동으로
           재시도하지 않습니다.
+        </p>
+      )}
+      {item?.status === 'ready' && (
+        <p className={styles.meta}>
+          저장 결과: {aiProviderLabel(item.provider)} · {item.model}
+        </p>
+      )}
+      {unknownConfidenceCount > 0 && (
+        <p className={styles.notice}>
+          신뢰도 미제공 영역 {unknownConfidenceCount}개가 있습니다. 공급자가
+          수치를 제공하지 않아 정확도를 추정하지 않습니다. 황색 점선 영역의
+          원본을 확인해 주세요.
         </p>
       )}
       {item?.status === 'ready' && (

@@ -1,4 +1,5 @@
 'use client';
+import { aiProviderLabel } from '@/domains/ai/lib/providerLabel';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { Exercise, ExerciseResult } from '@/domains/ai/model/contracts';
@@ -217,7 +218,8 @@ export function ExerciseSolver({
               : '자유답변'}
         </Badge>
         <span className={styles.meta}>
-          문제 v{exercise.version} · {exercise.model}
+          문제 v{exercise.version} · {aiProviderLabel(exercise.provider)} ·{' '}
+          {exercise.model}
         </span>
         <Badge
           tone={

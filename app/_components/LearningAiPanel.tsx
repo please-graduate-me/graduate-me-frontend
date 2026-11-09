@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import type { SourceInput } from '@/domains/materials/model/source';
 import type { Conversation, Explanation } from '@/domains/ai/model/contracts';
 import {
+  getAiCapabilities,
   generateExplanation,
   generateExercises,
   listConversations,
@@ -20,6 +21,7 @@ import { AiConversation } from './AiConversation';
 import { ExpressionComposer } from './ExpressionComposer';
 import { QuestionComposer } from './QuestionComposer';
 import { getLearningProfile } from '@/domains/users/api/profile';
+import { aiProviderLabel } from '@/domains/ai/lib/providerLabel';
 import * as styles from '@/lib/styles/workspace.css';
 
 /** PDF와 영상의 저장 설명·개인 대화·적용 연습을 같은 원문에 연결한다. */
@@ -53,6 +55,11 @@ export function LearningAiPanel({
 
   const [selectedConversation, setSelectedConversation] = useState('');
   const [loading, setLoading] = useState(true);
+
+  const [capabilities, setCapabilities] = useState<Awaited<
+    ReturnType<typeof getAiCapabilities>
+  > | null>(null);
+
   const [busy, setBusy] = useState(false);
   const explanationRequest = useRef<{ key: string; id: string } | null>(null);
   const exerciseRequest = useRef<{ key: string; id: string } | null>(null);
@@ -92,6 +99,12 @@ export function LearningAiPanel({
           setLoading(false);
         }
       });
+
+    void getAiCapabilities()
+      .then((value) => {
+        if (active) setCapabilities(value);
+      })
+      .catch(() => undefined);
 
     void getLearningProfile()
       .then((value) => {
@@ -207,6 +220,13 @@ export function LearningAiPanel({
         <Badge tone='brand'>원문 기반 AI 학습</Badge>
         <span className={styles.meta}>자료 v{source.version ?? 1}</span>
       </div>
+      {capabilities && (
+        <p className={styles.meta}>
+          현재 요청 공급자: {aiProviderLabel(capabilities.provider)} · 텍스트{' '}
+          {capabilities.models.text} · 이미지 {capabilities.models.image}
+          {capabilities.configured ? '' : ' · 연결 설정 필요'}
+        </p>
+      )}
       <div className={styles.row}>
         <label className={styles.field}>
           살펴볼 내용

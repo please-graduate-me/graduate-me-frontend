@@ -1,4 +1,5 @@
 'use client';
+import { aiProviderLabel } from '@/domains/ai/lib/providerLabel';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
 import Link from 'next/link';
@@ -101,6 +102,15 @@ export function AiConversation({
                 </Badge>
               )}
             </div>
+            {message.role === 'assistant' &&
+              (message.model || message.provider) && (
+                <p className={styles.meta}>
+                  {message.provider
+                    ? aiProviderLabel(message.provider)
+                    : '공급자 기록 없음'}
+                  {message.model ? ` · ${message.model}` : ''}
+                </p>
+              )}
             <p className={styles.prose}>{message.text}</p>
             {message.citations?.map((cite, index) => (
               <blockquote

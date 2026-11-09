@@ -14,12 +14,14 @@ export const ocrFieldSchema = z.object({
       (rect) =>
         rect.x + rect.width <= 1.000001 && rect.y + rect.height <= 1.000001
     ),
-  confidence: z.number().min(0).max(1),
+  confidence: z.number().min(0).max(1).nullable(),
   lineBreak: z.boolean(),
 });
 
 /** OCR은 원본 텍스트와 구분한 페이지별 저장 결과다. */
 export const ocrPageSchema = z.object({
+  provider: z.enum(['naver', 'anthropic']).default('naver'),
+  model: z.string().default('모델 기록 없음'),
   id: z.string().uuid(),
   materialId: z.string(),
   version: z.number().int().positive(),
@@ -37,8 +39,10 @@ export const ocrPageSchema = z.object({
 
 /** 저장 결과 조회와 실제 지원·설정 상태를 함께 검증한다. */
 export const materialOcrSchema = z.object({
+  provider: z.enum(['naver', 'anthropic']),
+  model: z.string(),
   configured: z.boolean(),
-  supportedLanguages: z.array(z.literal('en')),
+  supportedLanguages: z.array(z.enum(['en', 'th'])),
   languageSupported: z.boolean(),
   item: ocrPageSchema.nullable(),
 });

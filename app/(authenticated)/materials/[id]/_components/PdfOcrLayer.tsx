@@ -64,8 +64,14 @@ export function PdfOcrLayer({
           <span
             className={styles.word}
             data-ocr-word
-            data-low-confidence={field.confidence < 0.8 || undefined}
-            title={`인식 신뢰도 ${Math.round(field.confidence * 100)}%, 원본 확인`}
+            data-review-needed={
+              field.confidence === null || field.confidence < 0.8 || undefined
+            }
+            title={
+              field.confidence === null
+                ? '신뢰도 미제공 · 원본 확인 필요'
+                : `공급자 인식 신뢰도 ${Math.round(field.confidence * 100)}%, 원본 확인`
+            }
             style={{
               left: field.rect.x * 100 + '%',
               top: field.rect.y * 100 + '%',

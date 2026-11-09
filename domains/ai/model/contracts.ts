@@ -9,7 +9,7 @@ const artifact = {
   needsReview: z.boolean(),
   source: sourceSchema,
   model: z.string(),
-  provider: z.string(),
+  provider: z.enum(['naver', 'anthropic']),
   createdAt: z.string(),
   updatedAt: z.string(),
 };
@@ -43,6 +43,7 @@ export const conversationSchema = z.object({
       status: z.enum(['ready', 'failed', 'out_of_scope']),
       createdAt: z.string(),
       model: z.string().optional(),
+      provider: z.enum(['naver', 'anthropic']).nullable().optional(),
       citations: z.array(z.object({ quote: z.string() })).optional(),
       uncertainty: z.string().optional(),
       contextDescription: z.string().optional(),
@@ -91,6 +92,7 @@ export const exerciseSchema = z.object({
 
 /** 지원 여부 대신 서버의 설정·사용량 한도를 표시한다. */
 export const aiCapabilitiesSchema = z.object({
+  provider: z.enum(['naver', 'anthropic']),
   configured: z.boolean(),
   models: z.object({ text: z.string(), image: z.string() }),
   limits: z.object({

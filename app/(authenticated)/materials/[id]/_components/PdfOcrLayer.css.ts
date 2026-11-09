@@ -27,7 +27,7 @@ export const word = style({
   cursor: 'text',
   userSelect: 'text',
   selectors: {
-    '&[data-low-confidence="true"]': {
+    '&[data-review-needed="true"]': {
       borderBottom: `2px dotted ${vars.color.warning}`,
       boxSizing: 'border-box',
     },

@@ -6,10 +6,35 @@ import { materialOcrSchema } from '../model/ocr';
 const id = '11111111-1111-4111-8111-111111111111';
 
 const result = {
+  provider: 'anthropic',
+  model: 'claude-test-model',
   configured: true,
-  supportedLanguages: ['en'],
+  supportedLanguages: ['en', 'th'],
   languageSupported: true,
-  item: null,
+  item: {
+    id,
+    materialId: id,
+    provider: 'anthropic',
+    model: 'claude-test-model',
+    version: 2,
+    page: 3,
+    status: 'ready',
+    text: 'sample',
+    fields: [
+      {
+        text: 'sample',
+        rect: { x: 0.1, y: 0.1, width: 0.3, height: 0.1 },
+        confidence: null,
+        lineBreak: true,
+      },
+    ],
+    width: 100,
+    height: 100,
+    lowConfidenceCount: 0,
+    error: null,
+    createdAt: '',
+    updatedAt: '',
+  },
 };
 
 afterEach(() => vi.unstubAllGlobals());
@@ -20,7 +45,10 @@ describe('페이지 OCR 계약', () => {
 
     vi.stubGlobal('fetch', transport);
 
-    await getMaterialOcr(id, 2, 3);
+    const saved = await getMaterialOcr(id, 2, 3);
+
+    expect(saved.item?.fields[0].confidence).toBeNull();
+    expect(saved.item?.lowConfidenceCount).toBe(0);
 
     expect(transport.mock.calls[0]).toEqual([
       `/api/materials/${id}/ocr?version=2&page=3`,
@@ -41,6 +69,8 @@ describe('페이지 OCR 계약', () => {
   });
 
   it('인식 출처를 저장하며 페이지 바깥의 인식 영역은 거부한다', () => {
+    expect(materialOcrSchema.parse(result).supportedLanguages).toContain('th');
+
     expect(
       sourceInputSchema.parse({
         kind: 'pdf',

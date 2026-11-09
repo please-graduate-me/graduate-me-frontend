@@ -1,3 +1,4 @@
+import { aiProviderLabel } from '@/domains/ai/lib/providerLabel';
 import Link from 'next/link';
 import { materialPaths } from '@/domains/materials/config/paths';
 import { sourceLabel } from '@/domains/learning/lib/format';
@@ -27,7 +28,8 @@ export function AiExplanation({ value }: { value: Explanation }) {
               : 'AI 생성'}
         </Badge>
         <span className={styles.meta}>
-          설명 v{value.version} · {value.model}
+          설명 v{value.version} · {aiProviderLabel(value.provider)} ·{' '}
+          {value.model}
         </span>
       </div>
       {data.contextDescription && (
