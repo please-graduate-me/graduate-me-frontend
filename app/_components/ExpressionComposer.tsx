@@ -18,7 +18,7 @@ export function ExpressionComposer({
   onClose: () => void;
 }) {
   const router = useRouter();
-  const [text, setText] = useState(source.quote.slice(0, 500));
+  const [text, setText] = useState(source.quote.slice(0, 1000));
   const [meaning, setMeaning] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
@@ -63,7 +63,7 @@ export function ExpressionComposer({
           <Input
             autoFocus
             required
-            maxLength={500}
+            maxLength={1000}
             value={text}
             onChange={(event) => setText(event.target.value)}
           />
@@ -71,7 +71,7 @@ export function ExpressionComposer({
         <label className={styles.field}>
           뜻
           <Input
-            maxLength={2000}
+            maxLength={5000}
             value={meaning}
             onChange={(event) => setMeaning(event.target.value)}
             placeholder='문맥에서 이해한 뜻을 적어 주세요.'

@@ -117,7 +117,7 @@ export function QuestionComposer({
               궁금한 내용
               <TextArea
                 required
-                maxLength={10000}
+                maxLength={5000}
                 value={body}
                 onChange={(event) => setBody(event.target.value)}
                 placeholder='이 구절에서 궁금한 점을 구체적으로 적어 주세요.'

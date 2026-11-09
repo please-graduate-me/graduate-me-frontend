@@ -22,7 +22,7 @@ export const questionSchema = questionSummarySchema.extend({
     z.object({
       id: z.string(),
       body: z.string(),
-      author: personSchema,
+      author: personSchema.extend({ id: z.string().nullable() }),
       kind: z.enum(['question', 'answer']),
       createdAt: z.string(),
     })
