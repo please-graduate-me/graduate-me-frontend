@@ -1,0 +1,384 @@
+'use client';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import type { SourceInput } from '@/domains/materials/model/source';
+import type { Conversation, Explanation } from '@/domains/ai/model/contracts';
+import {
+  generateExplanation,
+  generateExercises,
+  listConversations,
+  listExplanations,
+  openConversation,
+} from '@/domains/ai/api/learning';
+import { Button } from '@/components/ui/primitives/Button';
+import { Select } from '@/components/ui/primitives/Select';
+import { Badge } from '@/components/ui/primitives/Badge';
+import { AiExplanation } from './AiExplanation';
+import { AiConversation } from './AiConversation';
+import { ExpressionComposer } from './ExpressionComposer';
+import { QuestionComposer } from './QuestionComposer';
+import { getLearningProfile } from '@/domains/users/api/profile';
+import * as styles from '@/lib/styles/workspace.css';
+
+/** PDF와 영상의 저장 설명·개인 대화·적용 연습을 같은 원문에 연결한다. */
+export function LearningAiPanel({
+  source,
+  language,
+  image,
+}: {
+  source: SourceInput;
+  language: 'en' | 'th';
+  image?: { base64: string; mimeType: 'image/png' | 'image/jpeg' };
+}) {
+  const router = useRouter();
+  const serial = JSON.stringify(source);
+  const [items, setItems] = useState<Explanation[]>([]);
+  const [related, setRelated] = useState<Explanation[]>([]);
+  const [reload, setReload] = useState(0);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+
+  const [mode, setMode] = useState<
+    'meaning' | 'translation' | 'structure' | 'concept'
+  >('meaning');
+
+  const [explanationLanguage, setExplanationLanguage] = useState<
+    'ko' | 'en' | 'th'
+  >('ko');
+
+  const [exerciseType, setExerciseType] = useState<
+    'choice' | 'short_answer' | 'free_response'
+  >('choice');
+
+  const [selectedConversation, setSelectedConversation] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [dialog, setDialog] = useState<'expression' | 'question' | null>(null);
+  const latest = items[0];
+
+  const conversation = conversations.find(
+    (value) => value.id === selectedConversation
+  );
+
+  useEffect(() => {
+    let active = true;
+    const selected: SourceInput = JSON.parse(serial);
+
+    const same = (value: { source: SourceInput }) =>
+      value.source.quote.normalize('NFKC').replace(/\s+/g, '') ===
+        selected.quote.normalize('NFKC').replace(/\s+/g, '') &&
+      (value.source.version ?? 1) === (selected.version ?? 1);
+
+    void Promise.all([listExplanations(selected), listConversations(selected)])
+      .then(([explanations, chats]) => {
+        if (active) {
+          setItems(explanations.items.filter(same));
+          setRelated(explanations.items.filter((item) => !same(item)));
+          setConversations(chats.items.filter(same));
+          setLoading(false);
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          setError(error.message);
+          setLoading(false);
+        }
+      });
+
+    void getLearningProfile()
+      .then((value) => {
+        if (active) setExplanationLanguage(value.explanationLanguage);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      active = false;
+    };
+  }, [serial, reload]);
+
+  async function explain(useImage = false) {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+
+    try {
+      const value = await generateExplanation({
+        requestId: crypto.randomUUID(),
+        source,
+        mode,
+        explanationLanguage,
+        ...(useImage && image ? { image } : {}),
+      });
+
+      setItems((previous) => [
+        value,
+        ...previous.filter((item) => item.id !== value.id),
+      ]);
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function startConversation() {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+
+    try {
+      const value = await openConversation(source);
+
+      setConversations((previous) => [
+        value,
+        ...previous.filter((item) => item.id !== value.id),
+      ]);
+
+      setSelectedConversation(value.id);
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function practice() {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+
+    try {
+      const value = await generateExercises({
+        requestId: crypto.randomUUID(),
+        source,
+        language,
+        type: exerciseType,
+        count: 1,
+        ...(latest ? { explanationId: latest.id } : {}),
+      });
+
+      if (value.items[0])
+        router.push(
+          `/practice?exerciseId=${encodeURIComponent(value.items[0].id)}`
+        );
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section
+      className={styles.stack}
+      aria-label='원문 AI 학습'>
+      <div className={styles.row}>
+        <Badge tone='brand'>원문 기반 AI 학습</Badge>
+        <span className={styles.meta}>자료 v{source.version ?? 1}</span>
+      </div>
+      <div className={styles.row}>
+        <label className={styles.field}>
+          살펴볼 내용
+          <Select
+            value={mode}
+            disabled={busy}
+            onChange={(event) => setMode(event.target.value as typeof mode)}>
+            <option value='meaning'>문맥의 뜻</option>
+            <option value='translation'>번역</option>
+            <option value='structure'>문장 구조</option>
+            <option value='concept'>개념과 적용</option>
+          </Select>
+        </label>
+        <label className={styles.field}>
+          설명 언어
+          <Select
+            value={explanationLanguage}
+            disabled={busy}
+            onChange={(event) =>
+              setExplanationLanguage(
+                event.target.value as typeof explanationLanguage
+              )
+            }>
+            <option value='ko'>한국어</option>
+            <option value='en'>영어</option>
+            <option value='th'>태국어</option>
+          </Select>
+        </label>
+      </div>
+      <div className={styles.row}>
+        <Button
+          size='small'
+          loading={busy}
+          disabled={busy}
+          onClick={() => void explain()}>
+          선택 원문 설명 요청
+        </Button>
+        {image && (
+          <Button
+            size='small'
+            variant='secondary'
+            disabled={busy}
+            onClick={() => void explain(true)}>
+            이 페이지 이미지로 해석
+          </Button>
+        )}
+      </div>
+      <p className={styles.meta}>
+        저장 결과를 여는 것만으로 AI를 호출하지 않습니다. 새 설명·질문·연습을
+        요청할 때 서버 한도를 확인합니다.
+      </p>
+      {loading && <p role='status'>저장된 설명과 대화를 불러오고 있어요.</p>}
+      <div>
+        <Button
+          size='small'
+          variant='ghost'
+          disabled={loading || busy}
+          onClick={() => {
+            setLoading(true);
+            setError('');
+            setReload((value) => value + 1);
+          }}>
+          저장 결과 새로 조회
+        </Button>
+      </div>
+      {error && (
+        <p
+          role='alert'
+          className={styles.error}>
+          {error}
+        </p>
+      )}
+      {latest && (
+        <>
+          <AiExplanation value={latest} />
+          <div className={styles.row}>
+            <Button
+              variant='secondary'
+              size='small'
+              onClick={() => setDialog('expression')}>
+              이 뜻과 버전으로 표현 저장
+            </Button>
+            <Button
+              variant='ghost'
+              size='small'
+              onClick={() => setDialog('question')}>
+              이 설명을 도우미에게 질문
+            </Button>
+          </div>
+        </>
+      )}
+      {!loading && !latest && (
+        <p className={styles.notice}>
+          아직 저장된 설명이 없습니다. 필요한 내용과 설명 언어를 선택해 요청해
+          보세요.
+        </p>
+      )}
+      {items.length > 1 && (
+        <details>
+          <summary>이 발췌의 다른 저장 설명 {items.length - 1}개</summary>
+          {items.slice(1).map((value) => (
+            <AiExplanation
+              key={value.id + ':' + value.version}
+              value={value}
+            />
+          ))}
+        </details>
+      )}
+      {related.length > 0 && (
+        <details>
+          <summary>
+            이 페이지·구절의 다른 범위 준비 결과 {related.length}개
+          </summary>
+          {related.map((value) => (
+            <div key={value.id + ':' + value.version}>
+              <p className={styles.meta}>이 설명에 사용한 원문 범위</p>
+              <blockquote className={styles.quote}>
+                {value.source.quote}
+              </blockquote>
+              <AiExplanation value={value} />
+            </div>
+          ))}
+        </details>
+      )}
+      <label className={styles.field}>
+        짧은 적용 연습
+        <Select
+          value={exerciseType}
+          onChange={(event) =>
+            setExerciseType(event.target.value as typeof exerciseType)
+          }>
+          <option value='choice'>객관식 이해 확인</option>
+          <option value='short_answer'>짧은 정답형</option>
+          <option value='free_response'>자유 답변과 AI 피드백</option>
+        </Select>
+      </label>
+      <div>
+        <Button
+          variant='secondary'
+          size='small'
+          disabled={busy}
+          onClick={() => void practice()}>
+          이 원문으로 새 문제 생성
+        </Button>
+      </div>
+      <hr />
+      <div className={styles.row}>
+        <h3>나만의 원문 대화</h3>
+        <Button
+          variant='ghost'
+          size='small'
+          disabled={busy}
+          onClick={() => void startConversation()}>
+          새 대화 열기
+        </Button>
+      </div>
+      {conversations.length > 0 && (
+        <Select
+          aria-label='저장된 원문 대화'
+          value={selectedConversation}
+          onChange={(event) => setSelectedConversation(event.target.value)}>
+          <option value=''>저장된 대화 선택</option>
+          {conversations.map((chat, index) => (
+            <option
+              key={chat.id}
+              value={chat.id}>
+              {chat.messages
+                .find((message) => message.role === 'user')
+                ?.text.slice(0, 35) || `원문 대화 ${index + 1}`}
+            </option>
+          ))}
+        </Select>
+      )}
+      {conversation && (
+        <AiConversation
+          key={conversation.id}
+          initial={conversation}
+          language={language}
+        />
+      )}
+      {dialog === 'expression' && latest && (
+        <ExpressionComposer
+          source={source}
+          explanation={latest}
+          onClose={() => setDialog(null)}
+        />
+      )}
+      {dialog === 'question' && latest && (
+        <QuestionComposer
+          source={source}
+          language={language}
+          attachment={{ artifactId: latest.id, version: latest.version }}
+          attachmentText={[
+            latest.payload.translation,
+            latest.payload.meaning,
+            latest.payload.structure,
+            latest.payload.concept,
+          ]
+            .filter(Boolean)
+            .join('\n')}
+          onClose={() => setDialog(null)}
+        />
+      )}
+    </section>
+  );
+}

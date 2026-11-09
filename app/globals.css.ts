@@ -88,3 +88,6 @@ globalStyle('progress', {
 });
 
 globalStyle(':root', { colorScheme: 'light' });
+
+// 입력 묶음은 브라우저 기본 테두리 대신 화면의 패널 간격을 따른다.
+globalStyle('fieldset', { border: 0, padding: 0, margin: 0, minWidth: 0 });

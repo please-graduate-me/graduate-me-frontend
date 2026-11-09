@@ -19,10 +19,18 @@ export function QuestionComposer({
   source,
   language,
   onClose,
+  attachment,
+  attachmentText,
+  report = false,
 }: {
   source: SourceInput;
   language: 'en' | 'th';
   onClose: () => void;
+  attachment?:
+    | { artifactId: string; version: number }
+    | { conversationId: string; messageId: string };
+  attachmentText?: string;
+  report?: boolean;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState('');
@@ -69,6 +77,8 @@ export function QuestionComposer({
         body: body.trim(),
         source,
         ...(assigneeId ? { assigneeId } : {}),
+        ...(attachment ? { attachment } : {}),
+        kind: report ? 'report' : 'question',
       });
 
       router.push(`/questions/${encodeURIComponent(result.id)}`);
@@ -156,6 +166,7 @@ export function QuestionComposer({
                 '질문을 배정할 운영자'}
               <br />
               공개 내용: 위 발췌와 질문 제목·내용
+              {attachmentText ? ', 아래에서 확인한 AI 결과' : ''}
               <br />
               공개되지 않는 내용: 전체 비공개 자료, 내 메모, 답안과 학습 기록
             </p>
@@ -168,6 +179,13 @@ export function QuestionComposer({
               공개할 발췌와 받는 사람을 확인했어요.
             </label>
           </>
+        )}
+        {attachmentText && (
+          <div className={styles.preview}>
+            <h3>함께 공유할 선택 결과</h3>
+            <p className={styles.prose}>{attachmentText}</p>
+            <p className={styles.meta}>전체 비공개 대화는 공유되지 않습니다.</p>
+          </div>
         )}
         {error && (
           <p

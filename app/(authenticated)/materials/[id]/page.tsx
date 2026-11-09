@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { requireSession } from '../../requireSession';
 import { getMaterial } from '@/domains/materials/api/materials';
+import { sourceInputSchema } from '@/domains/materials/model/source';
 import { ApiError } from '@/lib/api/request';
 import { PdfStudy } from './_components/PdfStudy';
 
@@ -10,7 +11,12 @@ export default async function MaterialPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    quote?: string;
+    rect?: string;
+    version?: string;
+  }>;
 }) {
   const { transport } = await requireSession();
   const [{ id }, search] = await Promise.all([params, searchParams]);
@@ -29,9 +35,32 @@ export default async function MaterialPage({
       ? requested
       : material.currentPage;
 
+  let rects: unknown[] = [];
+
+  try {
+    if (search.rect) rects = [JSON.parse(search.rect)];
+  } catch {
+    rects = [];
+  }
+
+  const selection = sourceInputSchema.safeParse({
+    kind: 'pdf',
+    materialId: material.id,
+    page,
+    quote: search.quote,
+    version: Number(search.version ?? 1),
+    rects,
+  });
+
   return (
     <PdfStudy
-      key={material.id}
+      key={`${material.id}:${page}:${search.quote ?? ''}`}
+      selection={
+        selection.success &&
+        (selection.data.version ?? 1) === (material.version ?? 1)
+          ? selection.data
+          : undefined
+      }
       initial={{ ...material, currentPage: page }}
     />
   );

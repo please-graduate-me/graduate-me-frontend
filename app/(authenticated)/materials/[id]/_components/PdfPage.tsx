@@ -11,15 +11,32 @@ export function PdfPage({
   scale,
   interactive = false,
   onSelection,
+  highlights = [],
+  onRendered,
 }: {
   document: PDFDocumentProxy;
   number: number;
   scale: number;
   interactive?: boolean;
-  onSelection?: (quote: string) => void;
+  onSelection?: (
+    quote: string,
+    rects: { x: number; y: number; width: number; height: number }[]
+  ) => void;
+  onRendered?: () => void;
+  highlights?: {
+    id: string;
+    rects: { x: number; y: number; width: number; height: number }[];
+    color: 'yellow' | 'blue' | 'green';
+  }[];
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const layer = useRef<HTMLDivElement>(null);
+  const onRenderedRef = useRef(onRendered);
+
+  useEffect(() => {
+    onRenderedRef.current = onRendered;
+  }, [onRendered]);
+
   const [error, setError] = useState('');
   const [size, setSize] = useState({ width: 0, height: 0 });
 
@@ -78,7 +95,10 @@ export function PdfPage({
         await text.render();
       }
 
-      if (!disposed) setError('');
+      if (!disposed) {
+        setError('');
+        onRenderedRef.current?.();
+      }
     }
 
     void draw().catch((error) => {
@@ -108,7 +128,19 @@ export function PdfPage({
 
     const quote = selection.toString().replace(/\s+/g, ' ').trim();
 
-    if (quote) onSelection?.(quote.slice(0, 5000));
+    const bounds = layer.current.getBoundingClientRect();
+
+    const rects = Array.from(selection.getRangeAt(0).getClientRects())
+      .filter((rect) => rect.width > 0 && rect.height > 0)
+      .slice(0, 200)
+      .map((rect) => ({
+        x: Math.max(0, Math.min(1, (rect.left - bounds.left) / bounds.width)),
+        y: Math.max(0, Math.min(1, (rect.top - bounds.top) / bounds.height)),
+        width: Math.max(0, Math.min(1, rect.width / bounds.width)),
+        height: Math.max(0, Math.min(1, rect.height / bounds.height)),
+      }));
+
+    if (quote) onSelection?.(quote.slice(0, 5000), rects);
   }
 
   return (
@@ -127,6 +159,25 @@ export function PdfPage({
         onPointerUp={selected}
         onKeyUp={selected}
       />
+      <div
+        className={styles.highlights}
+        aria-hidden='true'>
+        {highlights.flatMap((item) =>
+          item.rects.map((rect, index) => (
+            <span
+              key={item.id + ':' + index}
+              className={styles.highlight}
+              data-color={item.color}
+              style={{
+                left: rect.x * 100 + '%',
+                top: rect.y * 100 + '%',
+                width: rect.width * 100 + '%',
+                height: rect.height * 100 + '%',
+              }}
+            />
+          ))
+        )}
+      </div>
       {error && (
         <p
           className={styles.error}

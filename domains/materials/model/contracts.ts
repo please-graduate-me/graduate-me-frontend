@@ -14,7 +14,7 @@ export const materialSummarySchema = z.object({
   updatedAt: z.string(),
 });
 
-/** 미지원 AI 기능을 준비 완료로 오해하지 않도록 응답에 포함한다. */
+/** 원본 준비와 AI 기능의 사용 가능 상태를 별도로 검증한다. */
 export const materialSchema = materialSummarySchema.extend({
   pages: z.array(z.string()),
   memo: z.string(),

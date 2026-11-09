@@ -1,6 +1,25 @@
 import { globalStyle, style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
+/** 저장된 영역은 페이지 비율 좌표로 확대 배율과 무관하게 복원한다. */
+export const highlights = style({
+  position: 'absolute',
+  inset: 0,
+  pointerEvents: 'none',
+  zIndex: 1,
+});
+
+/** 강조 색은 원문을 가리지 않는 반투명 오버레이로 표시한다. */
+export const highlight = style({
+  position: 'absolute',
+  background: '#ffe16966',
+  mixBlendMode: 'multiply',
+  selectors: {
+    '&[data-color="blue"]': { background: '#8bbcff66' },
+    '&[data-color="green"]': { background: '#9bdab466' },
+  },
+});
+
 /** 원본 PDF 캔버스와 텍스트 층의 좌표 기준을 일치시킨다. */
 export const page = style({
   position: 'relative',

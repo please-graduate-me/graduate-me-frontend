@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from 'pdfjs-dist';
 import Link from 'next/link';
+import type { SourceInput } from '@/domains/materials/model/source';
 import type { Material } from '@/domains/materials/model/contracts';
 import { loadPdfEngine } from '@/domains/materials/lib/pdf';
 import { updateMaterial } from '@/domains/materials/api/materials';
@@ -10,6 +11,10 @@ import { Icon } from '@/components/ui/primitives/Icon';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { TextArea } from '@/components/ui/primitives/TextArea';
 import { EmptyState } from '@/components/ui/composites/EmptyState';
+import { listAnnotations } from '@/domains/materials/api/records';
+import type { Annotation } from '@/domains/materials/model/records';
+import { MaterialPreparation } from './MaterialPreparation';
+import { AnnotationList } from '../../../../_components/AnnotationList';
 import { SourceActions } from '../../../../_components/SourceActions';
 import { PdfPage } from './PdfPage';
 import { PdfToolbar } from './PdfToolbar';
@@ -17,7 +22,13 @@ import { PdfThumbnail } from './PdfThumbnail';
 import * as styles from './PdfStudy.css';
 
 /** 실제 PDF 선택과 개인 메모를 원문 질문·표현 저장에 연결한다. */
-export function PdfStudy({ initial }: { initial: Material }) {
+export function PdfStudy({
+  initial,
+  selection,
+}: {
+  initial: Material;
+  selection?: SourceInput;
+}) {
   const [document, setDocument] = useState<PDFDocumentProxy | null>(null);
   const [page, setPage] = useState(initial.currentPage);
   const [zoom, setZoom] = useState<number | 'width' | 'page'>('width');
@@ -26,13 +37,42 @@ export function PdfStudy({ initial }: { initial: Material }) {
   const [memoOpen, setMemoOpen] = useState(false);
   const [memo, setMemo] = useState(initial.memo);
   const [savedMemo, setSavedMemo] = useState(initial.memo);
-  const [quote, setQuote] = useState('');
+  const [quote, setQuote] = useState(selection?.quote ?? '');
+
+  const [rects, setRects] = useState<
+    { x: number; y: number; width: number; height: number }[]
+  >(selection?.rects ?? []);
+
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+
+  const [pageImage, setPageImage] = useState<{
+    base64: string;
+    mimeType: 'image/jpeg';
+  }>();
+
   const [saveStatus, setSaveStatus] = useState('저장됨');
   const [savingMemo, setSavingMemo] = useState(false);
   const [error, setError] = useState('');
   const [bounds, setBounds] = useState({ width: 800, height: 850 });
   const [pageSize, setPageSize] = useState({ width: 612, height: 792 });
   const scroll = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    void listAnnotations({ materialId: initial.id })
+      .then((result) => {
+        if (active) setAnnotations(result.items);
+      })
+      .catch((error) => {
+        if (active) setError(error.message);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [initial.id]);
+
   const saveQueue = useRef<Promise<unknown>>(Promise.resolve());
   const pageVersion = useRef(0);
 
@@ -128,6 +168,8 @@ export function PdfStudy({ initial }: { initial: Material }) {
 
       setPage(next);
       setQuote('');
+      setRects([]);
+      setPageImage(undefined);
       setSaveStatus('학습 위치 저장 중…');
       setError('');
 
@@ -194,7 +236,14 @@ export function PdfStudy({ initial }: { initial: Material }) {
     (_, i) => thumbStart + i
   );
 
-  const source = { kind: 'pdf' as const, materialId: initial.id, page, quote };
+  const source = {
+    kind: 'pdf' as const,
+    materialId: initial.id,
+    page,
+    quote,
+    rects,
+    version: initial.version ?? 1,
+  };
 
   return (
     <div className={styles.root}>
@@ -291,8 +340,48 @@ export function PdfStudy({ initial }: { initial: Material }) {
               number={page}
               scale={scale}
               interactive={selectionMode}
-              onSelection={(selected) => {
+              onRendered={() => {
+                const target = rects[0];
+
+                if (target && scroll.current)
+                  scroll.current.scrollTo({
+                    top: Math.max(0, target.y * pageSize.height * scale - 120),
+                    behavior: 'smooth',
+                  });
+              }}
+              highlights={[
+                ...(quote && rects.length
+                  ? [{ id: 'selection', rects, color: 'blue' as const }]
+                  : []),
+                ...annotations
+                  .filter(
+                    (item) =>
+                      item.source.kind === 'pdf' &&
+                      item.source.page === page &&
+                      (item.source.version ?? 1) === (initial.version ?? 1)
+                  )
+                  .map((item) => ({
+                    id: item.id,
+                    rects: item.source.rects ?? [],
+                    color: item.color,
+                  })),
+              ]}
+              onSelection={(selected, selectedRects) => {
                 setQuote(selected);
+                setRects(selectedRects);
+                const canvas = scroll.current?.querySelector('canvas');
+
+                if (canvas) {
+                  try {
+                    setPageImage({
+                      base64: canvas.toDataURL('image/jpeg', 0.8).split(',')[1],
+                      mimeType: 'image/jpeg',
+                    });
+                  } catch {
+                    setPageImage(undefined);
+                  }
+                }
+
                 setMemoOpen(false);
               }}
             />
@@ -309,6 +398,12 @@ export function PdfStudy({ initial }: { initial: Material }) {
         <aside
           className={styles.sidebar}
           aria-label={memoOpen ? '개인 메모' : '선택한 구절 학습'}>
+          <MaterialPreparation
+            id={initial.id}
+            page={page}
+            total={initial.pageCount}
+            version={initial.version ?? 1}
+          />
           {memoOpen ? (
             <>
               <div className={styles.panelHeading}>
@@ -364,17 +459,14 @@ export function PdfStudy({ initial }: { initial: Material }) {
                       key={`${page}:${quote}`}
                       source={source}
                       language={initial.language}
+                      image={pageImage}
+                      onAnnotated={(value) =>
+                        setAnnotations((previous) => [
+                          value,
+                          ...previous.filter((item) => item.id !== value.id),
+                        ])
+                      }
                     />
-                  </div>
-                  <div className={styles.capability}>
-                    <Icon
-                      name='circle-help'
-                      size={18}
-                    />
-                    <p>
-                      AI 설명과 번역은 아직 연결되지 않았어요. 원문과 나의 메모,
-                      도우미 답변을 활용할 수 있습니다.
-                    </p>
                   </div>
                 </>
               ) : (
@@ -390,6 +482,21 @@ export function PdfStudy({ initial }: { initial: Material }) {
               )}
             </>
           )}
+          <AnnotationList
+            items={annotations.filter(
+              (item) => item.source.kind === 'pdf' && item.source.page === page
+            )}
+            onChange={(value) =>
+              setAnnotations((previous) =>
+                previous.map((item) => (item.id === value.id ? value : item))
+              )
+            }
+            onDelete={(id) =>
+              setAnnotations((previous) =>
+                previous.filter((item) => item.id !== id)
+              )
+            }
+          />
         </aside>
       </div>
     </div>
