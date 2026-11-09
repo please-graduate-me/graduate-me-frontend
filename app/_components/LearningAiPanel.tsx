@@ -1,5 +1,7 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from './SessionRecovery';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { SourceInput } from '@/domains/materials/model/source';
 import type { Conversation, Explanation } from '@/domains/ai/model/contracts';
@@ -52,7 +54,10 @@ export function LearningAiPanel({
   const [selectedConversation, setSelectedConversation] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const explanationRequest = useRef<{ key: string; id: string } | null>(null);
+  const exerciseRequest = useRef<{ key: string; id: string } | null>(null);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [dialog, setDialog] = useState<'expression' | 'question' | null>(null);
   const latest = items[0];
 
@@ -100,21 +105,31 @@ export function LearningAiPanel({
     if (busy) return;
     setBusy(true);
     setError('');
+    setSessionExpired(false);
 
     try {
+      const key = JSON.stringify([source, mode, explanationLanguage, useImage]);
+
+      if (explanationRequest.current?.key !== key)
+        explanationRequest.current = { key, id: crypto.randomUUID() };
+
       const value = await generateExplanation({
-        requestId: crypto.randomUUID(),
+        requestId: explanationRequest.current.id,
         source,
         mode,
         explanationLanguage,
         ...(useImage && image ? { image } : {}),
       });
 
+      explanationRequest.current = null;
+
       setItems((previous) => [
         value,
         ...previous.filter((item) => item.id !== value.id),
       ]);
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -125,6 +140,7 @@ export function LearningAiPanel({
     if (busy) return;
     setBusy(true);
     setError('');
+    setSessionExpired(false);
 
     try {
       const value = await openConversation(source);
@@ -136,6 +152,8 @@ export function LearningAiPanel({
 
       setSelectedConversation(value.id);
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -146,10 +164,16 @@ export function LearningAiPanel({
     if (busy) return;
     setBusy(true);
     setError('');
+    setSessionExpired(false);
 
     try {
+      const key = JSON.stringify([source, language, exerciseType, latest?.id]);
+
+      if (exerciseRequest.current?.key !== key)
+        exerciseRequest.current = { key, id: crypto.randomUUID() };
+
       const value = await generateExercises({
-        requestId: crypto.randomUUID(),
+        requestId: exerciseRequest.current.id,
         source,
         language,
         type: exerciseType,
@@ -157,11 +181,14 @@ export function LearningAiPanel({
         ...(latest ? { explanationId: latest.id } : {}),
       });
 
+      exerciseRequest.current = null;
       if (value.items[0])
         router.push(
           `/practice?exerciseId=${encodeURIComponent(value.items[0].id)}`
         );
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -172,6 +199,7 @@ export function LearningAiPanel({
     <section
       className={styles.stack}
       aria-label='원문 AI 학습'>
+      {sessionExpired && <SessionRecovery />}
       <div className={styles.row}>
         <Badge tone='brand'>원문 기반 AI 학습</Badge>
         <span className={styles.meta}>자료 v{source.version ?? 1}</span>
@@ -236,6 +264,7 @@ export function LearningAiPanel({
           onClick={() => {
             setLoading(true);
             setError('');
+            setSessionExpired(false);
             setReload((value) => value + 1);
           }}>
           저장 결과 새로 조회
@@ -246,6 +275,28 @@ export function LearningAiPanel({
           role='alert'
           className={styles.error}>
           {error}
+          <span className={styles.row}>
+            <Button
+              size='small'
+              variant='ghost'
+              disabled={busy}
+              onClick={() => {
+                explanationRequest.current = null;
+                void explain();
+              }}>
+              선택 원문 설명 새로 요청
+            </Button>
+            <Button
+              size='small'
+              variant='ghost'
+              disabled={busy}
+              onClick={() => {
+                exerciseRequest.current = null;
+                void practice();
+              }}>
+              적용 문제 새로 요청
+            </Button>
+          </span>
         </p>
       )}
       {latest && (

@@ -1,4 +1,6 @@
 'use client';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from './SessionRecovery';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { SourceInput } from '@/domains/materials/model/source';
@@ -45,6 +47,7 @@ export function QuestionComposer({
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [recipientError, setRecipientError] = useState('');
   const materialId = source.kind === 'pdf' ? source.materialId : source.videoId;
 
@@ -70,6 +73,7 @@ export function QuestionComposer({
     if (!confirmed) return;
     setBusy(true);
     setError('');
+    setSessionExpired(false);
 
     try {
       const result = await createQuestion({
@@ -85,6 +89,8 @@ export function QuestionComposer({
       router.refresh();
       onClose();
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -102,6 +108,7 @@ export function QuestionComposer({
       <form
         onSubmit={(event) => void submit(event)}
         className={styles.stack}>
+        {sessionExpired && <SessionRecovery />}
         <div className={styles.preview}>
           <Badge tone='brand'>
             {source.kind === 'pdf'

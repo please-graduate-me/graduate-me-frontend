@@ -1,5 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from '../../../_components/SessionRecovery';
+import { useRef, useState } from 'react';
 import type { Exercise } from '@/domains/ai/model/contracts';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import { generateExercises, listExercises } from '@/domains/ai/api/learning';
@@ -47,7 +49,9 @@ export function GeneratedPractice({
   >('all');
 
   const [busy, setBusy] = useState(false);
+  const request = useRef<{ key: string; id: string } | null>(null);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const eligible = expressions.filter(
     (item) => item.source.language === language && item.reviewIncluded
@@ -70,10 +74,16 @@ export function GeneratedPractice({
     if (!expressionIds.length || busy) return;
     setBusy(true);
     setError('');
+    setSessionExpired(false);
 
     try {
+      const key = JSON.stringify([expressionIds, language, type, count]);
+
+      if (request.current?.key !== key)
+        request.current = { key, id: crypto.randomUUID() };
+
       const result = await generateExercises({
-        requestId: crypto.randomUUID(),
+        requestId: request.current.id,
         expressionIds,
         language,
         type,
@@ -87,9 +97,12 @@ export function GeneratedPractice({
         ),
       ]);
 
+      request.current = null;
       setFilter('all');
       setSelected(result.items[0]?.id || '');
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -99,10 +112,13 @@ export function GeneratedPractice({
   async function refresh() {
     setBusy(true);
     setError('');
+    setSessionExpired(false);
 
     try {
       setItems((await listExercises()).items);
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -111,6 +127,7 @@ export function GeneratedPractice({
 
   return (
     <div className={styles.stack}>
+      {sessionExpired && <SessionRecovery />}
       <div className={styles.heading}>
         <div>
           <h1>적용 연습 · 복습</h1>
@@ -210,6 +227,16 @@ export function GeneratedPractice({
             role='alert'
             className={styles.error}>
             {error}
+            <Button
+              size='small'
+              variant='ghost'
+              disabled={busy || !expressionIds.length}
+              onClick={() => {
+                request.current = null;
+                void generate();
+              }}>
+              새 문제로 다시 요청
+            </Button>
           </p>
         )}
       </section>

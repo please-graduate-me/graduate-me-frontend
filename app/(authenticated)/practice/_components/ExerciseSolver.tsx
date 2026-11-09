@@ -13,6 +13,8 @@ import { sourceLabel } from '@/domains/learning/lib/format';
 import { Button } from '@/components/ui/primitives/Button';
 import { TextArea } from '@/components/ui/primitives/TextArea';
 import { Badge } from '@/components/ui/primitives/Badge';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { QuestionComposer } from '../../../_components/QuestionComposer';
 import { ExerciseAttempts } from './ExerciseAttempts';
 import * as styles from '@/lib/styles/workspace.css';
@@ -41,6 +43,7 @@ export function ExerciseSolver({
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [report, setReport] = useState(false);
   const [reload, setReload] = useState(0);
   const [saveStatus, setSaveStatus] = useState('저장된 답안 복원');
@@ -51,7 +54,10 @@ export function ExerciseSolver({
   const request = useRef<{ answer: string; id: string } | null>(null);
 
   const disabled =
-    busy || exercise.status === 'suspended' || exercise.state.excluded;
+    busy ||
+    exercise.status === 'suspended' ||
+    exercise.needsReview ||
+    exercise.state.excluded;
 
   async function flushDraft(value: string) {
     clearTimeout(timer.current);
@@ -123,6 +129,7 @@ export function ExerciseSolver({
         answer,
       });
 
+      setSessionExpired(false);
       setResult(value);
       request.current = null;
       setReload((value) => value + 1);
@@ -138,6 +145,8 @@ export function ExerciseSolver({
         },
       });
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -164,6 +173,8 @@ export function ExerciseSolver({
         onChange({ ...exercise, state: value.state });
       }
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -175,7 +186,8 @@ export function ExerciseSolver({
     setError('');
 
     try {
-      await flushDraft(answer);
+      if (exercise.status !== 'suspended' && !exercise.needsReview)
+        await flushDraft(answer);
 
       onChange(
         await updateExerciseState(exercise.id, {
@@ -184,6 +196,8 @@ export function ExerciseSolver({
         })
       );
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -192,6 +206,7 @@ export function ExerciseSolver({
 
   return (
     <section className={styles.panel}>
+      {sessionExpired && <SessionRecovery />}
       <div className={styles.row}>
         <Badge tone='brand'>
           AI 생성 ·{' '}
@@ -222,6 +237,12 @@ export function ExerciseSolver({
       {exercise.status === 'suspended' && (
         <p className={styles.notice}>
           검토 중으로 새 풀이가 중단된 문제입니다. 과거 제출 기록은 유지됩니다.
+        </p>
+      )}
+      {exercise.needsReview && (
+        <p className={styles.notice}>
+          근거가 변경되어 확인이 필요한 문제입니다. 새 풀이는 검토 후 진행하고,
+          기존 답안과 당시 원문은 아래 기록에서 확인하세요.
         </p>
       )}
       {exercise.state.excluded && (

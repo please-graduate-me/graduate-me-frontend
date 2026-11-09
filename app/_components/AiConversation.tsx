@@ -1,5 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from './SessionRecovery';
+import Link from 'next/link';
+import { materialPaths } from '@/domains/materials/config/paths';
+import { useEffect, useRef, useState } from 'react';
 import type { Conversation } from '@/domains/ai/model/contracts';
 import { getConversation, sendAiMessage } from '@/domains/ai/api/learning';
 import { Button } from '@/components/ui/primitives/Button';
@@ -20,6 +24,8 @@ export function AiConversation({
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const request = useRef<{ text: string; id: string } | null>(null);
   const [sharedMessage, setSharedMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -43,17 +49,24 @@ export function AiConversation({
     if (!text.trim() || busy) return;
     setBusy(true);
     setError('');
+    setSessionExpired(false);
 
     try {
+      if (request.current?.text !== text.trim())
+        request.current = { text: text.trim(), id: crypto.randomUUID() };
+
       setConversation(
         await sendAiMessage(conversation.id, {
-          requestId: crypto.randomUUID(),
+          requestId: request.current.id,
           text: text.trim(),
         })
       );
 
+      request.current = null;
       setText('');
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -62,6 +75,7 @@ export function AiConversation({
 
   return (
     <div className={styles.stack}>
+      {sessionExpired && <SessionRecovery />}
       <p className={styles.meta}>
         나만 보는 대화 · 현재 발췌와 자료 버전에 연결됩니다. 전사문 기반 답변은
         영상 화면을 본 결과와 다릅니다.
@@ -93,8 +107,24 @@ export function AiConversation({
                 key={index}
                 className={styles.quote}>
                 {cite.quote}
+                <p>
+                  <Link
+                    href={materialPaths.source({
+                      ...conversation.source,
+                      quote: cite.quote,
+                      rects: undefined,
+                    })}
+                    className={styles.link}>
+                    근거 위치로 이동 ↗
+                  </Link>
+                </p>
               </blockquote>
             ))}
+            {message.contextDescription && (
+              <p className={styles.meta}>
+                실제로 제공한 문맥: {message.contextDescription}
+              </p>
+            )}
             {message.uncertainty && (
               <p className={styles.notice}>
                 해석·추정 및 한계: {message.uncertainty}

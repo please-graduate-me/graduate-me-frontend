@@ -1,4 +1,6 @@
 'use client';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from './SessionRecovery';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { SourceInput } from '@/domains/materials/model/source';
@@ -35,11 +37,13 @@ export function ExpressionComposer({
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     setError('');
+    setSessionExpired(false);
 
     try {
       await createExpression({
@@ -59,6 +63,8 @@ export function ExpressionComposer({
       router.refresh();
       onClose();
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -76,6 +82,7 @@ export function ExpressionComposer({
       <form
         onSubmit={(event) => void submit(event)}
         className={styles.stack}>
+        {sessionExpired && <SessionRecovery />}
         <blockquote className={styles.quote}>{source.quote}</blockquote>
         <label className={styles.field}>
           저장 종류

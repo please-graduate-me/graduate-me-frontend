@@ -19,6 +19,8 @@ export const explanationSchema = z.object({
   ...artifact,
   kind: z.literal('explanation'),
   payload: z.object({
+    contextDescription: z.string().optional(),
+    evidenceType: z.enum(['page_image_and_text', 'text_only']).optional(),
     translation: z.string(),
     meaning: z.string(),
     structure: z.string(),
@@ -43,6 +45,8 @@ export const conversationSchema = z.object({
       model: z.string().optional(),
       citations: z.array(z.object({ quote: z.string() })).optional(),
       uncertainty: z.string().optional(),
+      contextDescription: z.string().optional(),
+      evidenceType: z.enum(['page_image_and_text', 'text_only']).optional(),
     })
   ),
   createdAt: z.string(),
