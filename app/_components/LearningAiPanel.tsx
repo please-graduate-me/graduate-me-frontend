@@ -72,7 +72,10 @@ export function LearningAiPanel({
     const same = (value: { source: SourceInput }) =>
       value.source.quote.normalize('NFKC').replace(/\s+/g, '') ===
         selected.quote.normalize('NFKC').replace(/\s+/g, '') &&
-      (value.source.version ?? 1) === (selected.version ?? 1);
+      (value.source.version ?? 1) === (selected.version ?? 1) &&
+      (value.source.kind !== 'pdf' ||
+        selected.kind !== 'pdf' ||
+        (value.source.ocrId ?? null) === (selected.ocrId ?? null));
 
     void Promise.all([listExplanations(selected), listConversations(selected)])
       .then(([explanations, chats]) => {

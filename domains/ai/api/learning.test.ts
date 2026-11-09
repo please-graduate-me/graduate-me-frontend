@@ -102,3 +102,43 @@ describe('저장된 AI 학습의 요청 경계', () => {
     expect(item.payload).not.toHaveProperty('hint');
   });
 });
+
+describe('AI 저장 결과의 원문 버전 분리', () => {
+  it('같은 페이지의 native와 OCR 결과를 별도 출처로 조회한다', async () => {
+    const transport = vi.fn(async () => Response.json({ items: [] }));
+
+    vi.stubGlobal('fetch', transport);
+
+    const source = {
+      kind: 'pdf' as const,
+      materialId: '11111111-1111-4111-8111-111111111111',
+      page: 2,
+      version: 3,
+      quote: 'sample',
+    };
+
+    await listExplanations(source);
+
+    await listConversations({
+      ...source,
+      ocrId: '22222222-2222-4222-8222-222222222222',
+    });
+
+    const first = new URL(
+      String((transport.mock.calls[0] as unknown[])[0]),
+      'https://graduate-me.test'
+    );
+
+    const second = new URL(
+      String((transport.mock.calls[1] as unknown[])[0]),
+      'https://graduate-me.test'
+    );
+
+    expect(first.searchParams.get('version')).toBe('3');
+    expect(first.searchParams.get('ocrId')).toBe('none');
+
+    expect(second.searchParams.get('ocrId')).toBe(
+      '22222222-2222-4222-8222-222222222222'
+    );
+  });
+});

@@ -7,6 +7,7 @@ const selectionQuery = (source: SourceInput) => {
     version: String(source.version ?? 1),
   });
 
+  if (source.kind === 'pdf' && source.ocrId) query.set('ocrId', source.ocrId);
   if (source.rects?.[0]) query.set('rect', JSON.stringify(source.rects[0]));
 
   return query.toString();

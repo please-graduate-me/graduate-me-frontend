@@ -26,6 +26,7 @@ describe('원문 출처 복귀', () => {
       materialPaths.source({
         kind: 'pdf',
         materialId: 'pdf-1',
+        ocrId: '11111111-1111-4111-8111-111111111111',
         page: 4,
         quote: '문법 개념',
         version: 3,
@@ -35,6 +36,11 @@ describe('원문 출처 복귀', () => {
     );
 
     expect(url.searchParams.get('page')).toBe('4');
+
+    expect(url.searchParams.get('ocrId')).toBe(
+      '11111111-1111-4111-8111-111111111111'
+    );
+
     expect(url.searchParams.get('version')).toBe('3');
     expect(JSON.parse(url.searchParams.get('rect')!)).toEqual(rect);
   });

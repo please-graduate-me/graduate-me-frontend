@@ -16,11 +16,14 @@ const sourceQuery = (source: SourceInput) =>
           kind: source.kind,
           materialId: source.materialId,
           page: String(source.page),
+          version: String(source.version ?? 1),
+          ocrId: source.ocrId ?? 'none',
         }
       : {
           kind: source.kind,
           videoId: source.videoId,
           segmentId: source.segmentId,
+          version: String(source.version ?? 1),
         }
   ).toString();
 

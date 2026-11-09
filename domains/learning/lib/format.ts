@@ -12,5 +12,5 @@ export const formatDate = (value: string) =>
 /** 선택한 자료 위치를 원문과 같은 기준으로 표시한다. */
 export const sourceLabel = (source: SourceInput & { start?: number }) =>
   source.kind === 'pdf'
-    ? `PDF · ${source.page}페이지`
+    ? `PDF · ${source.page}페이지${source.ocrId ? ' · OCR' : ''}`
     : `영상 · ${Math.floor((source.start ?? 0) / 60)}:${String(Math.floor((source.start ?? 0) % 60)).padStart(2, '0')}`;

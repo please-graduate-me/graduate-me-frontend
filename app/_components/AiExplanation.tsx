@@ -39,7 +39,9 @@ export function AiExplanation({ value }: { value: Explanation }) {
         <p className={styles.meta}>
           {data.evidenceType === 'page_image_and_text'
             ? 'PDF 페이지 이미지와 텍스트를 확인한 설명입니다.'
-            : '선택 원문과 텍스트 문맥에 근거한 설명입니다. 영상 화면은 분석하지 않았습니다.'}
+            : value.source.kind === 'pdf' && value.source.ocrId
+              ? 'OCR로 인식한 텍스트와 주변 문맥에 근거한 설명입니다. 원본과 대조해 확인해 주세요.'
+              : '선택 원문과 텍스트 문맥에 근거한 설명입니다. 영상 화면은 분석하지 않았습니다.'}
         </p>
       )}
       <Link

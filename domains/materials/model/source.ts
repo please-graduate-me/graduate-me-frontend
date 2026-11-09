@@ -20,6 +20,7 @@ export const sourceInputSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('pdf'),
     materialId: z.string().uuid(),
+    ocrId: z.string().uuid().optional(),
     page: z.number().int().min(1).max(200),
     quote: z.string().trim().min(1).max(5000),
     ...location,
