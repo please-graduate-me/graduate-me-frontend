@@ -35,7 +35,7 @@ export const vars = createGlobalTheme(':root', {
   },
   font: {
     body: '"DM Sans", "Noto Sans KR", sans-serif',
-    document: 'Georgia, "Noto Sans KR", serif',
+    document: '"Noto Serif", "Noto Sans KR", serif',
   },
   fontSize: {
     caption: '12px',

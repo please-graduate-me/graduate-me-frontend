@@ -1,31 +1,27 @@
 import { globalStyle, style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 확정 시안의 본문 크기를 목록 화면에 한정한다. */
-export const root = style({ fontSize: 15 });
+/** 학습 홈의 본문 크기를 다른 학습 화면과 분리한다. */
+export const root = style({ fontSize: vars.fontSize.small });
 
-/** 화면 제목과 계정 행동을 한 행에서 구별한다. */
+/** 실제 계정 인사와 자료 추가 행동을 한 행에 정렬한다. */
 export const intro = style({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: 16,
-  marginBottom: 32,
-  '@media': { '(max-width: 800px)': { marginBottom: 24 } },
+  gap: 24,
+  marginBottom: 28,
 });
 
-globalStyle(`.${intro} h1`, {
-  fontSize: 36,
-  lineHeight: 1.3,
-  letterSpacing: '-1px',
+globalStyle('.' + intro + ' h1', {
+  fontSize: vars.fontSize.heading2,
+  lineHeight: '34px',
+  letterSpacing: '-0.5px',
   margin: 0,
-  '@media': { '(max-width: 800px)': { fontSize: 28 } },
 });
 
-globalStyle(`.${intro} p`, { color: vars.color.muted, margin: '8px 0 0' });
-
-/** 로그아웃이 좁은 화면에서 줄바꿈되지 않게 한다. */
-export const auth = style({
-  flexShrink: 0,
-  '@media': { '(max-width: 800px)': { fontSize: 12 } },
+globalStyle('.' + intro + ' p', {
+  color: vars.color.muted,
+  fontSize: vars.fontSize.caption,
+  margin: '0 0 4px',
 });

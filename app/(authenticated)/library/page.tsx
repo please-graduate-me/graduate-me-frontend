@@ -1,25 +1,34 @@
 import * as styles from './page.css';
 import { requireSession } from '../requireSession';
 import { Dashboard } from './_components/Dashboard';
-import { AuthButton } from '../../_components/AuthButton';
+import { Icon } from '@/components/ui/primitives/Icon';
+import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
 
-/** 개인 영상 목록은 로그인 확인을 마친 뒤에만 렌더링한다. */
+/** 로그인한 계정의 현재 날짜와 개인 학습 홈을 표시한다. */
 export default async function LibraryPage() {
   const { session } = await requireSession();
+
+  const today = new Intl.DateTimeFormat('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+    timeZone: 'Asia/Seoul',
+  }).format(new Date());
 
   return (
     <div className={styles.root}>
       <div className={styles.intro}>
         <div>
-          <h1>내 영상</h1>
-          <p>
-            {session.user.name ?? '학습자'} 님, 저장한 구절부터 이어서
-            들어보세요.
-          </p>
+          <p>{today}</p>
+          <h1>{session.user.name ?? '학습자'}님, 오늘은 어디서 이어갈까요?</h1>
         </div>
-        <div className={styles.auth}>
-          <AuthButton action='signout' />
-        </div>
+        <ButtonLink href='/materials?add=1'>
+          <Icon
+            name='plus'
+            size={16}
+          />
+          자료 추가
+        </ButtonLink>
       </div>
       <Dashboard />
     </div>

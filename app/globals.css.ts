@@ -15,6 +15,13 @@ globalFontFace('Noto Sans KR', {
   fontDisplay: 'swap',
 });
 
+globalFontFace('Noto Serif', {
+  src: 'url(/fonts/noto-serif.ttf) format("truetype")',
+  fontStyle: 'normal',
+  fontWeight: '400',
+  fontDisplay: 'swap',
+});
+
 globalStyle('*', { boxSizing: 'border-box' });
 
 globalStyle('body', {

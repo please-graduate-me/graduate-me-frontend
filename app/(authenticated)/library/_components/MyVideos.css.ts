@@ -1,173 +1,218 @@
-import { style, styleVariants, globalStyle } from '@vanilla-extract/css';
+import { style, globalStyle } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 목록 내부 여백과 외부 그리드 간격의 중복을 막는다. */
-export const root = style({ margin: 0 });
+/** 자료 영역의 제목과 다음 학습 카드 사이를 일정하게 유지한다. */
+export const root = style({ margin: '0 0 26px' });
 
-/** 검색을 넓게 두고 분류와 정렬을 나란히 제공한다. */
-export const controls = style({
+globalStyle('.' + root + ' h2', {
+  fontSize: vars.fontSize.body,
+  lineHeight: vars.lineHeight.body,
+  fontWeight: 500,
+  margin: '0 0 22px',
+});
+
+/** 최근 자료 카드를 같은 크기의 두 열로 배치한다. */
+export const resume = style({
   display: 'grid',
   gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-  gap: 12,
-  marginBottom: 24,
+  gap: 18,
 });
 
-globalStyle(`.${controls} label`, {
-  fontSize: 13,
-  fontWeight: 600,
-  minWidth: 0,
+/** 처음 시작하는 학습자에게도 내용 있는 빈 상태를 제공한다. */
+export const empty = style({
+  border: '1px solid ' + vars.color.line,
+  borderRadius: vars.radius.panel,
 });
 
-globalStyle(`.${controls} label:first-child`, { gridColumn: '1 / -1' });
-
-globalStyle(`.${controls} input, .${controls} select`, {
-  display: 'block',
-  fontSize: 14,
-  fontWeight: 400,
-  marginTop: 5,
-  width: '100%',
-});
-
-/** 자주 쓰는 표시 조건을 펼쳐 바로 선택하게 한다. */
-export const filters = style({
+/** 목록 제목과 전체 보관함 이동을 같은 줄에 둔다. */
+export const heading = style({
   display: 'flex',
-  flexWrap: 'wrap',
-  gap: 6,
-  marginBottom: 20,
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: 12,
 });
 
-/** 눌린 필터를 색과 접근성 상태로 함께 구별한다. */
-export const filterButton = style({
-  fontSize: 13,
-  padding: '8px 10px',
+globalStyle('.' + heading + ' a', {
+  color: vars.color.muted,
+  fontSize: vars.fontSize.caption,
+  textDecoration: 'none',
+});
+
+/** 자료 종류는 시안의 밑줄 탭으로 바꾼다. */
+export const tabs = style({ display: 'flex', gap: 24, marginBottom: 20 });
+
+/** 선택 상태는 밑줄과 글자색으로 함께 전달한다. */
+export const tab = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  minWidth: 90,
+  minHeight: 44,
+  background: 'transparent',
+  border: 0,
+  borderBottom: '2px solid transparent',
+  padding: '8px 12px',
+  color: vars.color.muted,
+  fontSize: vars.fontSize.small,
+  cursor: 'pointer',
   selectors: {
     '&[aria-pressed="true"]': {
-      background: '#e9effe',
-      color: vars.color.accent,
-      borderColor: vars.color.inputBorder,
+      borderBottomColor: vars.color.accent,
+      color: vars.color.ink,
     },
+    '&:hover': { color: vars.color.accent },
   },
 });
 
-/** 결과 수와 진도를 보조 정보로 읽게 한다. */
-export const count = style({
-  fontSize: 13,
-  color: vars.color.muted,
-  marginBottom: 12,
-  fontVariantNumeric: 'tabular-nums',
-});
-
-/** 목록 기본 들여쓰기를 제거한다. */
+/** 목록의 기본 들여쓰기를 제거한다. */
 export const list = style({ listStyle: 'none', margin: 0, padding: 0 });
 
-/** 행마다 제목과 행동을 한 묶음으로 구분한다. */
+/** 자료의 종류와 정보, 활동 시각을 읽는 순서대로 정렬한다. */
 export const item = style({
-  borderTop: `1px solid ${vars.color.line}`,
-  padding: '24px 0',
-});
-
-/** 긴 제목도 상태 배지를 밀어내지 않게 한다. */
-export const titleRow = style({
   display: 'flex',
-  gap: 12,
-  alignItems: 'start',
-  justifyContent: 'space-between',
-  '@media': { '(max-width: 800px)': { display: 'block' } },
+  alignItems: 'flex-start',
+  gap: 16,
+  minHeight: 108,
+  padding: '20px 0',
+  borderBottom: '1px solid ' + vars.color.line,
 });
 
-globalStyle(`.${titleRow} h3`, {
-  fontSize: 18,
-  lineHeight: 1.5,
-  margin: '0 0 8px',
+/** PDF와 영상의 문맥을 다른 바탕색으로 구별한다. */
+export const fileType = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flex: 'none',
+  width: 38,
+  height: 44,
+  borderRadius: 6,
+  background: vars.color.document,
+  color: vars.color.muted,
+  selectors: {
+    '&[data-kind="video"]': { background: vars.color.reviewBackground },
+  },
+});
+
+/** 제목이 길어져도 날짜와 관리 동작을 밀어내지 않게 한다. */
+export const information = style({ flex: 1, minWidth: 0 });
+
+globalStyle('.' + information + ' h3', {
+  margin: '0 0 4px',
+  fontSize: vars.fontSize.small,
+  lineHeight: vars.lineHeight.small,
+  fontWeight: 500,
   overflowWrap: 'anywhere',
 });
 
-globalStyle(`.${titleRow} a`, {
+globalStyle('.' + information + ' h3 a', {
   color: vars.color.ink,
   textDecoration: 'none',
 });
 
-globalStyle(`.${titleRow} a:hover`, {
-  color: vars.color.accent,
-  textDecoration: 'underline',
-});
-
-const badge = style({
-  fontSize: 12,
-  padding: '3px 7px',
-  borderRadius: 4,
-  whiteSpace: 'nowrap',
-  '@media': { '(max-width: 800px)': { display: 'inline-block', marginTop: 2 } },
-});
-
-/** 준비와 처리 중, 실패를 글자와 색으로 함께 알린다. */
-export const status = styleVariants({
-  ready: [badge, { background: vars.color.success, color: vars.color.match }],
-  working: [badge, { background: vars.color.notice, color: '#725009' }],
-  failed: [
-    badge,
-    { background: vars.color.errorBackground, color: vars.color.error },
-  ],
-});
-
-/** 분류와 반응 수는 제목의 읽기를 방해하지 않게 한다. */
-export const description = style({
+globalStyle('.' + information + ' p', {
+  fontSize: vars.fontSize.caption,
   color: vars.color.muted,
-  fontSize: 13,
-  margin: '8px 0',
+  margin: '0 0 6px',
 });
 
-/** 진행 위치를 짧은 선으로 표시하고 수치는 별도 텍스트로 제공한다. */
-export const progress = style({
-  height: 4,
-  background: '#e9effe',
-  maxWidth: 220,
-  borderRadius: 4,
-  margin: '12px 0 6px',
+/** 활동 시각은 자료 제목보다 낮은 위계로 읽게 한다. */
+export const updated = style({
+  flex: 'none',
+  maxWidth: 100,
+  color: vars.color.muted,
+  fontSize: vars.fontSize.caption,
+  paddingTop: 2,
 });
 
-globalStyle(`.${progress} span`, {
-  display: 'block',
-  height: 4,
-  background: vars.color.accent,
-  borderRadius: 4,
+/** 자주 쓰지 않는 목록 관리 동작은 더보기 안에 둔다. */
+export const menu = style({ position: 'relative', margin: 0, flex: 'none' });
+
+globalStyle('.' + menu + ' summary', {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 28,
+  height: 28,
+  listStyle: 'none',
+  margin: 0,
+  borderRadius: vars.radius.control,
+  color: vars.color.muted,
 });
 
-/** 목록 행동을 한 묶음으로 유지하면서 줄바꿈을 허용한다. */
-export const actions = style({
+globalStyle('.' + menu + ' summary::-webkit-details-marker', {
+  display: 'none',
+});
+
+/** 메뉴는 실제 관리 버튼을 포함하는 작은 팝오버로 표시한다. */
+export const menuContent = style({
+  position: 'absolute',
+  top: 32,
+  right: 0,
+  zIndex: 5,
+  width: 208,
+  padding: 6,
+  border: '1px solid ' + vars.color.line,
+  borderRadius: vars.radius.control,
+  background: vars.color.surface,
+  boxShadow: vars.shadow.popover,
+});
+
+globalStyle('.' + menuContent + ' button', {
   display: 'flex',
-  flexWrap: 'wrap',
+  alignItems: 'center',
   gap: 8,
-  marginTop: 16,
+  width: '100%',
+  minHeight: 36,
+  padding: '8px 10px',
+  textAlign: 'left',
+  border: 0,
+  background: 'transparent',
+  color: vars.color.ink,
+  fontSize: vars.fontSize.caption,
+  cursor: 'pointer',
+  borderRadius: 4,
 });
 
-/** 행별 행동은 탐색 제목보다 낮은 위계로 둔다. */
-export const actionButton = style({ fontSize: 12, padding: '7px 10px' });
-
-/** 제거가 관심 표시보다 먼저 눈에 들어오지 않게 한다. */
-export const removeButton = style([
-  actionButton,
-  { borderColor: 'transparent', color: vars.color.muted },
-]);
-
-/** 실패 안내와 재시도를 목록 가까이에 유지한다. */
-export const error = style({
-  color: vars.color.error,
-  background: vars.color.errorBackground,
-  padding: 12,
-  borderRadius: 7,
+globalStyle('.' + menuContent + ' button:hover', {
+  background: vars.color.selected,
 });
 
-globalStyle(`.${root} h2`, {
-  fontSize: 21,
-  lineHeight: 1.4,
-  margin: '0 0 18px',
-});
+/** PDF는 추가 관리 메뉴 없이 원문 이동을 제공한다. */
+export const open = style({ color: vars.color.muted, padding: 4 });
 
-/** 구절을 기다리는 설명의 문단 간격을 유지한다. */
-export const pending = style([count, { margin: '13px 0' }]);
-
-globalStyle(`.${controls} input::placeholder`, {
+/** 목록이 요약임을 알려 전체 자료 수와 혼동하지 않게 한다. */
+export const listNote = style({
   color: vars.color.muted,
-  opacity: 1,
+  fontSize: vars.fontSize.caption,
+  margin: '16px 0 0',
+});
+
+/** 데이터를 기다리는 상태를 빈 목록과 구분한다. */
+export const loading = style({
+  minHeight: 160,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: vars.color.muted,
+  fontSize: vars.fontSize.small,
+});
+
+/** 영상 목록의 실패와 다시 조회 동작을 같은 영역에 둔다. */
+export const error = style({
+  padding: 16,
+  borderRadius: vars.radius.control,
+  background: vars.color.errorBackground,
+  color: vars.color.error,
+  fontSize: vars.fontSize.small,
+  marginBottom: 20,
+});
+
+globalStyle('.' + error + ' p', { margin: '0 0 12px' });
+
+/** 삭제 확인 대상은 긴 제목도 줄바꿈한다. */
+export const removalTitle = style({
+  margin: 0,
+  overflowWrap: 'anywhere',
+  fontWeight: 500,
 });

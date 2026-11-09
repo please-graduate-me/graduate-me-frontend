@@ -1,7 +1,7 @@
 import { keyframes, style, styleVariants } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 공용 부품의 기본 모양과 상태가 사용처마다 달라지지 않게 한다. */
+/** 버튼과 버튼 형태 링크가 같은 모양과 상태를 사용하게 한다. */
 export const root = style({
   display: 'inline-flex',
   alignItems: 'center',

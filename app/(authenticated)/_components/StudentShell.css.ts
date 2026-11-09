@@ -72,6 +72,12 @@ export const avatar = style({
   fontSize: vars.fontSize.caption,
 });
 
+globalStyle('.' + workspace + ' .' + avatar, {
+  width: 24,
+  height: 24,
+  fontSize: 10,
+});
+
 /** 목적지를 세로로 나열하면서 현재 위치를 글자와 배경으로 알린다. */
 export const navigation = style({ display: 'grid', gap: 8 });
 

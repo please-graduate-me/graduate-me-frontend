@@ -1,144 +1,190 @@
 'use client';
-import { Button } from '@/components/ui/primitives/Button';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Panel } from '@/components/ui/layouts/Panel';
-import * as styles from './Dashboard.css';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { recommendations } from '@/domains/videos/config/catalog';
-import { registerVideo } from '@/domains/videos/api/videos';
-import { videoPaths } from '@/domains/videos/config/paths';
+import { Button } from '@/components/ui/primitives/Button';
+import { Badge } from '@/components/ui/primitives/Badge';
+import { Icon } from '@/components/ui/primitives/Icon';
+import { getLearningSummary } from '@/domains/learning/api/summary';
+import type { LearningSummary } from '@/domains/learning/model/summary';
+import { materialPaths } from '@/domains/materials/config/paths';
+import { sourceLabel, formatDate } from '@/domains/learning/lib/format';
 import { MyVideos } from './MyVideos';
+import * as styles from './Dashboard.css';
 
-/** 영상 선택과 등록 후 이동을 목록 화면에서 조율한다. */
+/** 학습 홈의 자료, 복습과 공개 질문 상태를 실제 계정 데이터로 연결한다. */
 export function Dashboard() {
-  const router = useRouter();
-  const [url, setUrl] = useState('');
-  const [busy, setBusy] = useState(false);
+  const [summary, setSummary] = useState<LearningSummary | null>(null);
   const [error, setError] = useState('');
-  const [topic, setTopic] = useState('');
-  const [level, setLevel] = useState('');
+  const [reload, setReload] = useState(0);
 
-  async function register(value: string) {
-    setError('');
-    setBusy(true);
+  useEffect(() => {
+    let disposed = false;
 
-    try {
-      const result = await registerVideo(value);
+    getLearningSummary()
+      .then((data) => {
+        if (!disposed) {
+          setSummary(data);
+          setError('');
+        }
+      })
+      .catch((error: Error) => {
+        if (!disposed) setError(error.message);
+      });
 
-      router.push(videoPaths.lesson(result.videoId));
-    } catch (error) {
-      setError((error as Error).message);
-      setBusy(false);
-    }
-  }
+    return () => {
+      disposed = true;
+    };
+  }, [reload]);
+
+  const question = summary?.recentQuestions.find(
+    (item) => item.status === 'answered'
+  );
+
+  const expression = summary?.recentExpressions[0];
 
   return (
     <div className={styles.workspace}>
       <div className={styles.library}>
-        <MyVideos />
-      </div>
-      <Panel className={styles.add}>
-        <h2>학습할 영상 추가</h2>
-        <p className={styles.muted}>원하는 영상으로 듣기를 연습하세요.</p>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            void register(url);
-          }}
-          className={styles.urlForm}>
-          <label htmlFor='youtube-url'>유튜브 URL</label>
-          <div className={styles.row}>
-            <input
-              id='youtube-url'
-              type='url'
-              required
-              placeholder='https://www.youtube.com/watch?v=...'
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              disabled={busy}
-            />
-            <Button
-              className={styles.submit}
-              disabled={busy}>
-              {busy ? '등록 중…' : '학습 시작'}
-            </Button>
-          </div>
-          <p className={[styles.muted, styles.small].join(' ')}>
-            공개된 15분 이하 영어 영상의 링크를 입력해 주세요.
-          </p>
-        </form>
         {error && (
-          <p
+          <div
             className={styles.error}
             role='alert'>
-            {error}
-          </p>
-        )}
-      </Panel>
-      <section className={styles.recommend}>
-        <div className={styles.sectionHeading}>
-          <h2>추천 영상</h2>
-          <div className={styles.filters}>
-            <select
-              aria-label='난이도'
-              value={level}
-              onChange={(event) => setLevel(event.target.value)}>
-              <option value=''>모든 난이도</option>
-              {['초급', '중급', '고급'].map((value) => (
-                <option key={value}>{value}</option>
-              ))}
-            </select>
-            <select
-              aria-label='주제'
-              value={topic}
-              onChange={(event) => setTopic(event.target.value)}>
-              <option value=''>모든 주제</option>
-              {recommendations.map((item) => (
-                <option key={item.topic}>{item.topic}</option>
-              ))}
-            </select>
+            <p>{error}</p>
+            <Button
+              variant='secondary'
+              size='small'
+              onClick={() => setReload((value) => value + 1)}>
+              학습 요약 다시 불러오기
+            </Button>
           </div>
-        </div>
-        <div className={styles.cards}>
-          {recommendations
-            .filter(
-              (item) =>
-                (!level || item.level === level) &&
-                (!topic || item.topic === topic)
-            )
-            .map((item) => (
-              <article
-                className={styles.card}
-
-                key={item.youtubeId}>
-                <h3>{item.title}</h3>
-                <p className={styles.muted}>
-                  {item.level} · {item.topic}
-                </p>
-                <p className={styles.muted}>{item.description}</p>
-                <Button
-                  variant='secondary'
-                  className={styles.cardAction}
-                  disabled={busy}
-                  onClick={() =>
-                    void register(
-                      `https://www.youtube.com/watch?v=${item.youtubeId}`
-                    )
-                  }>
-                  이 영상 선택
-                </Button>
-              </article>
-            ))}
-        </div>
-        {!recommendations.some(
-          (item) =>
-            (!level || item.level === level) && (!topic || item.topic === topic)
-        ) && (
-          <p className={styles.muted}>
-            선택한 조건에 맞는 추천 영상이 없습니다.
-          </p>
         )}
-      </section>
+        <MyVideos
+          materials={summary?.recentMaterials ?? []}
+          materialCount={summary?.materials ?? 0}
+          summaryLoading={!summary && !error}
+        />
+      </div>
+      <aside
+        className={styles.sidebar}
+        aria-label='표현 복습과 질문'>
+        <Panel className={styles.review}>
+          <span className={styles.eyebrow}>
+            <Icon
+              name='repeat-2'
+              size={18}
+            />
+            오늘의 복습
+          </span>
+          <h2>
+            배운 표현,
+            <br />한 번 더 기억하기
+          </h2>
+          <p>
+            {summary
+              ? summary.expressions > 0
+                ? '저장한 표현 ' +
+                  summary.expressions +
+                  '개를 나의 속도로 복습해 보세요.'
+                : '학습하면서 기억하고 싶은 표현을 저장해 보세요.'
+              : error
+                ? '표현집에서 저장한 표현을 확인해 보세요.'
+                : '나의 표현을 불러오고 있어요.'}
+          </p>
+          <Link
+            href={summary?.expressions ? '/practice' : '/expressions'}
+            className={styles.primaryLink}>
+            {summary?.expressions ? '표현 복습하기' : '개인 표현집 열기'}
+            <Icon
+              name='arrow-right'
+              size={16}
+            />
+          </Link>
+        </Panel>
+        <section className={styles.sideSection}>
+          <div className={styles.sectionHeading}>
+            <h2>도우미 답변</h2>
+            <Link href='/questions'>전체 보기</Link>
+          </div>
+          {question ? (
+            <div className={styles.answer}>
+              <Badge tone='success'>답변 도착</Badge>
+              <h3>
+                <Link href={'/questions/' + encodeURIComponent(question.id)}>
+                  {question.title}
+                </Link>
+              </h3>
+              <p>
+                {question.assignee?.name ?? '담당 도우미'} ·{' '}
+                {formatDate(question.updatedAt)}
+              </p>
+              <Link
+                className={styles.source}
+                href={materialPaths.source(question.source)}>
+                <Icon
+                  name={question.source.kind === 'pdf' ? 'file-text' : 'play'}
+                  size={14}
+                />
+                {sourceLabel(question.source)}
+              </Link>
+              <Link
+                className={styles.textLink}
+                href={'/questions/' + encodeURIComponent(question.id)}>
+                답변 확인하기
+                <Icon
+                  name='arrow-right'
+                  size={14}
+                />
+              </Link>
+            </div>
+          ) : (
+            <div className={styles.sideEmpty}>
+              <Icon name='message-circle' />
+              <p>
+                {summary?.unanswered
+                  ? summary.unanswered + '개 질문의 답변을 기다리고 있어요.'
+                  : '궁금한 구절을 선택해 도우미에게 질문해 보세요.'}
+              </p>
+              <Link href='/questions'>나의 질문 보기</Link>
+            </div>
+          )}
+        </section>
+        <section className={styles.sideSection}>
+          <h2>최근 저장한 표현</h2>
+          {expression ? (
+            <div className={styles.savedExpression}>
+              <h3>{expression.text}</h3>
+              <p>
+                {expression.meaning || '표현집에서 나만의 뜻을 기록해 보세요.'}
+              </p>
+              <Link
+                className={styles.source}
+                href={materialPaths.source(expression.source)}>
+                <Icon
+                  name={expression.source.kind === 'pdf' ? 'file-text' : 'play'}
+                  size={14}
+                />
+                {sourceLabel(expression.source)}
+              </Link>
+              <Link
+                className={styles.textLink}
+                href='/expressions'>
+                표현집에서 보기
+                <Icon
+                  name='arrow-right'
+                  size={14}
+                />
+              </Link>
+            </div>
+          ) : (
+            <div className={styles.sideEmpty}>
+              <Icon name='bookmark' />
+              <p>저장한 표현이 이곳에 표시돼요.</p>
+              <Link href='/materials'>자료에서 표현 찾기</Link>
+            </div>
+          )}
+        </section>
+      </aside>
     </div>
   );
 }
