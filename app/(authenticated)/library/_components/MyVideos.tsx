@@ -225,8 +225,9 @@ export function MyVideos({
                     </h3>
                     <p>
                       {video
-                        ? '영어 · 영상 · 구절 ' +
-                          Math.min(item.currentIndex, item.count) +
+                        ? (item.language === 'th' ? '태국어' : '영어') +
+                          ' · 영상 · 정답 구절 ' +
+                          Math.min(item.completedCount ?? 0, item.count) +
                           ' / ' +
                           item.count
                         : (item.language === 'th' ? '태국어' : '영어') +

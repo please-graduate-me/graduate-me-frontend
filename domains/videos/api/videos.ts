@@ -71,11 +71,11 @@ export const setVideoLike = (id: string, liked: boolean) =>
 export const listVideos = () => request('/api/videos', videoHistorySchema);
 
 /** 등록 요청과 반환 식별자를 같은 경계에서 검증한다. */
-export const registerVideo = (url: string) =>
+export const registerVideo = (url: string, language: 'en' | 'th' = 'en') =>
   request(
     '/api/videos',
     registeredVideoSchema,
-    jsonBody(registerVideoSchema.parse({ url }))
+    jsonBody(registerVideoSchema.parse({ url, language }))
   );
 
 /** 서버와 브라우저에서 동일한 학습 응답 계약을 사용한다. */

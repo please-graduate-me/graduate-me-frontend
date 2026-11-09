@@ -29,6 +29,11 @@ export const segmentSchema = z.object({
   end: z.number(),
   text: z.string(),
   blanks: z.array(z.number()),
+  units: z.array(z.string()).optional(),
+  translation: z.string().nullable().optional(),
+  blankCandidates: z.array(z.number()).nullable().optional(),
+  blankActualRatio: z.number().min(0).max(100).optional(),
+  version: z.number().int().optional(),
   words: z.array(
     z.object({ word: z.string(), start: z.number(), end: z.number() })
   ),
@@ -44,6 +49,9 @@ export const segmentStateSchema = z.object({
   draft: z.union([z.string(), z.array(z.string())]),
   status: z.string(),
   revealed: z.boolean(),
+  blankRatio: z.number().optional(),
+  hintCount: z.number().optional(),
+  sourceVersion: z.number().int().optional(),
 });
 
 /** 검증 스키마에서 타입을 추론해 별도 선언의 불일치를 막는다. */
@@ -72,6 +80,8 @@ export const lessonSchema = z.object({
     category: z.string().nullable(),
     liked: z.boolean(),
     likeCount: z.number().int().nonnegative(),
+    language: z.enum(['en', 'th']).optional(),
+    analysisVersion: z.number().optional(),
   }),
   job: z
     .object({
@@ -84,7 +94,22 @@ export const lessonSchema = z.object({
     currentIndex: z.number(),
     mode: modeSchema,
     favorite: z.boolean(),
+    blankRatio: z
+      .union([z.literal(20), z.literal(40), z.literal(60)])
+      .optional(),
+    scriptViewed: z.boolean().optional(),
   }),
+  preparation: z
+    .object({
+      transcription: z.enum(['ready', 'pending', 'failed']),
+      translation: z.enum(['ready', 'pending', 'failed']),
+      blanks: z.enum(['ready', 'pending', 'failed']),
+      error: z.string().nullable(),
+    })
+    .optional(),
+  completedCount: z.number().optional(),
+  progressPercent: z.number().optional(),
+  isComplete: z.boolean().optional(),
   difficultSegmentIds: z.array(z.string()),
   segments: z.array(segmentSchema),
   states: z.array(segmentStateSchema),
@@ -99,6 +124,8 @@ export const actionResultSchema = z.object({
   nextIndex: z.number().optional(),
   text: z.string().optional(),
   ok: z.boolean().optional(),
+  hint: z.string().optional(),
+  hintCount: z.number().optional(),
 });
 
 /** 검증 스키마에서 타입을 추론해 별도 선언의 불일치를 막는다. */
@@ -117,6 +144,10 @@ export const videoHistorySchema = z.array(
     likeCount: z.number().int().nonnegative(),
     count: z.number(),
     status: z.string(),
+    language: z.enum(['en', 'th']).optional(),
+    completedCount: z.number().optional(),
+    progressPercent: z.number().optional(),
+    isComplete: z.boolean().optional(),
   })
 );
 
@@ -124,7 +155,10 @@ export const videoHistorySchema = z.array(
 export type VideoHistory = z.infer<typeof videoHistorySchema>;
 
 /** 영상 등록 입력의 제한을 요청 양쪽에서 맞춘다. */
-export const registerVideoSchema = z.object({ url: z.string().max(2048) });
+export const registerVideoSchema = z.object({
+  url: z.string().max(2048),
+  language: z.enum(['en', 'th']).optional(),
+});
 
 /** 등록 후 이동할 영상 식별자가 있는지 확인한다. */
 export const registeredVideoSchema = z.object({ videoId: z.string() });

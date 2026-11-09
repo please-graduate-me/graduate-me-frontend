@@ -24,7 +24,7 @@ export const recommendations = [
 ];
 
 /** 학습 답안의 허용 길이와 빈칸 수를 제한한다. */
-export const answerLimits = { full: 2000, blank: 100, blanks: 3 } as const;
+export const answerLimits = { full: 5000, blank: 300, blanks: 100 } as const;
 
 /** 처리 상태의 사용자 문구를 화면마다 중복하지 않는다. */
 export const jobLabels: Record<string, string> = {

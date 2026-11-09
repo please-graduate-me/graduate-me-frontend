@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { blankIndices, grade, gradeAnswer } from './grading';
 
 describe('받아쓰기 채점', () => {
-  it('대소문자, 문장부호와 공백을 무시한다', () => {
-    expect(grade('Hello, WORLD!', '  hello   world ').correct).toBe(true);
-    expect(grade('It’s a test.', "it's a test").correct).toBe(true);
+  it('앞뒤 공백만 정리하고 문장 전체를 엄격히 비교한다', () => {
+    expect(grade('Hello, WORLD!', '  Hello, WORLD! ').correct).toBe(true);
+    expect(grade('Hello, WORLD!', 'hello world').correct).toBe(false);
+    expect(grade('Hello world', 'Hello  world').correct).toBe(false);
+    expect(grade('ฉันชอบเรียน', 'ฉันชอบเรียน').correct).toBe(true);
+    expect(grade('ฉันชอบเรียน', 'ฉันชอบเรยน').correct).toBe(false);
   });
 
   it('축약형, 단어 순서, 빈 답안은 엄격히 비교한다', () => {
@@ -38,7 +41,7 @@ describe('받아쓰기 채점', () => {
     expect(indices).toEqual([0, 2]);
     expect(indices.length).toBeGreaterThan(0);
     expect(indices.length).toBeLessThanOrEqual(3);
-    const answers = ['we', 'to'];
+    const answers = ['We', 'to'];
 
     expect(gradeAnswer(text, 'blank', answers).correct).toBe(true);
 

@@ -10,11 +10,13 @@ import { loadAPI, type Player } from '@/lib/youtube/player';
 export function useYouTubePlayer(
   youtubeId: string,
   segment: { id: string; start: number; end: number } | undefined,
-  settings: LearningSettings
+  settings: LearningSettings,
+  continuous = false
 ) {
   const container = useRef<HTMLDivElement>(null);
   const player = useRef<Player | null>(null);
   const bounds = useRef(segment);
+  const continuousRef = useRef(continuous);
 
   useEffect(() => {
     bounds.current = segment;
@@ -25,6 +27,11 @@ export function useYouTubePlayer(
   const manuallyPaused = useRef(false);
   const [waiting, setWaiting] = useState(false);
   const [scheduler] = useState(() => createReplayScheduler(setWaiting));
+
+  useEffect(() => {
+    continuousRef.current = continuous;
+    if (continuous) scheduler.cancel();
+  }, [continuous, scheduler]);
 
   useEffect(() => {
     settingsRef.current = settings;
@@ -63,7 +70,13 @@ export function useYouTubePlayer(
       const range = bounds.current;
       const options = settingsRef.current;
 
-      if (!options.autoReplay || !range || manuallyPaused.current) return;
+      if (
+        continuousRef.current ||
+        !options.autoReplay ||
+        !range ||
+        manuallyPaused.current
+      )
+        return;
 
       scheduler.schedule(
         () => {
@@ -180,7 +193,11 @@ export function useYouTubePlayer(
         }
       }
 
-      if (p.getPlayerState() === 1 && reachedEnd(current, range.end)) {
+      if (
+        !continuousRef.current &&
+        p.getPlayerState() === 1 &&
+        reachedEnd(current, range.end)
+      ) {
         p.pauseVideo();
         scheduleReplay();
       }
@@ -270,8 +287,8 @@ export function useYouTubePlayer(
       scheduler.cancel();
       p.pauseVideo();
     } else if (
-      p.getCurrentTime() < range.start ||
-      p.getCurrentTime() >= range.end
+      !continuousRef.current &&
+      (p.getCurrentTime() < range.start || p.getCurrentTime() >= range.end)
     )
       seek(range.start, true);
     else {

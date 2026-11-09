@@ -44,7 +44,7 @@ describe('공통 학습 화면의 체험 연결', () => {
 
   it('전체 받아쓰기 정답은 다음 구절로 이동하고 오답은 현재 구절에 남는다', () => {
     expect(
-      submit('first', 'full', 'we went to the park and stayed for a while')
+      submit('first', 'full', 'We went to the park and stayed for a while.')
     ).toMatchObject({ grade: { correct: true }, nextIndex: 1 });
 
     expect(submit('first', 'full', 'we went park')).toMatchObject({
@@ -54,7 +54,7 @@ describe('공통 학습 화면의 체험 연결', () => {
   });
 
   it('빈칸도 같은 규칙으로 채점하고 마지막 정답은 완료 위치로 이동한다', () => {
-    expect(submit('first', 'blank', ['WE', 'to'])).toMatchObject({
+    expect(submit('first', 'blank', ['We', 'to'])).toMatchObject({
       grade: { correct: true },
       nextIndex: 1,
     });
@@ -64,7 +64,7 @@ describe('공통 학습 화면의 체험 연결', () => {
       nextIndex: 0,
     });
 
-    expect(submit('last', 'blank', ['i'])).toMatchObject({
+    expect(submit('last', 'blank', ['I'])).toMatchObject({
       grade: { correct: true },
       nextIndex: lesson.segments.length,
     });

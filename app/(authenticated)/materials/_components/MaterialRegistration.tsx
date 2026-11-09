@@ -30,7 +30,7 @@ export function MaterialRegistration({ onClose }: { onClose: () => void }) {
 
     try {
       if (kind === 'video') {
-        const result = await registerVideo(url.trim());
+        const result = await registerVideo(url.trim(), language);
 
         router.push(`/learn/${encodeURIComponent(result.videoId)}`);
       } else {
@@ -149,8 +149,9 @@ export function MaterialRegistration({ onClose }: { onClose: () => void }) {
               </Select>
             </label>
             <p className={styles.notice}>
-              원본 PDF와 선택 가능한 텍스트를 저장합니다. 스캔본의 OCR과 AI
-              설명은 현재 제공하지 않습니다.
+              원본 PDF와 선택 가능한 텍스트를 저장합니다. 등록 후 필요한 페이지
+              범위를 명시해 기본 번역·설명을 준비할 수 있습니다. 스캔본의 광범위
+              OCR은 후속 범위입니다.
             </p>
           </>
         ) : (
@@ -167,9 +168,22 @@ export function MaterialRegistration({ onClose }: { onClose: () => void }) {
                 placeholder='https://www.youtube.com/watch?v=...'
               />
             </label>
+            <label className={styles.field}>
+              학습 언어
+              <Select
+                value={language}
+                disabled={busy}
+                onChange={(event) =>
+                  setLanguage(event.target.value as typeof language)
+                }>
+                <option value='en'>영어</option>
+                <option value='th'>태국어</option>
+              </Select>
+            </label>
             <p className={styles.notice}>
               등록한 영상은 서버에서 학습 자료를 준비합니다. 준비 상태는 영상
-              학습 화면에서 확인할 수 있어요.
+              학습 화면에서 확인할 수 있어요. 공개된 영어·태국어 영상, 최대
+              30분을 지원하며 분석 실패는 재시도하지 않습니다.
             </p>
           </>
         )}

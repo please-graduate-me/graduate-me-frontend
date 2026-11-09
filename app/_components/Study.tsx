@@ -11,7 +11,7 @@ import type {
   ActionResult,
 } from '@/domains/videos/model/contracts';
 import { applyDemoLearningAction } from '@/domains/videos/lib/demoLesson';
-import { applyLearningAction } from '@/domains/videos/api/videos';
+import { applyLearningAction, getLesson } from '@/domains/videos/api/videos';
 import { learningConfig, answerLimits } from '@/domains/videos/config/catalog';
 import { videoPaths } from '@/domains/videos/config/paths';
 import { useRouter } from 'next/navigation';
@@ -41,7 +41,35 @@ export function Study({
   demo?: boolean;
 }) {
   const router = useRouter();
-  const { video, segments } = initial;
+  const { video } = initial;
+  const [segments, setSegments] = useState(initial.segments);
+  const [preparation, setPreparation] = useState(initial.preparation);
+
+  const [blankRatio, setBlankRatio] = useState<20 | 40 | 60>(
+    initial.progress.blankRatio ?? 20
+  );
+
+  const [scriptViewed, setScriptViewed] = useState(
+    initial.progress.scriptViewed ?? false
+  );
+
+  useEffect(() => {
+    let active = true;
+
+    // 상태 조회의 후속 준비 결과만 반영해 작성 중인 답안과 모드를 유지한다.
+    queueMicrotask(() => {
+      if (!active) return;
+      setPreparation(initial.preparation);
+      setSegments(initial.segments);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [initial.preparation, initial.segments]);
+
+  const [hint, setHint] = useState('');
+  const blankAvailable = preparation?.blanks === 'ready' || !preparation;
 
   const {
     settings,
@@ -54,7 +82,13 @@ export function Study({
   const [answerFocused, setAnswerFocused] = useState(false);
   const answerForm = useAnswerViewport(answerFocused);
   const [index, setIndex] = useState(initial.progress.currentIndex);
-  const [mode, setMode] = useState<Mode>(initial.progress.mode);
+
+  const [mode, setMode] = useState<Mode>(
+    initial.progress.mode === 'blank' && !blankAvailable
+      ? 'full'
+      : initial.progress.mode
+  );
+
   const [states, setStates] = useState(initial.states);
 
   const [difficultSegmentIds, setDifficultSegmentIds] = useState(
@@ -93,10 +127,13 @@ export function Study({
     pause,
     resetPlayback,
     prepareNext,
-  } = useYouTubePlayer(video.youtubeId, segment, settings);
+  } = useYouTubePlayer(video.youtubeId, segment, settings, scriptView);
 
   const state = states.find(
-    (item) => item.segmentId === segment?.id && item.mode === mode
+    (item) =>
+      item.segmentId === segment?.id &&
+      item.mode === mode &&
+      (mode !== 'blank' || (item.blankRatio ?? 20) === blankRatio)
   );
 
   const draft =
@@ -198,7 +235,10 @@ export function Study({
   ) {
     setStates((previous) => {
       const existing = previous.find(
-        (item) => item.segmentId === segmentId && item.mode === selectedMode
+        (item) =>
+          item.segmentId === segmentId &&
+          item.mode === selectedMode &&
+          (selectedMode !== 'blank' || (item.blankRatio ?? 20) === blankRatio)
       );
 
       const next: SegmentState = {
@@ -207,6 +247,7 @@ export function Study({
         draft: selectedMode === 'full' ? '' : [],
         status: 'pending',
         revealed: false,
+        blankRatio: selectedMode === 'blank' ? blankRatio : 0,
         ...existing,
         ...patch,
       };
@@ -214,7 +255,12 @@ export function Study({
       return [
         ...previous.filter(
           (item) =>
-            !(item.segmentId === segmentId && item.mode === selectedMode)
+            !(
+              item.segmentId === segmentId &&
+              item.mode === selectedMode &&
+              (selectedMode !== 'blank' ||
+                (item.blankRatio ?? 20) === blankRatio)
+            )
         ),
         next,
       ];
@@ -258,6 +304,7 @@ export function Study({
       setIndex(next);
       setMode(nextMode);
       setFeedback(null);
+      setHint('');
       setScriptView(false);
     });
   }
@@ -267,7 +314,7 @@ export function Study({
     pause();
     if (
       !window.confirm(
-        '이 영상의 두 학습 모드에 저장된 답안, 제출 기록, 정답 보기, 건너뛰기, 안 들리는 구절 표시와 진도를 모두 삭제할까요? 되돌릴 수 없으며 첫 구절부터 다시 시작합니다.'
+        '이번 학습의 초안·정답 보기·현재 진도를 초기화하고 첫 구절부터 다시 시작할까요? 과거 제출 답안과 당시 근거 버전은 이력에 보존합니다.'
       )
     )
       return;
@@ -279,7 +326,8 @@ export function Study({
       setStates([]);
       setDifficultSegmentIds([]);
       setIndex(0);
-      setMode('blank');
+      setMode(blankAvailable ? 'blank' : 'full');
+      setScriptViewed(false);
       setFeedback(null);
       setSaveStatus(demo ? '체험 중에만 유지됨' : '저장됨');
     });
@@ -345,6 +393,55 @@ export function Study({
     });
   }
 
+  async function openScript() {
+    await perform(async () => {
+      await enqueue({ action: 'viewScript' });
+      setScriptViewed(true);
+      setScriptView(true);
+      setFeedback(null);
+    });
+  }
+
+  async function showHint() {
+    await perform(async () => {
+      const value = await enqueue({
+        action: 'hint',
+        segmentId: segment.id,
+        mode,
+      });
+
+      setHint(value.hint ?? '');
+      updateState({ hintCount: value.hintCount ?? 1 });
+    });
+  }
+
+  async function changeRatio(ratio: 20 | 40 | 60) {
+    if (ratio === blankRatio || demo) return;
+
+    await perform(async () => {
+      await enqueue({ action: 'blankRatio', ratio });
+      const lesson = await getLesson(video.id);
+
+      setSegments(lesson.segments);
+      setStates(lesson.states);
+      setBlankRatio(ratio);
+      setFeedback(null);
+      setHint('');
+      setSaveStatus('선택 비율의 저장된 답안 복원됨');
+    });
+  }
+
+  async function refreshPreparation() {
+    await perform(async () => {
+      const lesson = await getLesson(video.id);
+
+      setPreparation(lesson.preparation);
+      setSegments(lesson.segments);
+      setStates(lesson.states);
+      setSaveStatus('자료 준비 상태 확인됨');
+    });
+  }
+
   useEffect(() => {
     // 모바일은 사용자가 입력을 선택하기 전 키보드와 영상 접힘을 유발하지 않는다.
     if (!busy && segment && window.matchMedia('(min-width: 901px)').matches) {
@@ -389,9 +486,11 @@ export function Study({
     return () => window.removeEventListener('keydown', keydown);
   }, [segment, replay, rewind, toggle]);
 
-  const correct = states.filter(
-    (item) => item.mode === mode && item.status === 'correct'
-  ).length;
+  const correct = new Set(
+    states
+      .filter((item) => item.status === 'correct')
+      .map((item) => item.segmentId)
+  ).size;
 
   const skipped = states.filter(
     (item) => item.mode === mode && item.status === 'skipped'
@@ -431,6 +530,45 @@ export function Study({
         <p className={styles.notice}>
           체험 모드 · 답안과 진도는 페이지를 떠나면 사라집니다.
         </p>
+      )}
+      {preparation && (
+        <div className={styles.notice}>
+          <strong>자료 준비 상태</strong>
+          <p>
+            원문 전사:{' '}
+            {preparation.transcription === 'ready'
+              ? '완료'
+              : preparation.transcription === 'failed'
+                ? '실패'
+                : '준비 중'}{' '}
+            · 저장 번역:{' '}
+            {preparation.translation === 'ready'
+              ? '완료'
+              : preparation.translation === 'failed'
+                ? '실패'
+                : '준비 중'}{' '}
+            · 빈칸 후보:{' '}
+            {preparation.blanks === 'ready'
+              ? '완료'
+              : preparation.blanks === 'failed'
+                ? '실패'
+                : '준비 중'}
+          </p>
+          {preparation.error && <p>{preparation.error}</p>}
+          {!blankAvailable && (
+            <p>
+              빈칸 후보가 준비되지 않아 전체 받아쓰기와 스크립트를 이용할 수
+              있습니다. 단계 실패는 자동 재시도하지 않습니다.
+            </p>
+          )}
+          <Button
+            size='small'
+            variant='ghost'
+            disabled={busy}
+            onClick={() => void refreshPreparation()}>
+            저장된 준비 상태 조회
+          </Button>
+        </div>
       )}
       {error && (
         <div
@@ -568,6 +706,7 @@ export function Study({
                   <LearningModeSwitch
                     mode={mode}
                     disabled={busy}
+                    blankAvailable={blankAvailable}
                     onChange={(next) => {
                       setScriptView(false);
                       void navigate(index, next);
@@ -578,10 +717,7 @@ export function Study({
                     className={styles.scriptTab}
                     aria-pressed={scriptView}
                     disabled={busy}
-                    onClick={() => {
-                      setScriptView(true);
-                      if (!state?.revealed) void reveal();
-                    }}>
+                    onClick={() => void openScript()}>
                     스크립트
                   </button>
                 </div>
@@ -590,11 +726,14 @@ export function Study({
                     <p className={styles.muted}>
                       정답을 확인한 구절은 학습 기록에 표시됩니다.
                     </p>
-                    <p lang='en'>
-                      {state?.revealed
-                        ? segment.text
-                        : '스크립트를 불러오고 있습니다.'}
-                    </p>
+                    {segments.map((item) => (
+                      <div key={item.id}>
+                        <p lang={video.language ?? 'en'}>{item.text}</p>
+                        {item.translation && (
+                          <p className={styles.muted}>{item.translation}</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <form
@@ -617,7 +756,7 @@ export function Study({
                         autoCorrect='off'
                         autoCapitalize='off'
                         spellCheck={false}
-                        placeholder='들은 내용을 영어로 적어 주세요.'
+                        placeholder='들은 내용을 원문 언어로 적어 주세요.'
                         onChange={(event) => changeDraft(event.target.value)}
                         onKeyDown={(event) => {
                           if (
@@ -634,37 +773,42 @@ export function Study({
                         className={styles.blankSentence}
                         ref={blanksContainer}
                         data-answer>
-                        {segment.text.split(/\s+/).map((word, wordIndex) => {
-                          const position = segment.blanks.indexOf(wordIndex);
+                        {(segment.units ?? segment.text.split(/\s+/)).map(
+                          (word, wordIndex) => {
+                            const position = segment.blanks.indexOf(wordIndex);
 
-                          return position < 0 ? (
-                            <span key={wordIndex}>{word} </span>
-                          ) : (
-                            <input
-                              key={wordIndex}
-                              aria-label={`빈칸 ${position + 1}`}
-                              maxLength={answerLimits.blank}
-                              disabled={busy}
-                              autoComplete='off'
-                              autoCorrect='off'
-                              autoCapitalize='off'
-                              spellCheck={false}
-                              value={
-                                Array.isArray(draft)
-                                  ? (draft[position] ?? '')
-                                  : ''
-                              }
-                              onChange={(event) => {
-                                const next = Array.isArray(draft)
-                                  ? [...draft]
-                                  : segment.blanks.map(() => '');
+                            return position < 0 ? (
+                              <span key={wordIndex}>
+                                {word}
+                                {video.language === 'th' ? '' : ' '}
+                              </span>
+                            ) : (
+                              <input
+                                key={wordIndex}
+                                aria-label={`빈칸 ${position + 1}`}
+                                maxLength={answerLimits.blank}
+                                disabled={busy}
+                                autoComplete='off'
+                                autoCorrect='off'
+                                autoCapitalize='off'
+                                spellCheck={false}
+                                value={
+                                  Array.isArray(draft)
+                                    ? (draft[position] ?? '')
+                                    : ''
+                                }
+                                onChange={(event) => {
+                                  const next = Array.isArray(draft)
+                                    ? [...draft]
+                                    : segment.blanks.map(() => '');
 
-                                next[position] = event.target.value;
-                                changeDraft(next);
-                              }}
-                            />
-                          );
-                        })}
+                                  next[position] = event.target.value;
+                                  changeDraft(next);
+                                }}
+                              />
+                            );
+                          }
+                        )}
                       </div>
                     )}
                     <div className={styles.answerActions}>
@@ -684,11 +828,56 @@ export function Study({
                         variant='ghost'
                         size='small'
                         disabled={busy}
+                        onClick={() => void showHint()}>
+                        표현 힌트
+                      </Button>
+                      <Button
+                        type='button'
+                        variant='ghost'
+                        size='small'
+                        disabled={busy}
                         onClick={() => void reveal()}>
                         정답 보기
                       </Button>
                     </div>
                   </form>
+                )}
+                {mode === 'blank' && !scriptView && (
+                  <label className={styles.small}>
+                    빈칸 비율 · 저장 후보 기준
+                    <Select
+                      value={blankRatio}
+                      disabled={busy || demo}
+                      onChange={(event) =>
+                        void changeRatio(
+                          Number(event.target.value) as 20 | 40 | 60
+                        )
+                      }>
+                      <option value={20}>20% · 기본</option>
+                      <option value={40}>40%</option>
+                      <option value={60}>60%</option>
+                    </Select>
+                    실제 빈칸 {segment.blanks.length}개 ·{' '}
+                    {Math.round(
+                      segment.blankActualRatio ??
+                        (100 * segment.blanks.length) /
+                          Math.max(
+                            1,
+                            (segment.units ?? segment.text.split(/\s+/)).filter(
+                              (unit) => /[\p{L}\p{N}]/u.test(unit)
+                            ).length
+                          )
+                    )}
+                    %
+                    <br />
+                    짧은 구절과 후보 수에 따라 실제 비율이 달라질 수 있습니다.
+                    비율별 답안은 따로 보존하며 선택한 비율의 답안을 복원합니다.
+                  </label>
+                )}
+                {hint && (
+                  <p className={styles.notice}>
+                    표현 힌트: {hint} · 도움 사용으로 기록됩니다.
+                  </p>
                 )}
                 {feedback && (
                   <div
@@ -723,10 +912,11 @@ export function Study({
                     )}
                   </div>
                 )}
-                {!scriptView && state?.revealed && (
+                {!scriptView && (state?.revealed || scriptViewed) && (
                   <div className={styles.notice}>
                     <strong>정답</strong>
-                    <p lang='en'>{segment.text}</p>
+                    <p lang={video.language ?? 'en'}>{segment.text}</p>
+                    {segment.translation && <p>{segment.translation}</p>}
                     <p className={styles.small}>
                       음성 인식 결과에 오류가 있으면 이 구절을 건너뛰거나
                       도우미에게 질문할 수 있어요.
@@ -775,12 +965,19 @@ export function Study({
           )}
           {complete && (
             <Panel className={styles.completion}>
-              <Badge tone='success'>
+              <Badge
+                tone={
+                  segments.length > 0 && correct === segments.length
+                    ? 'success'
+                    : 'warning'
+                }>
                 <Icon
                   name='check-check'
                   size={16}
                 />
-                학습 완료
+                {segments.length > 0 && correct === segments.length
+                  ? '학습 완료'
+                  : '끝 위치에 도착 · 미완료 구절 있음'}
               </Badge>
               <h2>마지막 구절까지 도착했어요.</h2>
               <p>
@@ -795,7 +992,7 @@ export function Study({
                   건너뛰기 <strong>{skipped}</strong>
                 </span>
                 <span>
-                  미완료 <strong>{segments.length - correct - skipped}</strong>
+                  미완료 <strong>{segments.length - correct}</strong>
                 </span>
               </div>
               <p className={styles.muted}>정답을 확인한 구절: {revealed}개</p>
@@ -806,7 +1003,7 @@ export function Study({
               </Button>
               <Button
                 variant='secondary'
-                disabled={busy}
+                disabled={busy || (!blankAvailable && mode === 'full')}
                 onClick={() =>
                   void navigate(0, mode === 'full' ? 'blank' : 'full')
                 }>
@@ -856,8 +1053,8 @@ export function Study({
               />
             )}
             <p className={styles.muted}>
-              이 영상의 두 모드 답안과 구절 표시 및 진도를 삭제하고 처음부터
-              시작합니다.
+              현재 학습 상태와 진도를 초기화하고 새 회차를 시작합니다. 과거 제출
+              당시의 답안과 근거 버전은 보존합니다.
             </p>
             <Button
               variant='danger'
@@ -874,6 +1071,8 @@ export function Study({
           mode={mode}
           busy={busy}
           videoId={video.id}
+          language={video.language ?? 'en'}
+          scriptViewed={scriptViewed}
           demo={demo}
           onNavigate={(next) => void navigate(next)}
         />

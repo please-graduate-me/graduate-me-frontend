@@ -15,6 +15,7 @@ export function createDemoLesson(demo: DemoLesson): Lesson {
       id: 'demo',
       youtubeId: demo.youtubeId,
       title: '체험 영상',
+      language: 'en',
       duration: null,
       category: null,
       liked: false,
@@ -39,6 +40,8 @@ export function applyDemoLearningAction(
   input: LearningAction
 ): ActionResult {
   if (input.action === 'reset') return { ok: true };
+  if (input.action === 'blankRatio' || input.action === 'viewScript')
+    return { ok: true };
 
   if (input.action === 'navigate') {
     if (input.index > lesson.segments.length)
@@ -55,6 +58,8 @@ export function applyDemoLearningAction(
 
   if (!segment) throw new Error('학습 구절을 찾을 수 없습니다.');
   if (input.action === 'difficulty') return { ok: true };
+  if (input.action === 'hint')
+    return { hint: segment.text.trim().slice(0, 1) + '…', hintCount: 1 };
   if (input.action === 'reveal') return { text: segment.text };
   if (input.action === 'skip') return { nextIndex: index + 1 };
   if (!('answer' in input)) throw new Error('지원하지 않는 동작입니다.');

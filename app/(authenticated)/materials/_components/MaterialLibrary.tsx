@@ -214,9 +214,12 @@ export function MaterialLibrary({
                     </div>
                   </div>
                 </td>
-                <td>영상 · {video.count}구절</td>
                 <td>
-                  {video.currentIndex} / {video.count}구절
+                  영상 · {video.language === 'th' ? '태국어' : '영어'} ·{' '}
+                  {video.count}구절
+                </td>
+                <td>
+                  정답 통과 {video.completedCount ?? 0} / {video.count}구절
                 </td>
                 <td>
                   <Badge

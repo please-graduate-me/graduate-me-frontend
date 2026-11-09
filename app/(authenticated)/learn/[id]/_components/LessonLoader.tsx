@@ -18,8 +18,13 @@ export function LessonLoader({ initial }: { initial: Lesson }) {
   const [reload, setReload] = useState(0);
 
   useEffect(() => {
-    if (['ready', 'failed'].includes(initial.job?.status ?? '') && reload === 0)
-      return;
+    const pending = (value: Lesson) =>
+      !['ready', 'failed'].includes(value.job?.status ?? '') ||
+      Object.entries(value.preparation ?? {}).some(
+        ([key, status]) => key !== 'error' && status === 'pending'
+      );
+
+    if (!pending(initial) && reload === 0) return;
     let disposed = false;
     let timer: ReturnType<typeof setTimeout>;
 
@@ -30,7 +35,7 @@ export function LessonLoader({ initial }: { initial: Lesson }) {
         if (disposed) return;
         setLesson(result);
         setError('');
-        if (!['ready', 'failed'].includes(result.job?.status ?? ''))
+        if (pending(result))
           timer = setTimeout(refresh, learningConfig.pollInterval);
       } catch (error) {
         if (!disposed) setError((error as Error).message);
@@ -43,7 +48,7 @@ export function LessonLoader({ initial }: { initial: Lesson }) {
       disposed = true;
       clearTimeout(timer);
     };
-  }, [videoId, reload, initial.job?.status]);
+  }, [videoId, reload, initial]);
 
   if (lesson?.job?.status === 'ready')
     return (

@@ -11,6 +11,11 @@ const answerSchema = z.union([
 export const actionSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('reset') }),
   z.object({
+    action: z.literal('blankRatio'),
+    ratio: z.union([z.literal(20), z.literal(40), z.literal(60)]),
+  }),
+  z.object({ action: z.literal('viewScript') }),
+  z.object({
     action: z.literal('difficulty'),
     segmentId: z.string(),
     marked: z.boolean(),
@@ -34,7 +39,7 @@ export const actionSchema = z.discriminatedUnion('action', [
     requestId: z.uuid(),
   }),
   z.object({
-    action: z.enum(['reveal', 'skip']),
+    action: z.enum(['reveal', 'skip', 'hint']),
     segmentId: z.string(),
     mode: modeSchema,
   }),

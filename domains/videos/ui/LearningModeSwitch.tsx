@@ -6,10 +6,12 @@ export function LearningModeSwitch({
   mode,
   disabled = false,
   onChange,
+  blankAvailable = true,
 }: {
   mode: Mode;
   disabled?: boolean;
   onChange: (mode: Mode) => void;
+  blankAvailable?: boolean;
 }) {
   return (
     <div
@@ -28,7 +30,7 @@ export function LearningModeSwitch({
         type='button'
         className={styles.option}
         aria-pressed={mode === 'blank'}
-        disabled={disabled}
+        disabled={disabled || !blankAvailable}
         onClick={() => onChange('blank')}>
         빈칸 채우기
       </button>

@@ -17,7 +17,7 @@ export function ResumeCard({
   const video = 'videoId' in item;
 
   const current = video
-    ? Math.min(item.currentIndex, item.count)
+    ? Math.min(item.completedCount ?? 0, item.count)
     : item.currentPage;
 
   const total = video ? item.count : item.pageCount;
@@ -27,6 +27,11 @@ export function ResumeCard({
     : materialPaths.detail(item.id, item.currentPage);
 
   const progress = total > 0 ? Math.min(100, (current / total) * 100) : 0;
+
+  const shownProgress =
+    video && !item.isComplete
+      ? Math.min(99, Math.floor(progress))
+      : Math.floor(progress);
 
   return (
     <article className={styles.root}>
@@ -59,7 +64,7 @@ export function ResumeCard({
               size={14}
             />
             {video
-              ? '영상 · 영어'
+              ? '영상 · ' + (item.language === 'th' ? '태국어' : '영어')
               : 'PDF · ' + (item.language === 'th' ? '태국어' : '영어')}
           </Badge>
           <h3>
@@ -67,7 +72,7 @@ export function ResumeCard({
           </h3>
           <p>
             {video
-              ? '구절 ' + current + ' / ' + total
+              ? '정답 구절 ' + current + ' / ' + total
               : current + '페이지에서 이어 읽기'}
           </p>
           <ButtonLink
@@ -80,11 +85,11 @@ export function ResumeCard({
       <div
         className={styles.progress}
         role='progressbar'
-        aria-label={item.title + ' 진행률'}
+        aria-label={item.title + (video ? ' 정답 진도' : ' 읽기 위치')}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-valuenow={Math.round(progress)}>
-        <span style={{ width: progress + '%' }} />
+        aria-valuenow={shownProgress}>
+        <span style={{ width: shownProgress + '%' }} />
       </div>
     </article>
   );

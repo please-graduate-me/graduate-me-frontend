@@ -20,6 +20,8 @@ export function VideoScript({
   busy,
   videoId,
   demo,
+  language = 'en',
+  scriptViewed = false,
   onNavigate,
 }: {
   segments: Segment[];
@@ -29,12 +31,15 @@ export function VideoScript({
   busy: boolean;
   videoId: string;
   demo: boolean;
+  language?: 'en' | 'th';
+  scriptViewed?: boolean;
   onNavigate: (index: number) => void;
 }) {
   const [query, setQuery] = useState('');
   const segment = segments[index];
 
   const visible = (id: string) =>
+    scriptViewed ||
     states.some(
       (state) =>
         state.segmentId === id && (state.revealed || state.status === 'correct')
@@ -86,6 +91,9 @@ export function VideoScript({
                     ? item.text
                     : `구절 ${position + 1} · 아직 확인하지 않은 문장`}
                 </p>
+                {visible(item.id) && item.translation && (
+                  <p className={styles.description}>{item.translation}</p>
+                )}
                 {states.some(
                   (state) =>
                     state.segmentId === item.id &&
@@ -104,8 +112,9 @@ export function VideoScript({
               videoId,
               segmentId: segment.id,
               quote: segment.text,
+              version: segment.version ?? 1,
             }}
-            language='en'
+            language={language}
           />
         </div>
       )}
