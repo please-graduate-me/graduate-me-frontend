@@ -161,7 +161,8 @@ export function GeneratedPractice({
         <div>
           <h1>적용 연습 · 복습</h1>
           <p className={styles.description}>
-            PDF·영상의 저장 표현과 실제 오답을 바탕으로 짧게 적용해 보세요.
+            선택한 표현을 출제 근거로, 최근 30일의 오답·메모·질문을 함께 참고해
+            문제를 만듭니다.
           </p>
         </div>
         <Badge tone='brand'>저장 문제 재풀이는 AI 호출 없음</Badge>

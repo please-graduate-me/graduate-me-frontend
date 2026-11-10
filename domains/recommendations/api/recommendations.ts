@@ -33,3 +33,14 @@ export const recordRecommendationEvent = (
     z.object({ ok: z.literal(true) }),
     { ...jsonBody({ requestId, action }), keepalive: true }
   );
+
+/** 최근 학습 기록을 분석하는 명시적 요청만 AI 생성을 시작한다. */
+export const personalizeRecommendations = (
+  language: 'en' | 'th',
+  requestId: string
+) =>
+  request(
+    '/api/recommendations/personalize',
+    recommendationsSchema,
+    jsonBody({ language, requestId })
+  );

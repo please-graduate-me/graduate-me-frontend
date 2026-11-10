@@ -22,6 +22,17 @@ export const recommendationsSchema = z.object({
   insufficientCandidates: z.boolean(),
   basis: z.string(),
   savedExpressionCount: z.number(),
+  personalization: z
+    .object({
+      summary: z.string(),
+      focusAreas: z.array(z.string()),
+      generatedAt: z.string(),
+      evidenceCount: z.number(),
+      provider: z.enum(['naver', 'anthropic']),
+      model: z.string(),
+    })
+    .nullable()
+    .default(null),
 });
 
 /** 영상 추천 응답은 학습 결과나 정밀 능력 진단과 구분한다. */
