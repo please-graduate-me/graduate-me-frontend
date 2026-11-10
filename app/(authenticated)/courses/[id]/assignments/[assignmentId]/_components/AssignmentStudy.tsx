@@ -42,7 +42,9 @@ export function AssignmentStudy({
   const request = useRef<{ key: string; id: string } | null>(null);
 
   const blocked =
-    !canSubmit || (!value.allowResubmit && value.submissions.length > 0);
+    !canSubmit ||
+    value.sourceAvailable === false ||
+    (!value.allowResubmit && value.submissions.length > 0);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -169,6 +171,12 @@ export function AssignmentStudy({
         {value.allowHints ? '허용' : '불가'}
       </p>
       {sessionExpired && <SessionRecovery />}
+      {value.sourceAvailable === false && (
+        <p className={styles.notice}>
+          원본이 삭제되었거나 현재 열람 권한이 없습니다. 새 학습·제출·힌트는
+          중지하며 본인의 과거 제출과 변경 이력은 계속 확인할 수 있습니다.
+        </p>
+      )}
       {error && (
         <p
           className={styles.error}
@@ -215,15 +223,17 @@ export function AssignmentStudy({
                 이 구절 음성 듣기
               </Button>
             )}
-            {value.allowHints && canSubmit && (
-              <Button
-                type='button'
-                variant='ghost'
-                disabled={busy}
-                onClick={() => void hint(task.id)}>
-                힌트 확인 · 사용 기록됨
-              </Button>
-            )}
+            {value.allowHints &&
+              canSubmit &&
+              value.sourceAvailable !== false && (
+                <Button
+                  type='button'
+                  variant='ghost'
+                  disabled={busy}
+                  onClick={() => void hint(task.id)}>
+                  힌트 확인 · 사용 기록됨
+                </Button>
+              )}
             {hints[task.id] && (
               <p className={styles.notice}>{hints[task.id]}</p>
             )}

@@ -8,6 +8,7 @@ const course = z.object({
   language: z.enum(['en', 'th']),
   createdAt: z.string(),
   role,
+  ownerUnavailable: z.boolean().optional(),
 });
 
 const answer = z.union([z.string(), z.array(z.string())]);
@@ -70,6 +71,7 @@ export const courseDetailSchema = z.object({
 
 /** 제출 전 가려진 답안과 현재 과제·원문 버전을 구분한다. */
 export const assignmentSchema = z.object({
+  sourceAvailable: z.boolean().optional(),
   id: z.string(),
   courseId: z.string(),
   version: z.number(),

@@ -27,6 +27,12 @@ export default async function CoursePage({
         과제 제출은 개인 받아쓰기 진도·답안과 별도로 기록됩니다. 수업 참여만으로
         비공개 원본 전체를 열 수 있는 권한이 생기지 않습니다.
       </p>
+      {value.course.ownerUnavailable && (
+        <p className={styles.notice}>
+          수업 개설자의 계정이 탈퇴한 상태입니다. 기존 과제와 허용된 제출 기록은
+          보존됩니다.
+        </p>
+      )}
       {value.assignments.length === 0 && <p>아직 배정된 과제가 없습니다.</p>}
       {value.assignments.map((item) => (
         <article
