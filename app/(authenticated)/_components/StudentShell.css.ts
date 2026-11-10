@@ -79,7 +79,13 @@ globalStyle('.' + workspace + ' .' + avatar, {
 });
 
 /** 목적지를 세로로 나열하면서 현재 위치를 글자와 배경으로 알린다. */
-export const navigation = style({ display: 'grid', gap: 8 });
+export const navigation = style({
+  display: 'grid',
+  gap: 8,
+  minHeight: 0,
+  overflowY: 'auto',
+  scrollbarWidth: 'thin',
+});
 
 /** 메뉴 항목은 클릭 영역과 현재 위치를 같은 방식으로 표시한다. */
 export const navItem = style({

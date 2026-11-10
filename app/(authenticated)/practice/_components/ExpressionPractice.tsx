@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import { savePracticeAttempt } from '@/domains/learning/api/history';
@@ -25,19 +25,29 @@ export function ExpressionPractice({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const expression = expressions[index];
+  const attempt = useRef<{ key: string; id: string } | null>(null);
+  const submitting = useRef(false);
 
   async function confirm(result: boolean) {
-    if (!expression || busy) return;
+    if (!expression || submitting.current) return;
+    submitting.current = true;
     setBusy(true);
     setError('');
 
     try {
+      const key = JSON.stringify([expression.id, answer, result]);
+
+      if (attempt.current?.key !== key)
+        attempt.current = { key, id: crypto.randomUUID() };
+
       await savePracticeAttempt({
+        requestId: attempt.current.id,
         expressionId: expression.id,
         answer,
         correct: result,
       });
 
+      attempt.current = null;
       setCorrect((value) => value + Number(result));
       setIndex((value) => value + 1);
       setAnswer('');
@@ -45,6 +55,7 @@ export function ExpressionPractice({
     } catch (error) {
       setError((error as Error).message);
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }

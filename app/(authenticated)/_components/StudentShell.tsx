@@ -12,6 +12,10 @@ const destinations: { href: string; label: string; icon: IconName }[] = [
   { href: '/practice', label: '연습·복습', icon: 'repeat-2' },
   { href: '/questions', label: '나의 질문', icon: 'message-circle' },
   { href: '/history', label: '학습 기록', icon: 'chart-no-axes-column' },
+  { href: '/insights', label: '학습 분석', icon: 'chart-no-axes-column' },
+  { href: '/recommendations', label: '추천 영상', icon: 'play' },
+  { href: '/courses', label: '내 수업과 과제', icon: 'users' },
+  { href: '/community', label: '학습 커뮤니티', icon: 'message-circle' },
 ];
 
 /** 학생의 학습 탐색과 계정 정보를 제공하고 전용 학습 화면에는 전체 폭을 내어 준다. */

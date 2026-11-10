@@ -7,6 +7,7 @@ export const getLearningHistory = (transport?: Transport) =>
 
 /** AI 채점과 구분되는 사용자의 자가점검만 저장한다. */
 export const savePracticeAttempt = (input: {
+  requestId: string;
   expressionId: string;
   answer: string;
   correct: boolean;
