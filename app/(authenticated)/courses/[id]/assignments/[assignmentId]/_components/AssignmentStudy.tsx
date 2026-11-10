@@ -2,6 +2,10 @@
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../../../../_components/SessionRecovery';
 import { useRef, useState } from 'react';
+import {
+  archiveAssignmentDraft,
+  type AssignmentDraft,
+} from '@/domains/courses/lib/drafts';
 import type { Assignment } from '@/domains/courses/model/contracts';
 import {
   getAssignment,
@@ -29,6 +33,7 @@ export function AssignmentStudy({
   const [value, setValue] = useState(initial);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [confirmed, setConfirmed] = useState(false);
+  const [previousDrafts, setPreviousDrafts] = useState<AssignmentDraft[]>([]);
   const [hints, setHints] = useState<Record<string, string>>({});
 
   const [listeningTaskId, setListeningTaskId] = useState(
@@ -123,12 +128,21 @@ export function AssignmentStudy({
     try {
       const result = await getAssignment(value.courseId, value.id);
 
-      if (result.version !== value.version) {
+      if (
+        result.version !== value.version ||
+        (result.sourceAvailable === false && value.sourceAvailable !== false)
+      ) {
+        const draft = archiveAssignmentDraft(value, answers);
+
+        // 새 버전 답안에 섞지 않고 당시 입력을 따로 보관해 조용한 손실을 막는다.
+        if (draft) setPreviousDrafts((previous) => [draft, ...previous]);
         setAnswers({});
         setConfirmed(false);
 
         setMessage(
-          '과제가 변경되어 현재 버전을 불러왔습니다. 이전 제출은 이력에서 확인하세요.'
+          result.sourceAvailable === false
+            ? '원본 접근이 변경되어 새 학습을 중지했습니다. 작성한 초안은 별도로 보관했습니다.'
+            : '과제가 변경되어 현재 버전을 불러왔습니다. 이전 초안과 제출은 별도로 보관합니다.'
         );
       }
 
@@ -323,6 +337,32 @@ export function AssignmentStudy({
           </>
         )}
       </form>
+      {previousDrafts.map((draft, index) => (
+        <section
+          className={styles.panel}
+          key={`${draft.version}:${index}`}>
+          <h2>이전 과제 v{draft.version} · 미제출 초안</h2>
+          <p className={styles.notice}>
+            과제 변경 전에 작성한 내용입니다. 새 버전의 제출 답안으로 자동
+            사용하지 않습니다.
+          </p>
+          {draft.answers.map((answer, position) => (
+            <label
+              className={styles.field}
+              key={position}>
+              {answer.label}
+              <TextArea
+                readOnly
+                value={
+                  Array.isArray(answer.answer)
+                    ? answer.answer.join(' / ')
+                    : answer.answer
+                }
+              />
+            </label>
+          ))}
+        </section>
+      ))}
       <section>
         <h2>제출 이력</h2>
         {!value.submissions.length && <p>아직 제출한 기록이 없습니다.</p>}
