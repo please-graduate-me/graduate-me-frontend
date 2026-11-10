@@ -89,12 +89,17 @@ export const time = style({
   fontVariantNumeric: 'tabular-nums',
 });
 
-/** 현재 구절의 전체 위치를 재생 탐색과 혼동하지 않게 표시한다. */
+/** 실제 재생 시각을 포인터와 키보드로 탐색한다. */
 export const progress = style({
   accentColor: vars.color.accent,
-  height: 5,
+  height: 24,
   flex: 1,
   minWidth: 70,
+  minHeight: 0,
+  padding: 0,
+  border: 0,
+  margin: 0,
+  cursor: 'pointer',
 });
 
 /** 자동 반복은 입력 가능한 체크박스로 제공한다. */

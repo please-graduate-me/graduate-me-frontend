@@ -14,6 +14,7 @@ export const learningHistorySchema = z.object({
         'annotation',
         'explanation',
         'conversation',
+        'watch',
       ]),
       language: z.enum(['en', 'th']).nullable().optional(),
       title: z.string(),

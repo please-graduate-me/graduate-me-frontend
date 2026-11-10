@@ -1,6 +1,7 @@
 'use client';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
+import { useWatchPosition } from './useWatchPosition';
 import { useAnswerViewport } from './useAnswerViewport';
 import { Button } from '@/components/ui/primitives/Button';
 import { Panel } from '@/components/ui/layouts/Panel';
@@ -18,6 +19,9 @@ import { learningConfig, answerLimits } from '@/domains/videos/config/catalog';
 import { videoPaths } from '@/domains/videos/config/paths';
 import { useRouter } from 'next/navigation';
 import { type Grade, type Mode } from '@/domains/videos/model/contracts';
+import { playbackPosition } from '@/domains/videos/lib/playback';
+import { Switch } from '@/components/ui/primitives/Switch';
+import { Slider } from '@/components/ui/primitives/Slider';
 import { isTextInput } from '@/lib/dom/isTextInput';
 import type { LearningAction } from '@/domains/videos/model/contracts';
 import { useYouTubePlayer } from './useYouTubePlayer';
@@ -72,10 +76,20 @@ export function Study({
     change: changeSettings,
   } = useLearningSettings(initial.settings, !demo);
 
-  const [scriptView, setScriptView] = useState(false);
+  const [scriptView, setScriptView] = useState(
+    initial.progress.watchMode === 'script'
+  );
+
   const [answerFocused, setAnswerFocused] = useState(false);
   const answerForm = useAnswerViewport(answerFocused);
-  const [index, setIndex] = useState(initial.progress.currentIndex);
+
+  const [index, setIndex] = useState(
+    initial.progress.currentIndex < initial.segments.length &&
+      initial.progress.playbackPosition
+      ? (playbackPosition(initial.progress.playbackPosition, initial.segments)
+          ?.index ?? initial.progress.currentIndex)
+      : initial.progress.currentIndex
+  );
 
   const [mode, setMode] = useState<Mode>(
     initial.progress.mode === 'blank' && !blankAvailable
@@ -158,6 +172,8 @@ export function Study({
     buffering,
     waiting,
     actualRate,
+    currentTime,
+    seekPlayback,
     error: playerError,
     blocked,
     replay,
@@ -166,7 +182,25 @@ export function Study({
     pause,
     resetPlayback,
     prepareNext,
-  } = useYouTubePlayer(video.youtubeId, segment, settings, scriptView);
+  } = useYouTubePlayer(
+    video.youtubeId,
+    segment,
+    settings,
+    scriptView,
+    initial.progress.watchMode === 'script'
+      ? initial.progress.scriptPosition
+      : initial.progress.playbackPosition
+  );
+
+  const watch = useWatchPosition(
+    video.id,
+    initial.progress,
+    currentTime,
+    scriptView,
+    playerReady,
+    playing,
+    !demo
+  );
 
   const state = currentStates.find(
     (item) =>
@@ -352,6 +386,7 @@ export function Study({
     try {
       // 구절 이동과 제출이 마지막 입력의 저장보다 앞서지 않게 한다.
       await flushDraft();
+      await watch.save();
       await operation();
       setSessionExpired(false);
     } catch (error) {
@@ -376,6 +411,30 @@ export function Study({
     });
   }
 
+  async function seekTime(time: number) {
+    const position = playbackPosition(time, segments);
+
+    if (!position || busyRef.current) return;
+
+    if (scriptView || position.index === index) {
+      const target = scriptView ? time : position.time;
+
+      seekPlayback(target);
+      await watch.save(false, target, scriptView);
+
+      return;
+    }
+
+    await perform(async () => {
+      await enqueue({ action: 'navigate', index: position.index, mode });
+      setIndex(position.index);
+      setFeedback(null);
+      setHint('');
+      seekPlayback(position.time, true);
+      await watch.save(false, position.time, false);
+    });
+  }
+
   async function reset() {
     if (busyRef.current) return;
     pause();
@@ -389,6 +448,7 @@ export function Study({
     await perform(async () => {
       // 대기 중인 저장을 끝낸 뒤 초기화해야 이전 답안이 다시 저장되지 않는다.
       await enqueue({ action: 'reset' });
+      await watch.restart();
       resetPlayback(segments[0]?.start ?? 0);
       setStates([]);
       setDifficultSegmentIds([]);
@@ -477,6 +537,10 @@ export function Study({
       await enqueue({ action: 'viewScript' });
       setScriptViewed(true);
       setScriptView(true);
+      const scriptTime = watch.positions.scriptPosition || currentTime;
+
+      seekPlayback(scriptTime);
+      await watch.save(false, scriptTime, true);
       setFeedback(null);
     });
   }
@@ -606,7 +670,20 @@ export function Study({
           학습 종료
         </Link>
       </header>
-      {sessionExpired && <SessionRecovery />}
+      {(sessionExpired || watch.sessionExpired) && <SessionRecovery />}
+      {watch.error && (
+        <div
+          className={styles.error}
+          role='alert'>
+          재생 위치 저장: {watch.error}
+          <Button
+            size='small'
+            variant='secondary'
+            onClick={() => void watch.resume()}>
+            저장된 위치 확인 후 이 위치 저장
+          </Button>
+        </div>
+      )}
       {demo && (
         <p className={styles.notice}>
           체험 모드 · 답안과 진도는 페이지를 떠나면 사라집니다.
@@ -703,14 +780,24 @@ export function Study({
                     disabled={!playerReady}
                   />
                   <span className={styles.time}>
-                    {segment.start.toFixed(0)}초 /{' '}
-                    {video.duration?.toFixed(0) ?? '알 수 없음'}초
+                    {Math.floor(currentTime / 60)}:
+                    {String(Math.floor(currentTime % 60)).padStart(2, '0')} /{' '}
+                    {video.duration == null
+                      ? '길이 미확인'
+                      : `${Math.floor(video.duration / 60)}:${String(Math.floor(video.duration % 60)).padStart(2, '0')}`}
                   </span>
-                  <progress
+                  <Slider
                     className={styles.progress}
-                    max={segments.length}
-                    value={index + 1}
-                    aria-label='전체 구절 중 현재 위치'
+                    min={0}
+                    max={video.duration ?? segments.at(-1)?.end ?? 0}
+                    step={0.1}
+                    value={currentTime}
+                    disabled={!playerReady || busy}
+                    aria-label='영상 재생 위치'
+                    aria-valuetext={`${Math.floor(currentTime / 60)}분 ${Math.floor(currentTime % 60)}초`}
+                    onChange={(event) =>
+                      void seekTime(Number(event.target.value))
+                    }
                   />
                   <Icon
                     name='volume-2'
@@ -737,8 +824,7 @@ export function Study({
                     ))}
                   </Select>
                   <label className={styles.repeatControl}>
-                    <input
-                      type='checkbox'
+                    <Switch
                       checked={settings.autoReplay}
                       disabled={savingSettings}
                       onChange={(event) =>
@@ -788,8 +874,8 @@ export function Study({
                     mode={mode}
                     disabled={busy}
                     blankAvailable={blankAvailable}
+                    active={!scriptView}
                     onChange={(next) => {
-                      setScriptView(false);
                       void navigate(index, next);
                     }}
                   />
@@ -1149,7 +1235,11 @@ export function Study({
           selection={selection}
           segments={segments}
           states={currentStates}
-          index={index}
+          index={
+            scriptView
+              ? (playbackPosition(currentTime, segments)?.index ?? index)
+              : index
+          }
           mode={mode}
           busy={busy}
           videoId={video.id}

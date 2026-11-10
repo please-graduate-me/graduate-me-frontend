@@ -27,7 +27,11 @@ export default async function Learn({
     (segment) => segment.id === search.segment
   );
 
-  if (requestedIndex >= 0) initial.progress.currentIndex = requestedIndex;
+  if (requestedIndex >= 0) {
+    initial.progress.currentIndex = requestedIndex;
+    initial.progress.playbackPosition = initial.segments[requestedIndex].start;
+    initial.progress.watchMode = 'dictation';
+  }
 
   const segment = initial.segments[requestedIndex];
   const requestedVersion = Number(search.version);

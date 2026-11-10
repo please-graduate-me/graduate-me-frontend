@@ -83,3 +83,30 @@ export const selectable = style({
   borderRadius: vars.radius.control,
   background: vars.color.canvas,
 });
+
+/** 구절 탐색과 개인 기록을 같은 밑줄 탭으로 전환한다. */
+export const tabs = style({
+  display: 'flex',
+  gap: 16,
+  borderBottom: `1px solid ${vars.color.line}`,
+  marginBottom: 16,
+});
+
+/** 현재 탭은 문구와 밑줄을 함께 표시한다. */
+export const tab = style({
+  minHeight: 44,
+  padding: '10px 12px',
+  border: 0,
+  borderBottom: '2px solid transparent',
+  background: 'transparent',
+  color: vars.color.muted,
+  cursor: 'pointer',
+  fontSize: 14,
+  selectors: {
+    '&[aria-pressed="true"]': {
+      color: vars.color.ink,
+      borderBottomColor: vars.color.accent,
+    },
+    '&:hover': { background: vars.color.canvas },
+  },
+});

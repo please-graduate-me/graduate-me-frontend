@@ -7,11 +7,13 @@ export function LearningModeSwitch({
   disabled = false,
   onChange,
   blankAvailable = true,
+  active = true,
 }: {
   mode: Mode;
   disabled?: boolean;
   onChange: (mode: Mode) => void;
   blankAvailable?: boolean;
+  active?: boolean;
 }) {
   return (
     <div
@@ -21,7 +23,7 @@ export function LearningModeSwitch({
       <button
         type='button'
         className={styles.option}
-        aria-pressed={mode === 'full'}
+        aria-pressed={active && mode === 'full'}
         disabled={disabled}
         onClick={() => onChange('full')}>
         문장 전체
@@ -29,7 +31,7 @@ export function LearningModeSwitch({
       <button
         type='button'
         className={styles.option}
-        aria-pressed={mode === 'blank'}
+        aria-pressed={active && mode === 'blank'}
         disabled={disabled || !blankAvailable}
         onClick={() => onChange('blank')}>
         빈칸 채우기

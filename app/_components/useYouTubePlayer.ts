@@ -11,9 +11,11 @@ export function useYouTubePlayer(
   youtubeId: string,
   segment: { id: string; start: number; end: number } | undefined,
   settings: LearningSettings,
-  continuous = false
+  continuous = false,
+  initialPosition = 0
 ) {
   const container = useRef<HTMLDivElement>(null);
+  const restorePosition = useRef(initialPosition);
   const player = useRef<Player | null>(null);
   const bounds = useRef(segment);
   const continuousRef = useRef(continuous);
@@ -45,6 +47,9 @@ export function useYouTubePlayer(
   const [blocked, setBlocked] = useState(false);
   const [availableRates, setAvailableRates] = useState<number[]>([1]);
   const [actualRate, setActualRate] = useState(1);
+  const [currentTime, setCurrentTime] = useState(0);
+  const clockAt = useRef(0);
+  const requestedSeek = useRef<{ time: number; play: boolean } | null>(null);
 
   const seek = useCallback(
     (target: number, play: boolean, manual = true) => {
@@ -56,6 +61,7 @@ export function useYouTubePlayer(
       if (!p || typeof p.seekTo !== 'function') return;
       pendingSeek.current = { target, at: Date.now() };
       p.seekTo(target, true);
+      setCurrentTime(target);
       if (play) {
         engaged.current = true;
         setBlocked(false);
@@ -126,6 +132,15 @@ export function useYouTubePlayer(
                 );
 
                 setActualRate(player.current?.getPlaybackRate() ?? 1);
+                const restored = restorePosition.current;
+
+                if (restored > 0) {
+                  requestedSeek.current = { time: restored, play: false };
+                  player.current?.seekTo(restored, true);
+                  setCurrentTime(restored);
+                  engaged.current = true;
+                }
+
                 setReady(true);
               }
             },
@@ -175,6 +190,13 @@ export function useYouTubePlayer(
 
       if (!p || !range || typeof p.getCurrentTime !== 'function') return;
       const current = p.getCurrentTime();
+
+      // 구절 종료 감시는 유지하되 읽기용 시각 갱신은 초당 네 번으로 제한한다.
+      if (Date.now() - clockAt.current >= 250) {
+        clockAt.current = Date.now();
+        setCurrentTime(current);
+      }
+
       const pending = pendingSeek.current;
 
       // 탐색 직후의 이전 재생 시각으로 구절 종료를 오판하지 않는다.
@@ -219,9 +241,21 @@ export function useYouTubePlayer(
     scheduler.reset();
     if (segment) {
       // 첫 재생 전 탐색과 일시정지는 YouTube의 썸네일을 검은 화면으로 바꾼다.
-      if (engaged.current) seek(segment.start, true);
-      manuallyPaused.current = false;
-      if (!engaged.current) scheduleReplay(true);
+      const requested = requestedSeek.current;
+
+      requestedSeek.current = null;
+      if (
+        requested &&
+        (continuousRef.current ||
+          (requested.time >= segment.start && requested.time <= segment.end))
+      )
+        seek(requested.time, requested.play);
+      else if (engaged.current) seek(segment.start, true);
+
+      if (!requested) {
+        manuallyPaused.current = false;
+        if (!engaged.current) scheduleReplay(true);
+      }
     } else player.current?.pauseVideo();
 
     return () => scheduler.cancel();
@@ -308,6 +342,16 @@ export function useYouTubePlayer(
       seek(rewindTarget(p.getCurrentTime(), range.start, range.end), true);
   }, [seek]);
 
+  const seekPlayback = useCallback(
+    (time: number, awaitingSegment = false) => {
+      const play = player.current?.getPlayerState() === 1 || scheduler.waiting;
+
+      if (awaitingSegment) requestedSeek.current = { time, play };
+      seek(time, play);
+    },
+    [scheduler, seek]
+  );
+
   const mount = useCallback((element: HTMLDivElement | null) => {
     container.current = element;
   }, []);
@@ -320,6 +364,8 @@ export function useYouTubePlayer(
     waiting,
     availableRates,
     actualRate,
+    currentTime,
+    seekPlayback,
     error,
     blocked,
     replay,

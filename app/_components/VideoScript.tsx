@@ -9,6 +9,7 @@ import type {
 import { Icon } from '@/components/ui/primitives/Icon';
 import { Input } from '@/components/ui/primitives/Input';
 import { Badge } from '@/components/ui/primitives/Badge';
+import { VideoSavedEntries } from './VideoSavedEntries';
 import { SourceActions } from './SourceActions';
 import * as styles from './VideoScript.css';
 
@@ -39,6 +40,7 @@ export function VideoScript({
   onNavigate: (index: number) => void;
 }) {
   const [query, setQuery] = useState('');
+  const [tab, setTab] = useState<'all' | 'saved'>('all');
 
   const [selection, setSelection] = useState<{
     id: string;
@@ -87,54 +89,86 @@ export function VideoScript({
           size={18}
         />
       </div>
-      <Input
-        aria-label='확인한 스크립트 검색'
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        placeholder='확인한 구절에서 찾기'
-      />
-      <p className={styles.description}>
-        정답을 확인하거나 맞힌 문장만 표시됩니다.
-      </p>
-      <ol className={styles.list}>
-        {segments
-          .map((item, position) => ({ item, position }))
-          .filter(
-            ({ item }) =>
-              !query.trim() ||
-              (visible(item.id) &&
-                item.text.toLowerCase().includes(query.toLowerCase()))
-          )
-          .map(({ item, position }) => (
-            <li key={item.id}>
-              <button
-                type='button'
-                className={styles.item}
-                aria-current={index === position ? 'step' : undefined}
-                disabled={busy}
-                onClick={() => onNavigate(position)}>
-                <time className={styles.time}>
-                  {Math.floor(item.start / 60)}:
-                  {String(Math.floor(item.start % 60)).padStart(2, '0')}
-                </time>
-                <p className={styles.text}>
-                  {visible(item.id)
-                    ? item.text
-                    : `구절 ${position + 1} · 아직 확인하지 않은 문장`}
-                </p>
-                {visible(item.id) && item.translation && (
-                  <p className={styles.description}>{item.translation}</p>
-                )}
-                {states.some(
-                  (state) =>
-                    state.segmentId === item.id &&
-                    state.mode === mode &&
-                    state.status === 'correct'
-                ) && <Badge tone='success'>받아쓰기 완료</Badge>}
-              </button>
-            </li>
-          ))}
-      </ol>
+      <div
+        className={styles.tabs}
+        role='group'
+        aria-label='스크립트 보기'>
+        <button
+          type='button'
+          className={styles.tab}
+          aria-pressed={tab === 'all'}
+          onClick={() => setTab('all')}>
+          전체 구절
+        </button>
+        <button
+          type='button'
+          className={styles.tab}
+          aria-pressed={tab === 'saved'}
+          onClick={() => setTab('saved')}>
+          표현·메모
+        </button>
+      </div>
+      {tab === 'all' ? (
+        <>
+          <Input
+            aria-label='확인한 스크립트 검색'
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder='확인한 구절에서 찾기'
+          />
+          <p className={styles.description}>
+            정답을 확인하거나 맞힌 문장만 표시됩니다.
+          </p>
+          <ol className={styles.list}>
+            {segments
+              .map((item, position) => ({ item, position }))
+              .filter(
+                ({ item }) =>
+                  !query.trim() ||
+                  (visible(item.id) &&
+                    item.text.toLowerCase().includes(query.toLowerCase()))
+              )
+              .map(({ item, position }) => (
+                <li key={item.id}>
+                  <button
+                    type='button'
+                    className={styles.item}
+                    aria-current={index === position ? 'step' : undefined}
+                    disabled={busy}
+                    onClick={() => onNavigate(position)}>
+                    <time className={styles.time}>
+                      {Math.floor(item.start / 60)}:
+                      {String(Math.floor(item.start % 60)).padStart(2, '0')}
+                    </time>
+                    <p className={styles.text}>
+                      {visible(item.id)
+                        ? item.text
+                        : `구절 ${position + 1} · 아직 확인하지 않은 문장`}
+                    </p>
+                    {visible(item.id) && item.translation && (
+                      <p className={styles.description}>{item.translation}</p>
+                    )}
+                    {states.some(
+                      (state) =>
+                        state.segmentId === item.id &&
+                        state.mode === mode &&
+                        state.status === 'correct'
+                    ) && <Badge tone='success'>받아쓰기 완료</Badge>}
+                  </button>
+                </li>
+              ))}
+          </ol>
+        </>
+      ) : demo ? (
+        <p className={styles.description}>
+          개인 표현과 메모는 로그인한 학습 공간에서 저장합니다.
+        </p>
+      ) : (
+        <VideoSavedEntries
+          key={videoId}
+          videoId={videoId}
+        />
+      )}
       {segment && visible(segment.id) && !demo && (
         <div className={styles.actions}>
           <p className={styles.description}>

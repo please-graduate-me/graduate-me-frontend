@@ -18,6 +18,7 @@ const labels = {
   annotation: '하이라이트·메모',
   explanation: 'AI 설명',
   conversation: 'AI 대화',
+  watch: '영상 시청 위치',
 } as const;
 
 /** 저장된 학습 활동과 실제 정오 판정을 별도로 보여준다. */
@@ -77,6 +78,7 @@ export function LearningHistoryList({ items }: { items: LearningHistory }) {
             ['annotation', '위치 메모'],
             ['explanation', 'AI 설명'],
             ['conversation', 'AI 대화'],
+            ['watch', '영상 시청 위치'],
           ] as const
         ).map(([value, label]) => (
           <button

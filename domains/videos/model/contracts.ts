@@ -98,6 +98,12 @@ export const lessonSchema = z.object({
       .union([z.literal(20), z.literal(40), z.literal(60)])
       .optional(),
     scriptViewed: z.boolean().optional(),
+    watchVersion: z.string().optional(),
+    watchRevision: z.number().int().nonnegative().optional(),
+    playbackPosition: z.number().nonnegative().optional(),
+    scriptPosition: z.number().nonnegative().optional(),
+    scriptMaxPosition: z.number().nonnegative().optional(),
+    watchMode: z.enum(['dictation', 'script']).optional(),
   }),
   preparation: z
     .object({
