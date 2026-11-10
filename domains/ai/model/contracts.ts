@@ -79,6 +79,8 @@ export const exerciseSchema = z.object({
     question: z.string(),
     choices: z.array(z.string()),
     sourceQuote: z.string(),
+    practiceStyle: z.enum(['application', 'flex']).optional(),
+    skill: z.enum(['reading', 'listening']).optional(),
   }),
   state: z.object({
     draft: z.string(),

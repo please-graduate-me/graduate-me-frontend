@@ -208,9 +208,24 @@ export function ExerciseSolver({
   return (
     <section className={styles.panel}>
       {sessionExpired && <SessionRecovery />}
+      {exercise.payload.practiceStyle === 'flex' && (
+        <p className={styles.notice}>
+          문맥 이해를 위한 FLEX형 연습입니다. 실제 시험 점수나 공인 수준으로
+          환산하지 않습니다.
+          {exercise.payload.skill === 'listening' && (
+            <Link href={materialPaths.source(exercise.source)}>
+              {' '}
+              영상 원문 구절 듣기 ↗
+            </Link>
+          )}
+        </p>
+      )}
       <div className={styles.row}>
         <Badge tone='brand'>
           AI 생성 ·{' '}
+          {exercise.payload.practiceStyle === 'flex'
+            ? `FLEX형 ${exercise.payload.skill === 'listening' ? '듣기' : '읽기'} · `
+            : ''}{' '}
           {exercise.payload.type === 'choice'
             ? '객관식'
             : exercise.payload.type === 'short_answer'

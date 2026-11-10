@@ -119,6 +119,8 @@ export const generateExercises = (input: {
   language: 'en' | 'th';
   type?: 'choice' | 'short_answer' | 'free_response';
   count?: number;
+  style?: 'application' | 'flex';
+  skill?: 'reading' | 'listening';
   explanationId?: string;
 }) =>
   request(

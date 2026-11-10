@@ -40,6 +40,12 @@ export function GeneratedPractice({
 
   const [count, setCount] = useState(1);
 
+  const [practiceStyle, setPracticeStyle] = useState<'application' | 'flex'>(
+    'application'
+  );
+
+  const [skill, setSkill] = useState<'reading' | 'listening'>('reading');
+
   const [expressionIds, setExpressionIds] = useState<string[]>(
     selectedExpressionId ? [selectedExpressionId] : []
   );
@@ -58,7 +64,12 @@ export function GeneratedPractice({
   const [sessionExpired, setSessionExpired] = useState(false);
 
   const eligible = expressions.filter(
-    (item) => item.source.language === language && item.reviewIncluded
+    (item) =>
+      item.source.language === language &&
+      item.reviewIncluded &&
+      (practiceStyle !== 'flex' ||
+        skill !== 'listening' ||
+        item.source.kind === 'video')
   );
 
   const filtered = items.filter(
@@ -85,7 +96,14 @@ export function GeneratedPractice({
     setSessionExpired(false);
 
     try {
-      const key = JSON.stringify([expressionIds, language, type, count]);
+      const key = JSON.stringify([
+        expressionIds,
+        language,
+        type,
+        count,
+        practiceStyle,
+        skill,
+      ]);
 
       if (request.current?.key !== key)
         request.current = { key, id: crypto.randomUUID() };
@@ -96,6 +114,8 @@ export function GeneratedPractice({
         language,
         type,
         count,
+        style: practiceStyle,
+        skill,
       });
 
       setItems((previous) => [
@@ -169,6 +189,32 @@ export function GeneratedPractice({
             </Select>
           </label>
           <label className={styles.field}>
+            연습 방식
+            <Select
+              value={practiceStyle}
+              onChange={(event) => {
+                setPracticeStyle(event.target.value as typeof practiceStyle);
+                setExpressionIds([]);
+              }}>
+              <option value='application'>짧은 이해·적용</option>
+              <option value='flex'>FLEX형 확장 연습</option>
+            </Select>
+          </label>
+          {practiceStyle === 'flex' && (
+            <label className={styles.field}>
+              영역
+              <Select
+                value={skill}
+                onChange={(event) => {
+                  setSkill(event.target.value as typeof skill);
+                  setExpressionIds([]);
+                }}>
+                <option value='reading'>읽기</option>
+                <option value='listening'>듣기 · 영상 근거</option>
+              </Select>
+            </label>
+          )}
+          <label className={styles.field}>
             유형
             <Select
               value={type}
@@ -193,6 +239,13 @@ export function GeneratedPractice({
             </Select>
           </label>
         </div>
+        {practiceStyle === 'flex' && (
+          <p className={styles.notice}>
+            FLEX형 문맥 이해 연습입니다. 실제 FLEX 시험 문항·점수 또는 공인 능력
+            평가가 아닙니다. 듣기는 실제 영상의 원문 구절을 근거로 하며 영상
+            출처가 있는 표현만 선택할 수 있습니다.
+          </p>
+        )}
         <p className={styles.meta}>
           출제에 사용할 저장 항목을 선택하세요. 서버는 같은 언어의 실제 오답과
           미복습 항목을 우선 참고합니다.
