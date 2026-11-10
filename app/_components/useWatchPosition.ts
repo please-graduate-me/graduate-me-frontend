@@ -55,6 +55,7 @@ export function useWatchPosition(
 
   useEffect(() => {
     if (!enabled) return;
+    // 매 재생 틱 대신 주기와 이탈 경계에 저장해 답안 API와 불필요하게 경쟁하지 않는다.
     const timer = setInterval(() => void save(), 5000);
     const pagehide = () => void save(true);
 

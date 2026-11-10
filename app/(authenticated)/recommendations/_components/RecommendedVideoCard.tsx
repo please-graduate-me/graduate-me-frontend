@@ -26,6 +26,7 @@ export function RecommendedVideoCard({
 
     if (!element) return;
 
+    // 목록에 포함된 것과 실제로 화면에 들어온 노출을 구분한다.
     const observer = new IntersectionObserver(
       (entries) => {
         if (!entries.some((entry) => entry.isIntersecting)) return;

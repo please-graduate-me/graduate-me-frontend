@@ -61,6 +61,7 @@ export function createWatchPositionRecorder(
     const lesson = await getLesson(videoId, transport);
     const progress = lesson.progress;
 
+    // 초기화·원문 변경을 다른 기기의 단순 저장 경합으로 오인해 덮어쓰지 않는다.
     if (!allowNewSource && sourceVersion !== progress.watchVersion)
       throw new Error(
         '원문 또는 학습 회차가 변경되었습니다. 작성 중인 답안을 보존한 뒤 자료를 다시 열어 주세요.'

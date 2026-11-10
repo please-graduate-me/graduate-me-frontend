@@ -50,6 +50,7 @@ export function CommunityPostComposer({
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
+    // 이전 공개 확인을 입력 변경 뒤 재사용하지 않으며 원본 권한은 서버가 다시 확인한다.
     if (!confirmed || busy) return;
     setBusy(true);
     setError('');

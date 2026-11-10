@@ -37,6 +37,7 @@ export function ExpressionPractice({
     try {
       const key = JSON.stringify([expression.id, answer, result]);
 
+      // 응답 유실 후 재전송도 같은 시도로 묶고 다음 카드에서만 식별자를 버린다.
       if (attempt.current?.key !== key)
         attempt.current = { key, id: crypto.randomUUID() };
 

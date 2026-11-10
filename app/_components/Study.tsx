@@ -384,7 +384,7 @@ export function Study({
     setError('');
 
     try {
-      // 구절 이동과 제출이 마지막 입력의 저장보다 앞서지 않게 한다.
+      // 구절 이동과 제출이 답안·시청 위치 저장보다 앞서지 않게 한다.
       await flushDraft();
       await watch.save();
       await operation();

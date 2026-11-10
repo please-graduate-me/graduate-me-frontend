@@ -134,6 +134,7 @@ export function useYouTubePlayer(
                 setActualRate(player.current?.getPlaybackRate() ?? 1);
                 const restored = restorePosition.current;
 
+                // 복원은 사용자의 새 재생 의도가 아니므로 자동 재생하지 않는다.
                 if (restored > 0) {
                   requestedSeek.current = { time: restored, play: false };
                   player.current?.seekTo(restored, true);
