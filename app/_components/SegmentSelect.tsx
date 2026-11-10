@@ -1,3 +1,4 @@
+import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import type {
   Mode,
   Segment,
@@ -50,8 +51,7 @@ export function SegmentSelect({
   return (
     <div className={styles.container}>
       <label className={styles.label}>
-        <input
-          type='checkbox'
+        <Checkbox
           checked={onlyDifficult}
           onChange={(event) => setOnlyDifficult(event.target.checked)}
         />

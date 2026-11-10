@@ -12,6 +12,7 @@ import {
   listRecipients,
   listQuestions,
 } from '@/domains/questions/api/questions';
+import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
@@ -211,8 +212,7 @@ export function QuestionComposer({
             공개되지 않는 내용: 전체 비공개 자료, 내 메모, 답안과 학습 기록
           </p>
           <label className={styles.row}>
-            <input
-              type='checkbox'
+            <Checkbox
               checked={confirmed}
               onChange={(event) => setConfirmed(event.target.checked)}
             />

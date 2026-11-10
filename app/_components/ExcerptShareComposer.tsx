@@ -9,6 +9,7 @@ import {
   listExcerptShares,
   revokeExcerptShare,
 } from '@/domains/materials/api/records';
+import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
@@ -158,8 +159,7 @@ export function ExcerptShareComposer({
           공개하지 않는 내용: 원본 파일·개인 메모·질문·답안·전체 대화
         </p>
         <label className={styles.row}>
-          <input
-            type='checkbox'
+          <Checkbox
             checked={confirmed}
             onChange={(event) => setConfirmed(event.target.checked)}
           />

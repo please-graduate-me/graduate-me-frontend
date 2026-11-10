@@ -58,13 +58,16 @@ globalStyle(':focus-visible', {
   outlineOffset: '3px',
 });
 
-globalStyle('input, textarea, select', {
-  border: `1px solid ${vars.color.inputBorder}`,
-  borderRadius: vars.radius.control,
-  padding: '10px 12px',
-  color: vars.color.ink,
-  background: vars.color.surface,
-});
+globalStyle(
+  'input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select',
+  {
+    border: `1px solid ${vars.color.inputBorder}`,
+    borderRadius: vars.radius.control,
+    padding: '10px 12px',
+    color: vars.color.ink,
+    background: vars.color.surface,
+  }
+);
 
 globalStyle('input, textarea', { minWidth: '0' });
 
@@ -76,7 +79,7 @@ globalStyle('textarea', {
   fontSize: vars.fontSize.small,
 });
 
-globalStyle('label', { fontSize: '14px', fontWeight: '600' });
+globalStyle('label', { fontSize: '14px', fontWeight: '500' });
 globalStyle('details', { marginTop: '20px', fontSize: '14px' });
 globalStyle('summary', { cursor: 'pointer' });
 

@@ -1,4 +1,5 @@
 'use client';
+import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useRef, useState } from 'react';
@@ -255,8 +256,7 @@ export function GeneratedPractice({
             <label
               className={styles.row}
               key={item.id}>
-              <input
-                type='checkbox'
+              <Checkbox
                 checked={expressionIds.includes(item.id)}
                 onChange={(event) =>
                   setExpressionIds((previous) =>

@@ -1,4 +1,5 @@
 'use client';
+import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/primitives/Button';
@@ -274,8 +275,7 @@ export function MaterialRegistration({
           </>
         )}
         <label className={styles.row}>
-          <input
-            type='checkbox'
+          <Checkbox
             checked={confirmed}
             disabled={busy}
             onChange={(event) => setConfirmed(event.target.checked)}

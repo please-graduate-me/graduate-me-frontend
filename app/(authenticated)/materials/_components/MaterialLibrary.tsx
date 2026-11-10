@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { Icon } from '@/components/ui/primitives/Icon';
-import { IconButton } from '@/components/ui/primitives/IconButton';
 import { EmptyState } from '@/components/ui/composites/EmptyState';
 import { MaterialRegistration } from './MaterialRegistration';
 import * as styles from '@/lib/styles/workspace.css';
@@ -332,15 +331,15 @@ export function MaterialLibrary({
                   {formatDate(video.updatedAt)}
                 </time>
               </span>
-              <IconButton
-                name='arrow-up-right'
-                label={`${video.title} 열기`}
-                onClick={() => {
-                  window.location.assign(
-                    `/learn/${encodeURIComponent(video.videoId)}`
-                  );
-                }}
-              />
+              <Link
+                href={`/learn/${encodeURIComponent(video.videoId)}`}
+                className={styles.link}
+                aria-label={`${video.title} 열기`}>
+                <Icon
+                  name='arrow-up-right'
+                  size={18}
+                />
+              </Link>
             </li>
           ))}
         </ul>

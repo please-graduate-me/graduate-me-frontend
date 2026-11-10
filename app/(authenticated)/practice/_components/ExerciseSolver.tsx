@@ -11,6 +11,7 @@ import {
 } from '@/domains/ai/api/learning';
 import { materialPaths } from '@/domains/materials/config/paths';
 import { sourceLabel } from '@/domains/learning/lib/format';
+import { Radio } from '@/components/ui/primitives/Radio';
 import { Button } from '@/components/ui/primitives/Button';
 import { TextArea } from '@/components/ui/primitives/TextArea';
 import { Badge } from '@/components/ui/primitives/Badge';
@@ -19,6 +20,7 @@ import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { QuestionComposer } from '../../../_components/QuestionComposer';
 import { ExerciseAttempts } from './ExerciseAttempts';
 import * as styles from '@/lib/styles/workspace.css';
+import * as exerciseStyles from './ExerciseSolver.css';
 
 /** 저장 정답 채점과 자유 답변 AI 피드백을 분리하고 도움 사용을 보존한다. */
 export function ExerciseSolver({
@@ -281,8 +283,7 @@ export function ExerciseSolver({
               <label
                 key={index}
                 className={styles.row}>
-                <input
-                  type='radio'
+                <Radio
                   name={'exercise-' + exercise.id}
                   value={choice}
                   checked={answer === choice}
@@ -386,12 +387,34 @@ export function ExerciseSolver({
           </Button>
         </article>
       )}
+      {exercise.payload.practiceStyle === 'flex' &&
+        exercise.payload.skill === 'listening' &&
+        exercise.source.kind === 'video' &&
+        exercise.source.youtubeId && (
+          <iframe
+            className={exerciseStyles.audio}
+            src={`https://www.youtube.com/embed/${encodeURIComponent(exercise.source.youtubeId)}?start=${Math.floor(exercise.source.start ?? 0)}&end=${Math.ceil(exercise.source.end ?? 0)}`}
+            title='FLEX형 듣기 연습의 실제 원문 영상'
+            allow='encrypted-media; picture-in-picture'
+            allowFullScreen
+          />
+        )}
       <p className={styles.meta}>
         출제에 사용한 원문 · {sourceLabel(exercise.source)}
       </p>
-      <blockquote className={styles.quote}>
-        {exercise.payload.sourceQuote}
-      </blockquote>
+      {exercise.payload.practiceStyle === 'flex' &&
+      exercise.payload.skill === 'listening' &&
+      !result &&
+      !revealed ? (
+        <p className={styles.notice}>
+          먼저 원문 음성을 듣고 답해 보세요. 제출하거나 정답을 확인한 뒤 출제
+          근거 문장을 보여 줍니다.
+        </p>
+      ) : (
+        <blockquote className={styles.quote}>
+          {exercise.payload.sourceQuote}
+        </blockquote>
+      )}
       <Link
         className={styles.link}
         href={materialPaths.source(exercise.source)}>

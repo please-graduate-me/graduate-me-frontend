@@ -1,3 +1,4 @@
+import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import type { LearningSettings } from '@/domains/users/model/settings';
 import * as styles from './LearningOptions.css';
 
@@ -25,8 +26,7 @@ export function LearningOptions({
       disabled={saving}>
       <legend>내 학습 옵션</legend>
       <label className={styles.control}>
-        <input
-          type='checkbox'
+        <Checkbox
           checked={settings.autoReplay}
           onChange={(event) =>
             onChange({ ...settings, autoReplay: event.target.checked })
