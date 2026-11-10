@@ -19,6 +19,7 @@ export const row = style({
 
 /** 사진이 없는 원문도 실제 제목과 페이지를 가진 문서 표지로 표현한다. */
 export const cover = style({
+  position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
@@ -106,4 +107,13 @@ globalStyle('.' + progress + ' span', {
   height: '100%',
   background: vars.color.accent,
   borderRadius: 4,
+});
+
+/** 자료에서 확인한 실제 영상 썸네일을 표지 비율 안에 표시한다. */
+export const thumbnail = style({
+  position: 'absolute',
+  inset: 0,
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
 });

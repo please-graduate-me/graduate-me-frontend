@@ -34,6 +34,7 @@ export function Button({
       {loading && (
         <Icon
           name='loader-circle'
+          size={size === 'small' ? 16 : 18}
           className={styles.spinner}
         />
       )}

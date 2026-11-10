@@ -42,7 +42,17 @@ export function Dialog({
         onClose();
       }}
       onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target !== event.currentTarget) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+
+        // 대화상자 안쪽 여백 클릭으로 작성 중인 입력이 사라지지 않게 한다.
+        if (
+          event.clientX < bounds.left ||
+          event.clientX > bounds.right ||
+          event.clientY < bounds.top ||
+          event.clientY > bounds.bottom
+        )
+          onClose();
       }}>
       <div className={styles.header}>
         <div>

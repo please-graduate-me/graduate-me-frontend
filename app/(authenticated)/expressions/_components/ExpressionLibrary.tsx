@@ -4,12 +4,14 @@ import Link from 'next/link';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import { sourceLabel, formatDate } from '@/domains/learning/lib/format';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
+import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Icon } from '@/components/ui/primitives/Icon';
 import { EmptyState } from '@/components/ui/composites/EmptyState';
 import { ExpressionDetail } from './ExpressionDetail';
 import * as styles from '@/lib/styles/workspace.css';
+import * as expressionStyles from './ExpressionLibrary.css';
 
 /** 표현 검색과 출처별 탐색을 개인 메모 상세와 연결한다. */
 export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
@@ -18,7 +20,11 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<'all' | 'pdf' | 'video'>('all');
   const [language, setLanguage] = useState('all');
-  const [entryKind, setEntryKind] = useState('all');
+
+  const [entryKind, setEntryKind] = useState<
+    'all' | 'vocabulary' | 'sentence' | 'concept'
+  >('all');
+
   const [review, setReview] = useState('all');
   const [sort, setSort] = useState('recent');
 
@@ -27,7 +33,10 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
       (item) =>
         (kind === 'all' || item.source.kind === kind) &&
         (language === 'all' || item.source.language === language) &&
-        (entryKind === 'all' || item.kind === entryKind) &&
+        (entryKind === 'all' ||
+          (entryKind === 'vocabulary'
+            ? item.kind === 'word' || item.kind === 'phrase'
+            : item.kind === entryKind)) &&
         (review === 'all' || item.reviewIncluded === (review === 'included')) &&
         `${item.text} ${item.meaning} ${item.note} ${item.source.title}`
           .toLowerCase()
@@ -61,20 +70,25 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
         {(
           [
             ['all', '전체'],
-            ['pdf', 'PDF에서'],
-            ['video', '영상에서'],
+            ['vocabulary', '단어·표현'],
+            ['sentence', '문장'],
+            ['concept', '개념'],
           ] as const
         ).map(([value, label]) => (
           <button
             key={value}
             type='button'
             className={styles.tab}
-            aria-pressed={kind === value}
-            onClick={() => setKind(value)}>
+            aria-pressed={entryKind === value}
+            onClick={() => setEntryKind(value)}>
             {label}{' '}
             {value === 'all'
               ? items.length
-              : items.filter((item) => item.source.kind === value).length}
+              : items.filter((item) =>
+                  value === 'vocabulary'
+                    ? item.kind === 'word' || item.kind === 'phrase'
+                    : item.kind === value
+                ).length}
           </button>
         ))}
       </div>
@@ -90,7 +104,7 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
           </Link>
         </EmptyState>
       ) : (
-        <div className={styles.columns}>
+        <div className={expressionStyles.columns}>
           <section>
             <div className={styles.filters}>
               <Input
@@ -114,14 +128,14 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
                 <option value='th'>태국어</option>
               </Select>
               <Select
-                aria-label='표현 종류'
-                value={entryKind}
-                onChange={(event) => setEntryKind(event.target.value)}>
-                <option value='all'>모든 종류</option>
-                <option value='word'>단어</option>
-                <option value='phrase'>숙어·표현</option>
-                <option value='sentence'>문장</option>
-                <option value='concept'>개념</option>
+                aria-label='표현 출처'
+                value={kind}
+                onChange={(event) =>
+                  setKind(event.target.value as typeof kind)
+                }>
+                <option value='all'>모든 출처</option>
+                <option value='pdf'>PDF에서</option>
+                <option value='video'>영상에서</option>
               </Select>
               <Select
                 aria-label='복습 포함 상태'
@@ -139,7 +153,10 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
                 <option value='oldest'>오래된 저장순</option>
               </Select>
             </div>
-            <p className={styles.meta}>최근 저장순 · {filtered.length}개</p>
+            <p className={styles.meta}>
+              {sort === 'oldest' ? '오래된 저장순' : '최근 저장순'} ·{' '}
+              {filtered.length}개
+            </p>
             <ul className={styles.list}>
               {filtered.map((item) => (
                 <li key={item.id}>
@@ -166,8 +183,19 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
               <EmptyState
                 title='검색한 표현이 없어요'
                 description='다른 검색어나 출처를 선택해 보세요.'
-                icon='search'
-              />
+                icon='search'>
+                <Button
+                  variant='secondary'
+                  onClick={() => {
+                    setQuery('');
+                    setKind('all');
+                    setLanguage('all');
+                    setEntryKind('all');
+                    setReview('all');
+                  }}>
+                  전체 표현 보기
+                </Button>
+              </EmptyState>
             )}
           </section>
           {selected && (

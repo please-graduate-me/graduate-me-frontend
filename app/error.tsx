@@ -7,8 +7,10 @@ export default function ErrorPage({ reset }: { reset: () => void }) {
   return (
     <Panel>
       <h1>화면을 불러오지 못했어요.</h1>
-      <p>잠시 후 다시 시도해 주세요.</p>
-      <Button onClick={reset}>다시 시도</Button>
+      <p>
+        조회 중 문제가 발생했습니다. 잠시 후 저장된 자료를 다시 확인해 주세요.
+      </p>
+      <Button onClick={reset}>화면 다시 조회</Button>
     </Panel>
   );
 }

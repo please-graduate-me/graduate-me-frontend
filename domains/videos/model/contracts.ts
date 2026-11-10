@@ -135,6 +135,7 @@ export type ActionResult = z.infer<typeof actionResultSchema>;
 export const videoHistorySchema = z.array(
   z.object({
     videoId: z.string(),
+    youtubeId: z.string().optional(),
     title: z.string(),
     currentIndex: z.number(),
     favorite: z.boolean(),

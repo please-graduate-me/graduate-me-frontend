@@ -1,3 +1,6 @@
+'use client';
+import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import type { MaterialSummary } from '@/domains/materials/model/contracts';
 import type { VideoHistory } from '@/domains/videos/model/contracts';
@@ -15,6 +18,7 @@ export function ResumeCard({
   item: MaterialSummary | VideoHistory[number];
 }) {
   const video = 'videoId' in item;
+  const [thumbnailFailed, setThumbnailFailed] = useState(false);
 
   const current = video
     ? Math.min(item.completedCount ?? 0, item.count)
@@ -42,7 +46,17 @@ export function ResumeCard({
           data-kind={video ? 'video' : 'pdf'}
           tabIndex={-1}
           aria-hidden='true'>
-          {video ? (
+          {video && item.youtubeId && !thumbnailFailed ? (
+            <Image
+              unoptimized
+              src={`https://i.ytimg.com/vi/${encodeURIComponent(item.youtubeId)}/hqdefault.jpg`}
+              alt=''
+              width={100}
+              height={142}
+              className={styles.thumbnail}
+              onError={() => setThumbnailFailed(true)}
+            />
+          ) : video ? (
             <Icon
               name='play'
               size={32}

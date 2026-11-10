@@ -19,7 +19,7 @@ export function EmptyState({
       <span className={styles.icon}>
         <Icon
           name={icon}
-          size={24}
+          size={30}
         />
       </span>
       <h3>{title}</h3>

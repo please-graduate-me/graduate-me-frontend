@@ -10,7 +10,7 @@ export const root = style({
   border: `1px solid ${vars.color.accent}`,
   padding: '10px 16px',
   borderRadius: vars.radius.control,
-  fontWeight: 600,
+  fontWeight: 500,
   cursor: 'pointer',
   whiteSpace: 'nowrap',
   textDecoration: 'none',
@@ -66,9 +66,9 @@ export const variants = styleVariants({
 export const sizes = styleVariants({
   medium: { minHeight: 44, padding: '10px 16px' },
   small: {
-    minHeight: 34,
-    padding: '6px 12px',
-    fontSize: vars.fontSize.caption,
+    minHeight: 32,
+    padding: '5px 10px',
+    fontSize: vars.fontSize.small,
   },
 });
 

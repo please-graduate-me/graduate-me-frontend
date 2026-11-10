@@ -16,6 +16,7 @@ import { getLearningPolicy } from '@/domains/learning/api/policy';
 import type { LearningPolicy } from '@/domains/learning/model/policy';
 import { registerVideo } from '@/domains/videos/api/videos';
 import * as styles from '@/lib/styles/workspace.css';
+import * as registrationStyles from './MaterialRegistration.css';
 
 /** PDF 원본 등록과 기존 영상 준비를 실제 요청에 연결한다. */
 export function MaterialRegistration({
@@ -170,12 +171,26 @@ export function MaterialRegistration({
         )}
         {kind === 'pdf' ? (
           <>
-            <label className={styles.field}>
-              PDF 파일
+            <label
+              className={registrationStyles.dropzone}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault();
+                if (busy) return;
+                const next = event.dataTransfer.files[0];
+
+                if (!next) return;
+                setFile(next);
+                if (!title) setTitle(next.name.replace(/\.pdf$/i, ''));
+              }}>
+              <Icon
+                name='upload'
+                size={26}
+              />
+              {file ? file.name : 'PDF 파일을 여기에 놓아 주세요.'}
               <Input
                 type='file'
                 accept='.pdf,application/pdf'
-                required
                 disabled={busy}
                 onChange={(event) => {
                   const next = event.target.files?.[0] ?? null;
@@ -188,7 +203,7 @@ export function MaterialRegistration({
             </label>
             <p className={styles.meta}>
               {policy
-                ? `${policy.pdf.maxBytes / 1024 / 1024}MB 이하 · 최대 ${policy.pdf.maxPages}페이지 · 새 PDF 하루 ${policy.pdf.dailyNewLimit}개`
+                ? `${policy.pdf.maxBytes / 1024 / 1024}MiB 이하 · 최대 ${policy.pdf.maxPages}페이지 · 새 PDF 하루 ${policy.pdf.dailyNewLimit}개`
                 : '등록 한도 확인 중…'}{' '}
               · 개인 자료로 저장됩니다.
             </p>
