@@ -4,6 +4,8 @@ import { SessionRecovery } from '../../../../_components/SessionRecovery';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from 'pdfjs-dist';
 import Link from 'next/link';
+import { listExpressions } from '@/domains/expressions/api/expressions';
+import type { Expression } from '@/domains/expressions/model/contracts';
 import type { SourceInput } from '@/domains/materials/model/source';
 import type { LearningPolicy } from '@/domains/learning/model/policy';
 import type { Material } from '@/domains/materials/model/contracts';
@@ -62,6 +64,32 @@ export function PdfStudy({
 
   const [savingExpression, setSavingExpression] = useState(false);
   const [savedReload, setSavedReload] = useState(0);
+  const [expressions, setExpressions] = useState<Expression[]>([]);
+  const [expressionsLoading, setExpressionsLoading] = useState(true);
+  const [expressionsError, setExpressionsError] = useState('');
+
+  useEffect(() => {
+    let active = true;
+
+    void listExpressions()
+      .then((value) => {
+        if (active) {
+          setExpressions(value.items);
+          setExpressionsError('');
+          setExpressionsLoading(false);
+        }
+      })
+      .catch((error: Error) => {
+        if (active) {
+          setExpressionsError(error.message);
+          setExpressionsLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [initial.id, savedReload]);
 
   const [dialog, setDialog] = useState<
     'share' | 'annotation' | 'report' | 'question' | null
@@ -509,6 +537,8 @@ export function PdfStudy({
                   ? currentOcr
                   : undefined
               }
+              savedExpressions={expressions}
+              source={source}
               onSelectionAction={(action) => {
                 setPanelOpen(true);
                 setTab('explanation');
@@ -667,6 +697,7 @@ export function PdfStudy({
                   embedded
                   source={source}
                   onSaved={() => {
+                    setExpressionsLoading(true);
                     setSavedReload((value) => value + 1);
                     setTab('records');
                   }}
@@ -688,6 +719,7 @@ export function PdfStudy({
                   initialMode={initialMode}
                   beforeNavigate={confirmNavigation}
                   onSaved={() => {
+                    setExpressionsLoading(true);
                     setSavedReload((value) => value + 1);
                     setTab('records');
                   }}
@@ -787,7 +819,9 @@ export function PdfStudy({
             <PdfSavedExpressions
               key={JSON.stringify(source)}
               source={source}
-              reload={savedReload}
+              expressions={expressions}
+              loading={expressionsLoading}
+              error={expressionsError}
             />
             {quote && (
               <Button
@@ -859,6 +893,7 @@ export function PdfStudy({
                     eligibility?.aiAllowed !== false)
                 }
                 onSaved={() => {
+                  setExpressionsLoading(true);
                   setSavedReload((value) => value + 1);
                   setTab('records');
                 }}

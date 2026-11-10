@@ -82,3 +82,23 @@ globalStyle(`${textLayer} ::selection`, {
   background: 'rgb(255 213 61 / 45%)',
   color: 'transparent',
 });
+
+/** 저장한 뜻의 보조 표시는 원본 선택과 포인터 동작을 가로막지 않는다. */
+export const meaningTooltip = style({
+  position: 'absolute',
+  zIndex: 3,
+  pointerEvents: 'none',
+  width: 240,
+  maxHeight: 240,
+  overflow: 'hidden',
+  borderRadius: vars.radius.control,
+  padding: 12,
+  background: vars.color.surface,
+  color: vars.color.ink,
+  boxShadow: vars.shadow.popover,
+  fontSize: 12,
+  lineHeight: '18px',
+});
+
+globalStyle(`${meaningTooltip} p`, { margin: '6px 0 0' });
+globalStyle(`${meaningTooltip} small`, { color: vars.color.muted });

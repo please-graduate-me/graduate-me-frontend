@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { samePdfRecord } from './pdfRecords';
+import { samePdfRecord, pdfMeaningsAt } from './pdfRecords';
 import { pdfSelectionToolbarPosition } from './pdfSelection';
 
 const source = {
@@ -48,4 +48,22 @@ describe('PDF 선택 도구의 위치', () => {
     expect(bottom.left + bottom.width).toBeLessThanOrEqual(192);
     expect(bottom.top + 44).toBeLessThanOrEqual(400);
   });
+});
+
+it('저장된 뜻 hover는 같은 원문 버전·위치만 사용하고 중복 뜻은 합친다', () => {
+  const saved = {
+    text: 'opens doors',
+    meaning: '새로운 기회를 열다',
+    source: { ...source, rects: [{ x: 0.2, y: 0.3, width: 0.2, height: 0.1 }] },
+  };
+
+  expect(pdfMeaningsAt([saved, saved], source, 0.25, 0.35)).toEqual([
+    { text: saved.text, meaning: saved.meaning },
+  ]);
+
+  expect(pdfMeaningsAt([saved], { ...source, version: 1 }, 0.25, 0.35)).toEqual(
+    []
+  );
+
+  expect(pdfMeaningsAt([saved], source, 0.8, 0.8)).toEqual([]);
 });

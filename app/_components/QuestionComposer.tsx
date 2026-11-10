@@ -2,11 +2,15 @@
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { relatedAnsweredQuestions } from '@/domains/questions/lib/relatedQuestions';
+import type { QuestionSummary } from '@/domains/questions/model/contracts';
 import { useRouter } from 'next/navigation';
 import type { SourceInput } from '@/domains/materials/model/source';
 import {
   createQuestion,
   listRecipients,
+  listQuestions,
 } from '@/domains/questions/api/questions';
 import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
@@ -53,6 +57,24 @@ export function QuestionComposer({
   const [error, setError] = useState('');
   const [sessionExpired, setSessionExpired] = useState(false);
   const [recipientError, setRecipientError] = useState('');
+  const [related, setRelated] = useState<QuestionSummary[]>([]);
+  const sourceSerial = JSON.stringify(source);
+
+  useEffect(() => {
+    let active = true;
+    const selected: SourceInput = JSON.parse(sourceSerial);
+
+    void listQuestions()
+      .then((value) => {
+        if (active) setRelated(relatedAnsweredQuestions(value.items, selected));
+      })
+      .catch(() => undefined);
+
+    return () => {
+      active = false;
+    };
+  }, [sourceSerial]);
+
   const materialId = source.kind === 'pdf' ? source.materialId : source.videoId;
 
   useEffect(() => {
@@ -114,6 +136,20 @@ export function QuestionComposer({
         </Badge>
         <blockquote className={styles.quote}>{source.quote}</blockquote>
       </div>
+      {!preview && related.length > 0 && (
+        <details>
+          <summary>이 원문에서 답변받은 내 질문 {related.length}개</summary>
+          <ul>
+            {related.map((item) => (
+              <li key={item.id}>
+                <Link href={`/questions/${encodeURIComponent(item.id)}`}>
+                  {item.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
       {!preview ? (
         <>
           <label className={styles.field}>

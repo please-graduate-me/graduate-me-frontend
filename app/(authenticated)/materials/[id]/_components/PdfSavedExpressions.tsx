@@ -1,9 +1,7 @@
 'use client';
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { SourceInput } from '@/domains/materials/model/source';
 import type { Expression } from '@/domains/expressions/model/contracts';
-import { listExpressions } from '@/domains/expressions/api/expressions';
 import { materialPaths } from '@/domains/materials/config/paths';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
 import { samePdfRecord } from '@/domains/materials/lib/pdfRecords';
@@ -12,43 +10,18 @@ import * as styles from './PdfSavedExpressions.css';
 /** 내 기록은 현재 페이지·버전·선택 발췌의 개인 표현만 보여 준다. */
 export function PdfSavedExpressions({
   source,
-  reload,
+  expressions,
+  loading,
+  error,
 }: {
   source: SourceInput;
-  reload: number;
+  expressions: Expression[];
+  loading: boolean;
+  error: string;
 }) {
-  const [items, setItems] = useState<Expression[]>([]);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
-  const serial = JSON.stringify(source);
-
-  useEffect(() => {
-    let active = true;
-    const selected: SourceInput = JSON.parse(serial);
-
-    void listExpressions()
-      .then((value) => {
-        if (active) {
-          setError('');
-
-          setItems(
-            value.items.filter((item) => samePdfRecord(item.source, selected))
-          );
-
-          setLoading(false);
-        }
-      })
-      .catch((error: Error) => {
-        if (active) {
-          setError(error.message);
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [serial, reload]);
+  const items = expressions.filter((item) =>
+    samePdfRecord(item.source, source)
+  );
 
   return (
     <section

@@ -1,6 +1,9 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy, RenderTask, TextLayer } from 'pdfjs-dist';
+import type { Expression } from '@/domains/expressions/model/contracts';
+import type { SourceInput } from '@/domains/materials/model/source';
+import { pdfMeaningsAt } from '@/domains/materials/lib/pdfRecords';
 import { loadPdfEngine } from '@/domains/materials/lib/pdf';
 import type { OcrPage } from '@/domains/materials/model/ocr';
 import { readPdfSelection } from '@/domains/materials/lib/pdfSelection';
@@ -19,8 +22,12 @@ export function PdfPage({
   onRendered,
   ocr,
   onSelectionAction,
+  savedExpressions = [],
+  source,
 }: {
   document: PDFDocumentProxy;
+  savedExpressions?: Expression[];
+  source?: SourceInput;
   ocr?: OcrPage;
   onSelectionAction?: (action: 'meaning' | 'translation' | 'save') => void;
   number: number;
@@ -46,6 +53,13 @@ export function PdfPage({
   }, [onRendered]);
 
   const [error, setError] = useState('');
+
+  const [hovered, setHovered] = useState<{
+    x: number;
+    y: number;
+    meanings: { text: string; meaning: string }[];
+  } | null>(null);
+
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
@@ -135,6 +149,30 @@ export function PdfPage({
   return (
     <div
       className={styles.page}
+      onPointerMove={(event) => {
+        if (!source || !savedExpressions.length) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+        const x = (event.clientX - bounds.left) / bounds.width;
+        const y = (event.clientY - bounds.top) / bounds.height;
+        const meanings = pdfMeaningsAt(savedExpressions, source, x, y);
+
+        setHovered(
+          meanings.length
+            ? {
+                x: Math.max(
+                  8,
+                  Math.min(bounds.width - 248, x * bounds.width + 16)
+                ),
+                y: Math.max(
+                  8,
+                  Math.min(bounds.height - 100, y * bounds.height + 20)
+                ),
+                meanings,
+              }
+            : null
+        );
+      }}
+      onPointerLeave={() => setHovered(null)}
       style={
         size.width ? { width: size.width, height: size.height } : undefined
       }>
@@ -183,6 +221,21 @@ export function PdfPage({
           height={size.height}
           onAction={onSelectionAction}
         />
+      )}
+      {hovered && (
+        <div
+          className={styles.meaningTooltip}
+          role='tooltip'
+          style={{ left: hovered.x, top: hovered.y }}>
+          <small>이 위치에 저장한 나의 뜻</small>
+          {hovered.meanings.map((item, index) => (
+            <p key={index}>
+              <strong>{item.text}</strong>
+              <br />
+              {item.meaning}
+            </p>
+          ))}
+        </div>
       )}
       {error && (
         <p
