@@ -1,5 +1,7 @@
 'use client';
 import { ApiError } from '@/lib/api/request';
+import { canStartNewGeneration } from '@/domains/ai/lib/generationFailure';
+import { AiRequestStatus } from './AiRequestStatus';
 import { SessionRecovery } from './SessionRecovery';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -88,6 +90,12 @@ export function LearningAiPanel({
   const explanationRequest = useRef<{ key: string; id: string } | null>(null);
   const exerciseRequest = useRef<{ key: string; id: string } | null>(null);
   const [error, setError] = useState('');
+  const [loadError, setLoadError] = useState('');
+
+  const [failureRecovery, setFailureRecovery] = useState<
+    { kind: 'explanation'; useImage: boolean } | { kind: 'practice' } | null
+  >(null);
+
   const [sessionExpired, setSessionExpired] = useState(false);
   const [dialog, setDialog] = useState<'expression' | 'question' | null>(null);
   const latest = items[0];
@@ -114,12 +122,15 @@ export function LearningAiPanel({
           setItems(explanations.items.filter(same));
           setRelated(explanations.items.filter((item) => !same(item)));
           setConversations(chats.items.filter(same));
+          setLoadError('');
           setLoading(false);
         }
       })
       .catch((error) => {
         if (active) {
-          setError(error.message);
+          setLoadError(error.message);
+          if (error instanceof ApiError && error.status === 401)
+            setSessionExpired(true);
           setLoading(false);
         }
       });
@@ -142,9 +153,10 @@ export function LearningAiPanel({
   }, [serial, reload]);
 
   async function explain(useImage = false) {
-    if (busy) return;
+    if (busy || !allowGeneration) return;
     setBusy(true);
     setError('');
+    setFailureRecovery(null);
     setSessionExpired(false);
 
     try {
@@ -171,15 +183,18 @@ export function LearningAiPanel({
       if (error instanceof ApiError && error.status === 401)
         setSessionExpired(true);
       setError((error as Error).message);
+      if (canStartNewGeneration(error))
+        setFailureRecovery({ kind: 'explanation', useImage });
     } finally {
       setBusy(false);
     }
   }
 
   async function startConversation() {
-    if (busy) return;
+    if (busy || !allowGeneration) return;
     setBusy(true);
     setError('');
+    setFailureRecovery(null);
     setSessionExpired(false);
 
     try {
@@ -201,9 +216,11 @@ export function LearningAiPanel({
   }
 
   async function practice() {
-    if (busy || (beforeNavigate && !beforeNavigate())) return;
+    if (busy || !allowGeneration || (beforeNavigate && !beforeNavigate()))
+      return;
     setBusy(true);
     setError('');
+    setFailureRecovery(null);
     setSessionExpired(false);
 
     try {
@@ -230,6 +247,8 @@ export function LearningAiPanel({
       if (error instanceof ApiError && error.status === 401)
         setSessionExpired(true);
       setError((error as Error).message);
+      if (canStartNewGeneration(error))
+        setFailureRecovery({ kind: 'practice' });
     } finally {
       setBusy(false);
     }
@@ -240,6 +259,7 @@ export function LearningAiPanel({
     if (busy || !allowGeneration || !quickQuestion.trim()) return;
     setBusy(true);
     setError('');
+    setFailureRecovery(null);
     setSessionExpired(false);
 
     try {
@@ -273,6 +293,25 @@ export function LearningAiPanel({
       setError((error as Error).message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  function reloadStoredResults() {
+    setLoading(true);
+    setLoadError('');
+    setReload((value) => value + 1);
+  }
+
+  function requestNewGeneration() {
+    if (busy || !allowGeneration || !failureRecovery) return;
+
+    // 서버가 실패를 확정한 경우에만 사용자 클릭으로 새 유료 요청을 만든다.
+    if (failureRecovery.kind === 'explanation') {
+      explanationRequest.current = null;
+      void explain(failureRecovery.useImage);
+    } else {
+      exerciseRequest.current = null;
+      void practice();
     }
   }
 
@@ -416,10 +455,7 @@ export function LearningAiPanel({
                 )}
                 <Button
                   variant='ghost'
-                  onClick={() => {
-                    setLoading(true);
-                    setReload((v) => v + 1);
-                  }}>
+                  onClick={reloadStoredResults}>
                   저장 결과 새로 조회
                 </Button>
               </details>
@@ -490,13 +526,15 @@ export function LearningAiPanel({
             </p>
           </>
         )}
-        {error && (
-          <p
-            role='alert'
-            className={styles.error}>
-            {error}
-          </p>
-        )}
+        <AiRequestStatus
+          loadError={loadError}
+          error={error}
+          recovery={failureRecovery?.kind}
+          disabled={busy}
+          allowGeneration={allowGeneration}
+          onReload={reloadStoredResults}
+          onNewRequest={requestNewGeneration}
+        />
         {dialog === 'question' && (
           <QuestionComposer
             source={source}
@@ -584,44 +622,19 @@ export function LearningAiPanel({
           size='small'
           variant='ghost'
           disabled={loading || busy}
-          onClick={() => {
-            setLoading(true);
-            setError('');
-            setSessionExpired(false);
-            setReload((value) => value + 1);
-          }}>
+          onClick={reloadStoredResults}>
           저장 결과 새로 조회
         </Button>
       </div>
-      {error && (
-        <p
-          role='alert'
-          className={styles.error}>
-          {error}
-          <span className={styles.row}>
-            <Button
-              size='small'
-              variant='ghost'
-              disabled={busy}
-              onClick={() => {
-                explanationRequest.current = null;
-                void explain();
-              }}>
-              선택 원문 설명 새로 요청
-            </Button>
-            <Button
-              size='small'
-              variant='ghost'
-              disabled={busy}
-              onClick={() => {
-                exerciseRequest.current = null;
-                void practice();
-              }}>
-              적용 문제 새로 요청
-            </Button>
-          </span>
-        </p>
-      )}
+      <AiRequestStatus
+        loadError={loadError}
+        error={error}
+        recovery={failureRecovery?.kind}
+        disabled={busy}
+        allowGeneration={allowGeneration}
+        onReload={reloadStoredResults}
+        onNewRequest={requestNewGeneration}
+      />
       {latest && (
         <>
           <AiExplanation value={latest} />
