@@ -83,7 +83,7 @@ export function SourceActions({
         <ButtonLink
           variant='ghost'
           size='small'
-          href={`/community?source=${encodeURIComponent(JSON.stringify(source))}`}>
+          href={`/community?source=${encodeURIComponent(JSON.stringify(source))}&language=${language}`}>
           일반 글로 발췌 공유
         </ButtonLink>
         <Button

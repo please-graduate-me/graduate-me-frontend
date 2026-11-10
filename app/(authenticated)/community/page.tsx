@@ -8,7 +8,7 @@ import { CommunityList } from './_components/CommunityList';
 export default async function CommunityPage({
   searchParams,
 }: {
-  searchParams: Promise<{ source?: string }>;
+  searchParams: Promise<{ source?: string; language?: string }>;
 }) {
   const { transport } = await requireSession();
   const profile = await getLearningProfile(transport);
@@ -23,14 +23,19 @@ export default async function CommunityPage({
 
   const parsed = sourceInputSchema.safeParse(source);
 
+  const selectedLanguage =
+    search.language === 'en' || search.language === 'th'
+      ? search.language
+      : profile.targetLanguage;
+
   const initial = await listCommunityPosts(
-    { language: profile.targetLanguage },
+    { language: selectedLanguage },
     transport
   );
 
   return (
     <CommunityList
-      initialLanguage={profile.targetLanguage}
+      initialLanguage={selectedLanguage}
       initial={initial}
       source={parsed.success ? parsed.data : undefined}
     />
