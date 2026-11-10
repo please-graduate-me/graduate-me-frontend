@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { assignInlineVars } from '@vanilla-extract/dynamic';
 import * as styles from './Icon.css';
 
 /** 서비스 디자인 시스템의 원본 아이콘 이름을 제한한다. */
@@ -67,13 +67,12 @@ export function Icon({
     <span
       aria-hidden='true'
       className={[styles.root, className].filter(Boolean).join(' ')}
-      style={
-        {
-          [styles.source]: `url(/icons/${name}.svg)`,
-          width: size,
-          height: size,
-        } as CSSProperties
-      }
+      style={{
+        // createVar의 var(...) 참조를 실제 사용자 정의 속성 이름으로 변환해야 마스크가 적용된다.
+        ...assignInlineVars({ [styles.source]: `url(/icons/${name}.svg)` }),
+        width: size,
+        height: size,
+      }}
     />
   );
 }
