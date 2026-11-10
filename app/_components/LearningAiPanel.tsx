@@ -12,8 +12,10 @@ import {
   listConversations,
   listExplanations,
   openConversation,
+  sendAiMessage,
 } from '@/domains/ai/api/learning';
 import { Button } from '@/components/ui/primitives/Button';
+import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { AiExplanation } from './AiExplanation';
@@ -29,9 +31,23 @@ export function LearningAiPanel({
   source,
   language,
   image,
+  compact = false,
+  allowGeneration = true,
+  conversationView = false,
+  initialMode = 'meaning',
+  onQuestion,
+  onSaved,
+  beforeNavigate,
 }: {
   source: SourceInput;
   language: 'en' | 'th';
+  compact?: boolean;
+  allowGeneration?: boolean;
+  conversationView?: boolean;
+  initialMode?: 'meaning' | 'translation';
+  onQuestion?: () => void;
+  onSaved?: () => void;
+  beforeNavigate?: () => boolean;
   image?: { base64: string; mimeType: 'image/png' | 'image/jpeg' };
 }) {
   const router = useRouter();
@@ -43,7 +59,7 @@ export function LearningAiPanel({
 
   const [mode, setMode] = useState<
     'meaning' | 'translation' | 'structure' | 'concept'
-  >('meaning');
+  >(initialMode);
 
   const [explanationLanguage, setExplanationLanguage] = useState<
     'ko' | 'en' | 'th'
@@ -54,6 +70,14 @@ export function LearningAiPanel({
   >('choice');
 
   const [selectedConversation, setSelectedConversation] = useState('');
+  const [quickQuestion, setQuickQuestion] = useState('');
+
+  const quickRequest = useRef<{
+    conversation: Conversation;
+    text: string;
+    id: string;
+  } | null>(null);
+
   const [loading, setLoading] = useState(true);
 
   const [capabilities, setCapabilities] = useState<Awaited<
@@ -177,7 +201,7 @@ export function LearningAiPanel({
   }
 
   async function practice() {
-    if (busy) return;
+    if (busy || (beforeNavigate && !beforeNavigate())) return;
     setBusy(true);
     setError('');
     setSessionExpired(false);
@@ -210,6 +234,278 @@ export function LearningAiPanel({
       setBusy(false);
     }
   }
+
+  async function askFromSource(event: React.FormEvent) {
+    event.preventDefault();
+    if (busy || !allowGeneration || !quickQuestion.trim()) return;
+    setBusy(true);
+    setError('');
+    setSessionExpired(false);
+
+    try {
+      // 응답을 받지 못한 재전송에도 같은 실행 ID와 대화를 사용한다.
+      const chat =
+        quickRequest.current?.conversation ?? (await openConversation(source));
+
+      if (quickRequest.current?.text !== quickQuestion.trim())
+        quickRequest.current = {
+          conversation: chat,
+          text: quickQuestion.trim(),
+          id: crypto.randomUUID(),
+        };
+
+      const value = await sendAiMessage(chat.id, {
+        requestId: quickRequest.current.id,
+        text: quickRequest.current.text,
+      });
+
+      setConversations((previous) => [
+        value,
+        ...previous.filter((item) => item.id !== value.id),
+      ]);
+
+      setSelectedConversation(value.id);
+      setQuickQuestion('');
+      quickRequest.current = null;
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401)
+        setSessionExpired(true);
+      setError((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (compact)
+    return (
+      <section
+        className={styles.stack}
+        aria-label='원문 AI 학습'>
+        {sessionExpired && <SessionRecovery />}
+        {dialog === 'expression' ? (
+          <ExpressionComposer
+            source={source}
+            explanation={latest}
+            embedded
+            onSaved={onSaved}
+            onClose={() => setDialog(null)}
+          />
+        ) : (
+          <>
+            {!allowGeneration && (
+              <p className={styles.notice}>
+                지금은 새 AI 생성을 요청할 수 없습니다. 저장 설명·대화·표현과
+                개인 기록은 유지합니다.
+              </p>
+            )}
+            {loading && <p role='status'>저장된 설명을 불러오고 있어요.</p>}
+            {latest && (
+              <AiExplanation
+                value={latest}
+                compact
+              />
+            )}
+            {!loading && !latest && (
+              <p className={styles.meta}>
+                저장된 설명이 없습니다. 필요한 설명을 요청하면 이곳에
+                보관합니다.
+              </p>
+            )}
+            <div hidden={conversationView}>
+              <div className={styles.row}>
+                <Button
+                  disabled={busy}
+                  onClick={() => setDialog('expression')}>
+                  표현 저장
+                </Button>
+                <Button
+                  variant='secondary'
+                  disabled={busy || !allowGeneration}
+                  onClick={() => void practice()}>
+                  이해 확인
+                </Button>
+              </div>
+              <details open={!latest}>
+                <summary>
+                  {latest ? '다른 설명과 연습 요청' : '설명 요청'}
+                </summary>
+                <div className={styles.stack}>
+                  <label className={styles.field}>
+                    살펴볼 내용
+                    <Select
+                      value={mode}
+                      disabled={busy || !allowGeneration}
+                      onChange={(e) => setMode(e.target.value as typeof mode)}>
+                      <option value='meaning'>문맥의 뜻</option>
+                      <option value='translation'>번역</option>
+                      <option value='structure'>문장 구조</option>
+                      <option value='concept'>개념과 적용</option>
+                    </Select>
+                  </label>
+                  <label className={styles.field}>
+                    설명 언어
+                    <Select
+                      value={explanationLanguage}
+                      disabled={busy || !allowGeneration}
+                      onChange={(e) =>
+                        setExplanationLanguage(
+                          e.target.value as typeof explanationLanguage
+                        )
+                      }>
+                      <option value='ko'>한국어</option>
+                      <option value='en'>영어</option>
+                      <option value='th'>태국어</option>
+                    </Select>
+                  </label>
+                  <Button
+                    loading={busy}
+                    disabled={busy || !allowGeneration}
+                    onClick={() => void explain()}>
+                    선택 원문 설명 요청
+                  </Button>
+                  {image && (
+                    <Button
+                      variant='secondary'
+                      disabled={busy || !allowGeneration}
+                      onClick={() => void explain(true)}>
+                      이 페이지 이미지로 해석
+                    </Button>
+                  )}
+                  <label className={styles.field}>
+                    이해 확인 방식
+                    <Select
+                      value={exerciseType}
+                      disabled={busy || !allowGeneration}
+                      onChange={(e) =>
+                        setExerciseType(e.target.value as typeof exerciseType)
+                      }>
+                      <option value='choice'>객관식</option>
+                      <option value='short_answer'>짧은 정답형</option>
+                      <option value='free_response'>
+                        자유 답변과 AI 피드백
+                      </option>
+                    </Select>
+                  </label>
+                </div>
+              </details>
+              <details>
+                <summary>저장한 다른 설명과 사용 한도</summary>
+                {items.slice(1).map((item) => (
+                  <AiExplanation
+                    key={item.id}
+                    value={item}
+                    compact
+                  />
+                ))}
+                {related.map((item) => (
+                  <AiExplanation
+                    key={item.id}
+                    value={item}
+                    compact
+                  />
+                ))}
+                {capabilities && (
+                  <p className={styles.meta}>
+                    {aiProviderLabel(capabilities.provider)} ·{' '}
+                    {capabilities.models.text}
+                    <br />
+                    하루 {capabilities.limits.dailyRequests}회 ·{' '}
+                    {capabilities.limits.dailyTokens.toLocaleString()}토큰 ·
+                    동시 {capabilities.limits.concurrentRequests}개
+                  </p>
+                )}
+                <Button
+                  variant='ghost'
+                  onClick={() => {
+                    setLoading(true);
+                    setReload((v) => v + 1);
+                  }}>
+                  저장 결과 새로 조회
+                </Button>
+              </details>
+            </div>
+            <hr />
+            {!conversation && (
+              <form
+                className={styles.stack}
+                onSubmit={(event) => void askFromSource(event)}>
+                <label className={styles.field}>
+                  선택한 구절에 질문하기
+                  <Input
+                    aria-label='선택한 구절에 질문하기'
+                    value={quickQuestion}
+                    onChange={(event) => setQuickQuestion(event.target.value)}
+                    maxLength={3000}
+                    disabled={busy || !allowGeneration}
+                    required
+                    placeholder='이 구절에 대해 더 물어보세요'
+                  />
+                </label>
+                <div>
+                  <Button
+                    loading={busy}
+                    disabled={
+                      busy || !allowGeneration || !quickQuestion.trim()
+                    }>
+                    질문 보내기
+                  </Button>
+                </div>
+              </form>
+            )}
+            {conversations.length > 0 && (
+              <Select
+                aria-label='저장된 원문 대화'
+                value={selectedConversation}
+                onChange={(e) => setSelectedConversation(e.target.value)}>
+                <option value=''>저장된 대화 선택</option>
+                {conversations.map((chat, index) => (
+                  <option
+                    key={chat.id}
+                    value={chat.id}>
+                    {chat.messages
+                      .find((m) => m.role === 'user')
+                      ?.text.slice(0, 35) || `원문 대화 ${index + 1}`}
+                  </option>
+                ))}
+              </Select>
+            )}
+            {conversation && (
+              <AiConversation
+                key={conversation.id}
+                initial={conversation}
+                language={language}
+                readOnly={!allowGeneration}
+              />
+            )}
+            <Button
+              variant='ghost'
+              onClick={() =>
+                onQuestion ? onQuestion() : setDialog('question')
+              }>
+              도우미에게 질문하기 →
+            </Button>
+            <p className={styles.meta}>
+              설명 조회와 저장에는 새 AI 호출이 없습니다. 새 설명·문제·대화
+              답변만 사용량에 포함됩니다.
+            </p>
+          </>
+        )}
+        {error && (
+          <p
+            role='alert'
+            className={styles.error}>
+            {error}
+          </p>
+        )}
+        {dialog === 'question' && (
+          <QuestionComposer
+            source={source}
+            language={language}
+            onClose={() => setDialog(null)}
+          />
+        )}
+      </section>
+    );
 
   return (
     <section

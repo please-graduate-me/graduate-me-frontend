@@ -63,3 +63,32 @@ export function readPdfSelection(
     ),
   };
 }
+
+/** 선택 영역이 페이지 가장자리에 있어도 도구를 원본 안에 배치한다. */
+export function pdfSelectionToolbarPosition(
+  rect: { x: number; y: number; width: number; height: number },
+  pageWidth: number,
+  pageHeight: number
+) {
+  const width = Math.min(330, Math.max(0, pageWidth - 16));
+
+  const left = Math.max(
+    8,
+    Math.min(
+      pageWidth - width - 8,
+      (rect.x + rect.width / 2) * pageWidth - width / 2
+    )
+  );
+
+  const above = rect.y * pageHeight - 54;
+
+  const top = Math.max(
+    8,
+    Math.min(
+      Math.max(8, pageHeight - 52),
+      above >= 8 ? above : (rect.y + rect.height) * pageHeight + 8
+    )
+  );
+
+  return { left, top, width };
+}

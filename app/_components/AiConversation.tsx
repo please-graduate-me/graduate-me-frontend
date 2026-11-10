@@ -17,9 +17,11 @@ import * as styles from '@/lib/styles/workspace.css';
 export function AiConversation({
   initial,
   language,
+  readOnly = false,
 }: {
   initial: Conversation;
   language: 'en' | 'th';
+  readOnly?: boolean;
 }) {
   const [conversation, setConversation] = useState(initial);
   const [text, setText] = useState('');
@@ -47,7 +49,7 @@ export function AiConversation({
 
   async function send(event: React.FormEvent) {
     event.preventDefault();
-    if (!text.trim() || busy) return;
+    if (!text.trim() || busy || readOnly) return;
     setBusy(true);
     setError('');
     setSessionExpired(false);
@@ -151,6 +153,12 @@ export function AiConversation({
           </article>
         ))}
       </div>
+      {readOnly && (
+        <p className={styles.notice}>
+          저장된 대화를 읽을 수 있습니다. 현재 원문에서는 새 AI 답변을 요청할 수
+          없습니다.
+        </p>
+      )}
       <form
         onSubmit={(event) => void send(event)}
         className={styles.stack}>
@@ -159,7 +167,7 @@ export function AiConversation({
           <TextArea
             value={text}
             maxLength={3000}
-            disabled={busy}
+            disabled={busy || readOnly}
             onChange={(event) => setText(event.target.value)}
             placeholder='이 표현은 왜 이 의미로 쓰였나요?'
             required
@@ -179,7 +187,7 @@ export function AiConversation({
         <div>
           <Button
             loading={busy}
-            disabled={busy || !text.trim()}>
+            disabled={busy || readOnly || !text.trim()}>
             질문 보내기
           </Button>
         </div>

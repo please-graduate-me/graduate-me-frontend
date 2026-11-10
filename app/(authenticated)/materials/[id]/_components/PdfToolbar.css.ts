@@ -6,8 +6,8 @@ export const toolbar = style({
   position: 'relative',
   display: 'flex',
   alignItems: 'center',
-  gap: vars.space.xs,
-  height: 54,
+  gap: vars.space.sm,
+  height: 52,
   paddingInline: vars.space.md,
   borderBottom: `1px solid ${vars.color.line}`,
   background: vars.color.surface,
@@ -17,13 +17,17 @@ export const toolbar = style({
 /** 페이지 이동과 입력을 하나의 조작 단위로 묶는다. */
 export const pageControl = style({
   display: 'flex',
+  width: 190,
+  height: 40,
+  justifyContent: 'center',
+  flexShrink: 0,
   alignItems: 'center',
   gap: vars.space.xs,
 });
 
 /** 짧은 페이지 번호만 입력하는 실제 필드다. */
 export const pageInput = style({
-  width: 40,
+  width: 36,
   height: 32,
   textAlign: 'center',
   borderRadius: vars.radius.control,
@@ -46,7 +50,6 @@ export const divider = style({
   width: 1,
   height: 22,
   background: vars.color.line,
-  marginInline: vars.space.sm,
 });
 
 /** 확대 메뉴를 트리거 바로 아래에 배치한다. */
@@ -63,7 +66,8 @@ export const zoomButton = style({
   height: 32,
   border: 0,
   borderRadius: vars.radius.control,
-  background: vars.color.canvas,
+  background: 'transparent',
+  selectors: { '&[aria-expanded="true"]': { background: vars.color.selected } },
   color: vars.color.ink,
   fontSize: 13,
   cursor: 'pointer',
@@ -114,11 +118,21 @@ export const spacer = style({ flex: 1 });
 export const error = style({
   position: 'absolute',
   left: 44,
-  top: 54,
+  top: 52,
   padding: '6px 10px',
   border: `1px solid ${vars.color.line}`,
   borderRadius: vars.radius.control,
   background: vars.color.surface,
   color: vars.color.error,
   fontSize: 12,
+});
+
+/** 확대·축소·배율 선택을 하나의 조작 영역으로 묶는다. */
+export const zoomControls = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 2,
+  width: 200,
+  flexShrink: 0,
 });

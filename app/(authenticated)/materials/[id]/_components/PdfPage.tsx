@@ -4,6 +4,7 @@ import type { PDFDocumentProxy, RenderTask, TextLayer } from 'pdfjs-dist';
 import { loadPdfEngine } from '@/domains/materials/lib/pdf';
 import type { OcrPage } from '@/domains/materials/model/ocr';
 import { readPdfSelection } from '@/domains/materials/lib/pdfSelection';
+import { PdfSelectionToolbar } from './PdfSelectionToolbar';
 import { PdfOcrLayer } from './PdfOcrLayer';
 import * as styles from './PdfPage.css';
 
@@ -17,9 +18,11 @@ export function PdfPage({
   highlights = [],
   onRendered,
   ocr,
+  onSelectionAction,
 }: {
   document: PDFDocumentProxy;
   ocr?: OcrPage;
+  onSelectionAction?: (action: 'meaning' | 'translation' | 'save') => void;
   number: number;
   scale: number;
   interactive?: boolean;
@@ -126,6 +129,9 @@ export function PdfPage({
     if (selection) onSelection?.(selection.quote, selection.rects);
   }
 
+  const selectedRect = highlights.find((item) => item.id === 'selection')
+    ?.rects[0];
+
   return (
     <div
       className={styles.page}
@@ -170,6 +176,14 @@ export function PdfPage({
           ))
         )}
       </div>
+      {interactive && selectedRect && onSelectionAction && size.width > 0 && (
+        <PdfSelectionToolbar
+          rect={selectedRect}
+          width={size.width}
+          height={size.height}
+          onAction={onSelectionAction}
+        />
+      )}
       {error && (
         <p
           className={styles.error}

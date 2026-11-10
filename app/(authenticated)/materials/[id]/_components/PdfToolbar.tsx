@@ -17,6 +17,8 @@ export function PdfToolbar({
   onSelectionMode,
   onMemo,
   onThumbnails,
+  onHighlight,
+  hasSelection,
 }: {
   page: number;
   total: number;
@@ -29,6 +31,8 @@ export function PdfToolbar({
   onSelectionMode: (value: boolean) => void;
   onMemo: () => void;
   onThumbnails: () => void;
+  onHighlight: () => void;
+  hasSelection: boolean;
 }) {
   const [draft, setDraft] = useState(String(page));
   const [previous, setPrevious] = useState(page);
@@ -115,78 +119,80 @@ export function PdfToolbar({
         />
       </div>
       <span className={styles.divider} />
-      <IconButton
-        label='축소'
-        name='minus'
-        disabled={typeof zoom === 'number' && zoom <= 0.5}
-        onClick={() =>
-          onZoom(Math.max(0.5, (typeof zoom === 'number' ? zoom : 1) - 0.25))
-        }
-      />
-      <div
-        className={styles.zoomRoot}
-        ref={menu}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') setOpen(false);
-        }}>
-        <button
-          type='button'
-          className={styles.zoomButton}
-          aria-expanded={open}
-          aria-controls='pdf-zoom-menu'
-          onClick={() => setOpen((value) => !value)}>
-          {zoomLabel}
-          <Icon
-            name='chevron-down'
-            size={16}
-          />
-        </button>
-        {open && (
-          <div
-            id='pdf-zoom-menu'
-            className={styles.menu}
-            aria-label='PDF 확대율'>
-            {(
-              [
-                ['page', '페이지에 맞춤'],
-                ['width', '너비에 맞춤'],
-                [0.5, '50%'],
-                [0.75, '75%'],
-                [1, '100%'],
-                [1.25, '125%'],
-                [1.5, '150%'],
-                [2, '200%'],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                type='button'
-                key={value}
-                className={styles.menuItem}
-                aria-pressed={zoom === value}
-                onClick={() => {
-                  onZoom(value);
-                  setOpen(false);
-                }}>
-                {label}
-                {zoom === value && (
-                  <Icon
-                    name='check'
-                    size={16}
-                  />
-                )}
-              </button>
-            ))}
-          </div>
-        )}
+      <div className={styles.zoomControls}>
+        <IconButton
+          label='축소'
+          name='minus'
+          disabled={typeof zoom === 'number' && zoom <= 0.5}
+          onClick={() =>
+            onZoom(Math.max(0.5, (typeof zoom === 'number' ? zoom : 1) - 0.25))
+          }
+        />
+        <div
+          className={styles.zoomRoot}
+          ref={menu}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') setOpen(false);
+          }}>
+          <button
+            type='button'
+            className={styles.zoomButton}
+            aria-expanded={open}
+            aria-controls='pdf-zoom-menu'
+            onClick={() => setOpen((value) => !value)}>
+            {zoomLabel}
+            <Icon
+              name='chevron-down'
+              size={16}
+            />
+          </button>
+          {open && (
+            <div
+              id='pdf-zoom-menu'
+              className={styles.menu}
+              aria-label='PDF 확대율'>
+              {(
+                [
+                  ['page', '페이지에 맞춤'],
+                  ['width', '너비에 맞춤'],
+                  [0.5, '50%'],
+                  [0.75, '75%'],
+                  [1, '100%'],
+                  [1.25, '125%'],
+                  [1.5, '150%'],
+                  [2, '200%'],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  type='button'
+                  key={value}
+                  className={styles.menuItem}
+                  aria-pressed={zoom === value}
+                  onClick={() => {
+                    onZoom(value);
+                    setOpen(false);
+                  }}>
+                  {label}
+                  {zoom === value && (
+                    <Icon
+                      name='check'
+                      size={16}
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <IconButton
+          label='확대'
+          name='plus'
+          disabled={typeof zoom === 'number' && zoom >= 2}
+          onClick={() =>
+            onZoom(Math.min(2, (typeof zoom === 'number' ? zoom : 1) + 0.25))
+          }
+        />
       </div>
-      <IconButton
-        label='확대'
-        name='plus'
-        disabled={typeof zoom === 'number' && zoom >= 2}
-        onClick={() =>
-          onZoom(Math.min(2, (typeof zoom === 'number' ? zoom : 1) + 0.25))
-        }
-      />
       <span className={styles.divider} />
       <IconButton
         label='텍스트 선택 모드'
@@ -194,13 +200,16 @@ export function PdfToolbar({
         selected={selectionMode}
         onClick={() => onSelectionMode(!selectionMode)}
       />
-      <span className={styles.total}>
-        {selectionMode ? '텍스트 선택' : '읽기 모드'}
-      </span>
+      <IconButton
+        label='선택한 구절 하이라이트'
+        name='highlighter'
+        disabled={!hasSelection}
+        onClick={onHighlight}
+      />
       <div className={styles.spacer} />
       <IconButton
         label={memoOpen ? '구절 패널로 돌아가기' : '개인 메모 열기'}
-        name='pencil'
+        name='message-circle'
         selected={memoOpen}
         onClick={onMemo}
       />
