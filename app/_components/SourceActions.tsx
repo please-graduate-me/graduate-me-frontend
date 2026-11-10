@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import type { SourceInput } from '@/domains/materials/model/source';
 import { Button } from '@/components/ui/primitives/Button';
+import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
 import { Icon } from '@/components/ui/primitives/Icon';
 import { ExpressionComposer } from './ExpressionComposer';
 import { QuestionComposer } from './QuestionComposer';
@@ -79,6 +80,12 @@ export function SourceActions({
           onClick={() => setDialog('share')}>
           발췌 공유
         </Button>
+        <ButtonLink
+          variant='ghost'
+          size='small'
+          href={`/community?source=${encodeURIComponent(JSON.stringify(source))}`}>
+          일반 글로 발췌 공유
+        </ButtonLink>
         <Button
           size='small'
           variant='ghost'
