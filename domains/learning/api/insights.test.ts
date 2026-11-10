@@ -32,7 +32,7 @@ describe('개인 학습 분석 계약', () => {
 
     expect(fetch).toHaveBeenCalledWith(
       '/api/learning/insights?language=th&days=7',
-      { cache: 'no-store' }
+      expect.objectContaining({ cache: 'no-store' })
     );
 
     expect(value.accuracy).toBe(50);

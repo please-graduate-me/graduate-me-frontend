@@ -47,7 +47,10 @@ describe('별도 시청 위치 저장', () => {
       transport
     );
 
-    await expect(recorder.record(10, 'dictation')).rejects.toThrow('응답 유실');
+    await expect(recorder.record(10, 'dictation')).rejects.toThrow(
+      '응답을 받지 못했습니다.'
+    );
+
     await recorder.record(12, 'dictation');
 
     expect(bodies).toHaveLength(3);

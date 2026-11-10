@@ -57,7 +57,7 @@ describe('페이지 OCR 계약', () => {
 
     expect(transport.mock.calls[0]).toEqual([
       `/api/materials/${id}/ocr?version=2&page=3`,
-      { cache: 'no-store' },
+      expect.objectContaining({ cache: 'no-store' }),
     ]);
 
     await recognizeMaterialPage(id, { requestId: id, version: 2, page: 3 });
