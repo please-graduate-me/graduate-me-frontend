@@ -1,4 +1,6 @@
 'use client';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from './SessionRecovery';
 import { useState } from 'react';
 import type { Annotation } from '@/domains/materials/model/records';
 import {
@@ -20,6 +22,7 @@ export function AnnotationList({
   onDelete: (id: string) => void;
 }) {
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function save(item: Annotation, memo: string) {
@@ -30,6 +33,7 @@ export function AnnotationList({
     try {
       onChange(await updateAnnotation(item.id, { memo }));
     } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -44,6 +48,7 @@ export function AnnotationList({
       await deleteAnnotation(id);
       onDelete(id);
     } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -74,6 +79,7 @@ export function AnnotationList({
           </Button>
         </article>
       ))}
+      {sessionExpired && <SessionRecovery />}
       {error && (
         <p
           role='alert'

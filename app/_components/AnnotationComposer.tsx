@@ -1,4 +1,6 @@
 'use client';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from './SessionRecovery';
 import { useState } from 'react';
 import type { SourceInput } from '@/domains/materials/model/source';
 import type { Annotation } from '@/domains/materials/model/records';
@@ -23,6 +25,7 @@ export function AnnotationComposer({
   const [memo, setMemo] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
@@ -35,6 +38,7 @@ export function AnnotationComposer({
       onSaved?.(value);
       onClose();
     } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -71,6 +75,7 @@ export function AnnotationComposer({
             onChange={(event) => setMemo(event.target.value)}
           />
         </label>
+        {sessionExpired && <SessionRecovery />}
         {error && (
           <p
             className={styles.error}

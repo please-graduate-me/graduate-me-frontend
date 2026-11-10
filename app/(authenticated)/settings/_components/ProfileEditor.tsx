@@ -1,4 +1,6 @@
 'use client';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveLearningProfile } from '@/domains/users/api/profile';
@@ -15,6 +17,7 @@ export function ProfileEditor({ initial }: { initial: LearningProfile }) {
   const [interests, setInterests] = useState(initial.interests.join(', '));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [saved, setSaved] = useState(false);
 
   async function submit(event: React.FormEvent) {
@@ -41,6 +44,7 @@ export function ProfileEditor({ initial }: { initial: LearningProfile }) {
       setSaved(true);
       router.refresh();
     } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -121,6 +125,7 @@ export function ProfileEditor({ initial }: { initial: LearningProfile }) {
           </Button>
         </div>
       </fieldset>
+      {sessionExpired && <SessionRecovery />}
       {error && (
         <p
           className={styles.error}

@@ -1,4 +1,6 @@
 'use client';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from './SessionRecovery';
 import { useEffect, useState } from 'react';
 import type { SourceInput } from '@/domains/materials/model/source';
 import type { ExcerptShare } from '@/domains/materials/model/records';
@@ -27,6 +29,7 @@ export function ExcerptShareComposer({
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [url, setUrl] = useState('');
   const serial = JSON.stringify(source);
 
@@ -82,6 +85,7 @@ export function ExcerptShareComposer({
       setItems((previous) => [value, ...previous]);
       setUrl(new URL(value.path, window.location.origin).href);
     } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -105,6 +109,7 @@ export function ExcerptShareComposer({
 
       setUrl('');
     } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -186,6 +191,7 @@ export function ExcerptShareComposer({
             </Button>
           </div>
         )}
+        {sessionExpired && <SessionRecovery />}
         {error && (
           <p
             className={styles.error}

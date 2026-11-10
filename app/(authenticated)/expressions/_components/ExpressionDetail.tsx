@@ -1,4 +1,6 @@
 'use client';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useState } from 'react';
 import Link from 'next/link';
 import type { Expression } from '@/domains/expressions/model/contracts';
@@ -16,6 +18,7 @@ import { TextArea } from '@/components/ui/primitives/TextArea';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { Icon } from '@/components/ui/primitives/Icon';
 import * as styles from '@/lib/styles/workspace.css';
+import * as expressionStyles from './ExpressionDetail.css';
 
 /** 처음 만난 문맥을 유지하며 개인의 뜻과 메모만 편집한다. */
 export function ExpressionDetail({
@@ -33,6 +36,7 @@ export function ExpressionDetail({
   const [kind, setKind] = useState(expression.kind);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
@@ -43,6 +47,7 @@ export function ExpressionDetail({
       onChange(await updateExpression(expression.id, { meaning, note, kind }));
       setEditing(false);
     } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -63,6 +68,7 @@ export function ExpressionDetail({
       await deleteExpression(expression.id);
       onDelete();
     } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -71,7 +77,7 @@ export function ExpressionDetail({
 
   return (
     <section
-      className={styles.panel}
+      className={expressionStyles.detail}
       aria-label='선택한 표현 상세'>
       <div className={styles.row}>
         <Badge tone='brand'>
@@ -93,7 +99,7 @@ export function ExpressionDetail({
           {editing ? '편집 닫기' : '뜻 · 메모 편집'}
         </Button>
       </div>
-      <h2 className={styles.expressionTitle}>{expression.text}</h2>
+      <h2 className={expressionStyles.title}>{expression.text}</h2>
       <p className={styles.meta}>
         {
           {
@@ -170,6 +176,7 @@ export function ExpressionDetail({
           </p>
         </>
       )}
+      {sessionExpired && <SessionRecovery />}
       {error && (
         <p
           role='alert'

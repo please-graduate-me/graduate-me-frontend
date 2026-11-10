@@ -1,4 +1,6 @@
 'use client';
+import { ApiError } from '@/lib/api/request';
+import { SessionRecovery } from '../../../../_components/SessionRecovery';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -23,6 +25,7 @@ export function QuestionThread({ initial }: { initial: Question }) {
   const [body, setBody] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   async function send(event: React.FormEvent) {
     event.preventDefault();
@@ -34,6 +37,7 @@ export function QuestionThread({ initial }: { initial: Question }) {
       setBody('');
       router.refresh();
     } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -47,6 +51,7 @@ export function QuestionThread({ initial }: { initial: Question }) {
     try {
       setQuestion(await getQuestion(question.id));
     } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -61,6 +66,7 @@ export function QuestionThread({ initial }: { initial: Question }) {
       setQuestion(await updateQuestion(question.id, input));
       router.refresh();
     } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
     } finally {
       setBusy(false);
@@ -198,6 +204,7 @@ export function QuestionThread({ initial }: { initial: Question }) {
                 placeholder='더 궁금한 점을 적어 주세요.'
               />
             </label>
+            {sessionExpired && <SessionRecovery />}
             {error && (
               <p
                 className={styles.error}
