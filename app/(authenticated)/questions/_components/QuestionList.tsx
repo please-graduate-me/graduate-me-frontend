@@ -85,7 +85,7 @@ export function QuestionList({ initial }: { initial: QuestionSummary[] }) {
         <EmptyState
           title={query ? '검색한 질문이 없어요' : '아직 질문이 없어요'}
           icon='message-circle'
-          description='PDF나 영상에서 구절을 선택하고 담당 도우미에게 질문해 보세요.'
+          description='PDF나 영상에서 구절을 선택하고 담당 커뮤니티에 질문해 보세요.'
         />
       ) : (
         <table className={styles.table}>

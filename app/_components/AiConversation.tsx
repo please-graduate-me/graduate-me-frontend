@@ -147,7 +147,7 @@ export function AiConversation({
                 variant='ghost'
                 size='small'
                 onClick={() => setSharedMessage(message.id)}>
-                이 답변을 도우미에게 질문
+                이 답변을 커뮤니티에 질문
               </Button>
             )}
           </article>

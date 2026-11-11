@@ -64,7 +64,7 @@ export function SourceActions({
             name='message-circle'
             size={16}
           />
-          도우미에게 질문
+          커뮤니티에 질문
         </Button>
       </div>
       <div className={styles.row}>

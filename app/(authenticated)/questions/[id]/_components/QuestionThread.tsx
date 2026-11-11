@@ -191,35 +191,42 @@ export function QuestionThread({ initial }: { initial: Question }) {
               답변 새로 확인
             </Button>
           </div>
-          <form
-            className={styles.stack}
-            onSubmit={(event) => void send(event)}>
-            <label className={styles.field}>
-              추가 질문
-              <TextArea
-                required
-                value={body}
-                maxLength={10000}
-                onChange={(event) => setBody(event.target.value)}
-                placeholder='더 궁금한 점을 적어 주세요.'
-              />
-            </label>
-            {sessionExpired && <SessionRecovery />}
-            {error && (
-              <p
-                className={styles.error}
-                role='alert'>
-                {error}
-              </p>
-            )}
-            <div>
-              <Button
-                loading={busy}
-                disabled={busy || !body.trim()}>
-                추가 질문 보내기
-              </Button>
-            </div>
-          </form>
+          {question.kind === 'report' ? (
+            <form
+              className={styles.stack}
+              onSubmit={(event) => void send(event)}>
+              <label className={styles.field}>
+                추가 질문
+                <TextArea
+                  required
+                  value={body}
+                  maxLength={10000}
+                  onChange={(event) => setBody(event.target.value)}
+                  placeholder='더 궁금한 점을 적어 주세요.'
+                />
+              </label>
+              {sessionExpired && <SessionRecovery />}
+              {error && (
+                <p
+                  className={styles.error}
+                  role='alert'>
+                  {error}
+                </p>
+              )}
+              <div>
+                <Button
+                  loading={busy}
+                  disabled={busy || !body.trim()}>
+                  추가 질문 보내기
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <p className={styles.notice}>
+              기존 개인 질문은 이력으로 보존됩니다. 새 질문은 학습 커뮤니티에서
+              조교를 태그해 주세요.
+            </p>
+          )}
         </section>
         <aside className={styles.sourcePanel}>
           <p className={styles.meta}>질문의 근거</p>

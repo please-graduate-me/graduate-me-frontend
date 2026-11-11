@@ -16,10 +16,11 @@ import {
 } from '@/domains/community/api/community';
 import { materialPaths } from '@/domains/materials/config/paths';
 import { formatDate } from '@/domains/learning/lib/format';
+import { Badge } from '@/components/ui/primitives/Badge';
 import { Button } from '@/components/ui/primitives/Button';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
 import { TextArea } from '@/components/ui/primitives/TextArea';
-import { CommunityPostComposer } from '../../_components/CommunityPostComposer';
+import { CommunityPostComposer } from '../../../../_components/CommunityPostComposer';
 import * as styles from '@/lib/styles/workspace.css';
 
 /** 추천·팔로우와 작성자 관리를 공개된 글의 범위 안에서만 수행한다. */
@@ -79,10 +80,20 @@ export function CommunityThread({ initial }: { initial: CommunityPost }) {
       </ButtonLink>
       <h1>{value.title}</h1>
       <p className={styles.meta}>
-        {value.author.name ?? '학습자'} · {formatDate(value.createdAt)} ·{' '}
+        {value.author.name ?? '학습자'}{' '}
+        {value.author.isHelper && <Badge tone='neutral'>조교</Badge>} ·{' '}
+        {formatDate(value.createdAt)} ·{' '}
         {value.visibility === 'public' ? '공개 글' : '지정 계정에게 공개'}
       </p>
       <p className={styles.prose}>{value.body}</p>
+      {!!value.taggedHelpers.length && (
+        <p className={styles.meta}>
+          태그된 조교:{' '}
+          {value.taggedHelpers
+            .map((helper) => helper.name ?? '조교')
+            .join(', ')}
+        </p>
+      )}
       {value.source && (
         <section className={styles.preview}>
           <h2>공유한 원문 발췌</h2>
@@ -196,7 +207,8 @@ export function CommunityThread({ initial }: { initial: CommunityPost }) {
             key={comment.id}
             className={styles.message}>
             <p className={styles.meta}>
-              {comment.author.name ?? '학습자'} ·{' '}
+              {comment.author.name ?? '학습자'}{' '}
+              {comment.author.isHelper && <Badge tone='neutral'>조교</Badge>} ·{' '}
               {formatDate(comment.createdAt)}
             </p>
             <p className={styles.prose}>{comment.body}</p>

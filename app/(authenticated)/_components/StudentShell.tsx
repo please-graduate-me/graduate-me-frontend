@@ -10,7 +10,6 @@ const destinations: { href: string; label: string; icon: IconName }[] = [
   { href: '/materials', label: '자료 보관함', icon: 'layers' },
   { href: '/expressions', label: '개인 표현집', icon: 'bookmark' },
   { href: '/practice', label: '연습·복습', icon: 'repeat-2' },
-  { href: '/questions', label: '나의 질문', icon: 'message-circle' },
   { href: '/history', label: '학습 기록', icon: 'chart-no-axes-column' },
   { href: '/insights', label: '학습 분석', icon: 'chart-no-axes-column' },
   { href: '/recommendations', label: '추천 영상', icon: 'play' },
@@ -22,16 +21,31 @@ const destinations: { href: string; label: string; icon: IconName }[] = [
 export function StudentShell({
   children,
   name,
+  isHelper = false,
 }: {
   children: ReactNode;
   name: string;
+  isHelper?: boolean;
 }) {
   const pathname = usePathname();
   const immersive = /^\/(?:learn|materials)\/[^/]+/.test(pathname);
 
-  const current = destinations.find(
-    (item) => pathname === item.href || pathname.startsWith(item.href + '/')
-  );
+  const navigation = isHelper
+    ? [
+        ...destinations,
+        {
+          href: '/community/tagged',
+          label: '나를 태그한 글',
+          icon: 'bell' as const,
+        },
+      ]
+    : destinations;
+
+  const current = [...navigation]
+    .reverse()
+    .find(
+      (item) => pathname === item.href || pathname.startsWith(item.href + '/')
+    );
 
   const title =
     current?.label ??
@@ -64,7 +78,7 @@ export function StudentShell({
         <nav
           className={styles.navigation}
           aria-label='주 메뉴'>
-          {destinations.map((item) => (
+          {navigation.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -97,10 +111,10 @@ export function StudentShell({
         </div>
         <div className={styles.bottom}>
           <Link
-            href='/questions'
+            href='/community'
             className={styles.help}>
             <strong>궁금한 점이 있나요?</strong>
-            <span>도우미에게 질문해 보세요.</span>
+            <span>커뮤니티에서 조교를 태그해 보세요.</span>
           </Link>
           <Link
             href='/settings'
@@ -108,7 +122,7 @@ export function StudentShell({
             <span className={styles.avatar}>{initial}</span>
             <span className={styles.accountInfo}>
               <strong>{name}</strong>
-              <small>학생</small>
+              <small>{isHelper ? '조교' : '학습자'}</small>
             </span>
             <Icon
               name='settings'
@@ -130,8 +144,8 @@ export function StudentShell({
             자료 검색
           </Link>
           <Link
-            href='/questions'
-            aria-label='나의 질문과 답변 확인'>
+            href='/community'
+            aria-label='커뮤니티 확인'>
             <Icon
               name='bell'
               size={18}

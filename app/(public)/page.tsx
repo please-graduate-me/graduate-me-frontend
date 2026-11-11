@@ -136,7 +136,7 @@ export default async function Home({
         <div>
           <span>03</span>
           <h2>질문하고 다시 기억해요</h2>
-          <p>선택한 원문을 도우미에게 질문하고, 나의 표현집으로 복습하세요.</p>
+          <p>선택한 원문을 커뮤니티에 질문하고, 나의 표현집으로 복습하세요.</p>
         </div>
       </section>
       <section

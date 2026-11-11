@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { EmptyState } from '@/components/ui/composites/EmptyState';
 import { formatDate } from '@/domains/learning/lib/format';
-import { CommunityPostComposer } from './CommunityPostComposer';
+import { CommunityPostComposer } from '../../../_components/CommunityPostComposer';
 import * as styles from '@/lib/styles/workspace.css';
 
 /** 언어별 일반 글 검색과 팔로우 목록을 비공개 질문함에서 분리한다. */
@@ -21,8 +21,10 @@ export function CommunityList({
   initial,
   source,
   initialLanguage,
+  tagged = false,
 }: {
   initial: CommunityPosts;
+  tagged?: boolean;
   initialLanguage: 'en' | 'th';
   source?: SourceInput;
 }) {
@@ -40,7 +42,9 @@ export function CommunityList({
     setError('');
 
     try {
-      setValue(await listCommunityPosts({ language, q, following, page }));
+      setValue(
+        await listCommunityPosts({ language, q, following, page, tagged })
+      );
     } catch (error) {
       setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
@@ -53,10 +57,9 @@ export function CommunityList({
     <div className={styles.page}>
       <div className={styles.heading}>
         <div>
-          <h1>학습 커뮤니티</h1>
+          <h1>{tagged ? '나를 태그한 글' : '학습 커뮤니티'}</h1>
           <p className={styles.description}>
-            관심과 원문 경험을 나누는 일반 게시글입니다. 도우미 질문은 나의
-            질문에서 관리합니다.
+            학습 경험과 질문을 나누고, 조교를 태그해 함께 이야기해 보세요.
           </p>
         </div>
         <Button onClick={() => setCompose(true)}>글 쓰기</Button>
@@ -117,7 +120,9 @@ export function CommunityList({
               </Link>
             </h2>
             <p>
-              {item.author.name ?? '학습자'} · {formatDate(item.createdAt)}
+              {item.author.name ?? '학습자'}{' '}
+              {item.author.isHelper && <Badge tone='neutral'>조교</Badge>} ·{' '}
+              {formatDate(item.createdAt)}
             </p>
             <p className={styles.prose}>{item.body.slice(0, 200)}</p>
             <div className={styles.row}>

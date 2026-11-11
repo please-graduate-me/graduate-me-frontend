@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import { sourceSchema } from '@/domains/materials/model/source';
 
-const person = z.object({ id: z.string(), name: z.string().nullable() });
+const person = z.object({
+  id: z.string(),
+  name: z.string().nullable(),
+  isHelper: z.boolean().default(false),
+});
 
 const post = {
   id: z.string(),
@@ -15,12 +19,17 @@ const post = {
   createdAt: z.string(),
   updatedAt: z.string(),
   author: person,
+  taggedHelperIds: z.array(z.string()),
+  taggedHelpers: z.array(person),
   hiddenAt: z.string().nullable().optional(),
   owned: z.boolean(),
   likes: z.number(),
   liked: z.boolean(),
   following: z.boolean(),
 };
+
+/** 커뮤니티에서 태그할 조교의 공개 프로필만 조회한다. */
+export const communityHelpersSchema = z.object({ items: z.array(person) });
 
 /** 공개 범위가 허용된 일반 게시글만 표시한다. */
 export const communityPostsSchema = z.object({

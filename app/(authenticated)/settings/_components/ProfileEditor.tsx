@@ -55,6 +55,11 @@ export function ProfileEditor({ initial }: { initial: LearningProfile }) {
     <form
       onSubmit={(event) => void submit(event)}
       className={styles.stack}>
+      {profile.isHelper && (
+        <p className={styles.notice}>
+          조교 · 커뮤니티에서 학습자들과 함께 활동합니다.
+        </p>
+      )}
       <fieldset
         className={styles.stack}
         disabled={busy}>

@@ -1,9 +1,12 @@
 'use client';
 import { ApiError } from '@/lib/api/request';
-import { SessionRecovery } from '../../../_components/SessionRecovery';
-import { useState } from 'react';
+import { SessionRecovery } from './SessionRecovery';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveCommunityPost } from '@/domains/community/api/community';
+import {
+  listCommunityHelpers,
+  saveCommunityPost,
+} from '@/domains/community/api/community';
 import type { CommunityPost } from '@/domains/community/model/contracts';
 import type { SourceInput } from '@/domains/materials/model/source';
 import { Dialog } from '@/components/ui/composites/Dialog';
@@ -20,15 +23,19 @@ export function CommunityPostComposer({
   language = 'en',
   source,
   initial,
+  initialBody = '',
+  beforeNavigate,
 }: {
   onClose: () => void;
   language?: 'en' | 'th';
   source?: SourceInput;
   initial?: CommunityPost;
+  initialBody?: string;
+  beforeNavigate?: () => boolean;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(initial?.title ?? '');
-  const [body, setBody] = useState(initial?.body ?? '');
+  const [body, setBody] = useState(initial?.body ?? initialBody);
 
   const [selectedLanguage, setLanguage] = useState(
     initial?.language ?? language
@@ -42,16 +49,41 @@ export function CommunityPostComposer({
     initial?.allowedUserIds?.join('\n') ?? ''
   );
 
+  const [helpers, setHelpers] = useState<{ id: string; name: string | null }[]>(
+    []
+  );
+
+  const [tagged, setTagged] = useState<string[]>(
+    initial?.taggedHelpers.map((helper) => helper.id) ?? []
+  );
+
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [sessionExpired, setSessionExpired] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    void listCommunityHelpers()
+      .then((result) => {
+        if (active) setHelpers(result.items);
+      })
+      .catch((error) => {
+        if (active) setError(error.message);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const excerpt = source ?? initial?.source ?? undefined;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     // 이전 공개 확인을 입력 변경 뒤 재사용하지 않으며 원본 권한은 서버가 다시 확인한다.
-    if (!confirmed || busy) return;
+    if (!confirmed || busy || (beforeNavigate && !beforeNavigate())) return;
     setBusy(true);
     setError('');
 
@@ -67,6 +99,7 @@ export function CommunityPostComposer({
               ? accounts.split(/[\s,]+/).filter(Boolean)
               : [],
           source: excerpt,
+          taggedHelperIds: tagged,
         },
         initial?.id
       );
@@ -89,7 +122,7 @@ export function CommunityPostComposer({
         if (!busy) onClose();
       }}
       title={initial ? '게시글 수정' : '일반 학습 글 쓰기'}
-      description='도우미에게 보내는 비공개 질문과 다른 공간입니다.'>
+      description='조교를 태그하면 해당 조교의 모아보기에도 표시됩니다. 답변은 이 게시글의 댓글에서 나눕니다.'>
       <form
         className={styles.stack}
         onSubmit={(event) => void submit(event)}>
@@ -124,9 +157,10 @@ export function CommunityPostComposer({
           <Select
             value={selectedLanguage}
             disabled={busy}
-            onChange={(event) =>
-              setLanguage(event.target.value as typeof selectedLanguage)
-            }>
+            onChange={(event) => {
+              setLanguage(event.target.value as typeof selectedLanguage);
+              setConfirmed(false);
+            }}>
             <option value='en'>영어</option>
             <option value='th'>태국어</option>
           </Select>
@@ -159,6 +193,31 @@ export function CommunityPostComposer({
             />
           </label>
         )}
+        <fieldset
+          className={styles.stack}
+          disabled={busy}>
+          <legend>조교 태그</legend>
+          {!helpers.length && <p>현재 태그할 수 있는 조교가 없습니다.</p>}
+          {helpers.map((helper) => (
+            <label
+              key={helper.id}
+              className={styles.row}>
+              <Checkbox
+                checked={tagged.includes(helper.id)}
+                onChange={(event) => {
+                  setTagged((previous) =>
+                    event.target.checked
+                      ? [...previous, helper.id]
+                      : previous.filter((id) => id !== helper.id)
+                  );
+
+                  setConfirmed(false);
+                }}
+              />{' '}
+              {helper.name ?? '조교'}
+            </label>
+          ))}
+        </fieldset>
         {excerpt && (
           <div className={styles.preview}>
             <h3>함께 공유할 발췌</h3>

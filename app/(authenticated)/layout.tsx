@@ -1,3 +1,4 @@
+import { getLearningProfile } from '@/domains/users/api/profile';
 import { requireSession } from './requireSession';
 import { StudentShell } from './_components/StudentShell';
 
@@ -7,9 +8,14 @@ export default async function AuthenticatedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { session } = await requireSession();
+  const { session, transport } = await requireSession();
+  const profile = await getLearningProfile(transport);
 
   return (
-    <StudentShell name={session.user.name ?? '학습자'}>{children}</StudentShell>
+    <StudentShell
+      name={session.user.name ?? '학습자'}
+      isHelper={profile.isHelper}>
+      {children}
+    </StudentShell>
   );
 }

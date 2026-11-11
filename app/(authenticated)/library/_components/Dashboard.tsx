@@ -145,7 +145,7 @@ export function Dashboard() {
               <p>
                 {summary?.unanswered
                   ? summary.unanswered + '개 질문의 답변을 기다리고 있어요.'
-                  : '궁금한 구절을 선택해 도우미에게 질문해 보세요.'}
+                  : '궁금한 구절을 선택해 커뮤니티에 질문해 보세요.'}
               </p>
               <Link href='/questions'>나의 질문 보기</Link>
             </div>

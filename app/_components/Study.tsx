@@ -1086,7 +1086,7 @@ export function Study({
                     {segment.translation && <p>{segment.translation}</p>}
                     <p className={styles.small}>
                       음성 인식 결과에 오류가 있으면 이 구절을 건너뛰거나
-                      도우미에게 질문할 수 있어요.
+                      커뮤니티에 질문할 수 있어요.
                     </p>
                   </div>
                 )}

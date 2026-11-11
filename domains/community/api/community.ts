@@ -3,6 +3,7 @@ import { request, jsonBody, type Transport } from '@/lib/api/request';
 import type { SourceInput } from '@/domains/materials/model/source';
 import {
   communityPostsSchema,
+  communityHelpersSchema,
   communityPostSchema,
   savedCommunityPostSchema,
 } from '../model/contracts';
@@ -18,12 +19,13 @@ export const listCommunityPosts = (
     language: 'en' | 'th';
     q?: string;
     following?: boolean;
+    tagged?: boolean;
     page?: number;
   },
   transport?: Transport
 ) =>
   request(
-    `/api/community/posts?${new URLSearchParams({ language: input.language, q: input.q ?? '', following: String(input.following ?? false), page: String(input.page ?? 1), limit: '20' })}`,
+    `/api/community/posts?${new URLSearchParams({ language: input.language, q: input.q ?? '', following: String(input.following ?? false), tagged: String(input.tagged ?? false), page: String(input.page ?? 1), limit: '20' })}`,
     communityPostsSchema,
     undefined,
     transport
@@ -41,6 +43,7 @@ export const saveCommunityPost = (
     language: 'en' | 'th';
     visibility: 'public' | 'accounts';
     allowedUserIds?: string[];
+    taggedHelperIds?: string[];
     source?: SourceInput;
   },
   id?: string
@@ -88,3 +91,7 @@ export const reportCommunityPost = (id: string, reason: string) =>
     z.object({ id: z.string() }),
     jsonBody({ reason })
   );
+
+/** 태그 선택지에는 활성 조교의 이름과 식별자만 사용한다. */
+export const listCommunityHelpers = () =>
+  request('/api/community/helpers', communityHelpersSchema);

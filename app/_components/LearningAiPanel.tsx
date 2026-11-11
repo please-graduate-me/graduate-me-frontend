@@ -518,7 +518,7 @@ export function LearningAiPanel({
               onClick={() =>
                 onQuestion ? onQuestion() : setDialog('question')
               }>
-              도우미에게 질문하기 →
+              커뮤니티에 질문하기 →
             </Button>
             <p className={styles.meta}>
               설명 조회와 저장에는 새 AI 호출이 없습니다. 새 설명·문제·대화
@@ -649,7 +649,7 @@ export function LearningAiPanel({
               variant='ghost'
               size='small'
               onClick={() => setDialog('question')}>
-              이 설명을 도우미에게 질문
+              이 설명을 커뮤니티에 질문
             </Button>
           </div>
         </>
