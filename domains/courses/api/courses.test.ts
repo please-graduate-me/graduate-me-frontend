@@ -25,6 +25,9 @@ describe('수업 과제 학생 계약', () => {
           revisions: [],
           source: {
             kind: 'video',
+            fromIndex: 0,
+            toIndex: 0,
+            blankRatio: 20,
             id: 'video',
             title: '공개 영상',
             language: 'en',

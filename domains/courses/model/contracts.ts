@@ -82,6 +82,9 @@ export const assignmentSchema = z.object({
     title: z.string(),
     language: z.enum(['en', 'th']),
     version: z.number(),
+    fromIndex: z.number(),
+    toIndex: z.number(),
+    blankRatio: z.union([z.literal(20), z.literal(40), z.literal(60)]),
     youtubeId: z.string().optional(),
     tasks: z.array(
       z.object({

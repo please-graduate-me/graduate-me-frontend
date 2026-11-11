@@ -3,7 +3,7 @@ import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { joinCourse } from '@/domains/courses/api/courses';
+import { createCourse, joinCourse } from '@/domains/courses/api/courses';
 import type { Courses } from '@/domains/courses/model/contracts';
 import { Button } from '@/components/ui/primitives/Button';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
@@ -14,6 +14,8 @@ import * as styles from '@/lib/styles/workspace.css';
 /** 초대 코드 가입과 내 수업 탐색을 개인 학습에서 분리한다. */
 export function CourseList({ initial }: { initial: Courses }) {
   const router = useRouter();
+  const [title, setTitle] = useState('');
+  const [language, setLanguage] = useState<'en' | 'th'>('en');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -62,6 +64,50 @@ export function CourseList({ initial }: { initial: Courses }) {
         </label>
         <Button loading={busy}>수업 참여</Button>
       </form>
+      <details>
+        <summary>수업 개설</summary>
+        <form
+          className={styles.stack}
+          onSubmit={async (event) => {
+            event.preventDefault();
+            if (busy) return;
+            setBusy(true);
+            setError('');
+
+            try {
+              const result = await createCourse({ title, language });
+
+              router.push(`/courses/${encodeURIComponent(result.id)}`);
+              router.refresh();
+            } catch (error) {
+              setError((error as Error).message);
+            } finally {
+              setBusy(false);
+            }
+          }}>
+          <label className={styles.field}>
+            수업 이름
+            <Input
+              required
+              value={title}
+              maxLength={200}
+              onChange={(event) => setTitle(event.target.value)}
+            />
+          </label>
+          <label className={styles.field}>
+            언어
+            <select
+              value={language}
+              onChange={(event) =>
+                setLanguage(event.target.value as 'en' | 'th')
+              }>
+              <option value='en'>영어</option>
+              <option value='th'>태국어</option>
+            </select>
+          </label>
+          <Button loading={busy}>수업 만들기</Button>
+        </form>
+      </details>
       {sessionExpired && <SessionRecovery />}
       {error && (
         <p

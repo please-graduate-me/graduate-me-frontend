@@ -9,6 +9,9 @@ const assignment = assignmentSchema.parse({
   title: '과제',
   source: {
     kind: 'video',
+    fromIndex: 0,
+    toIndex: 0,
+    blankRatio: 20,
     id: 'video',
     title: '영상',
     language: 'en',

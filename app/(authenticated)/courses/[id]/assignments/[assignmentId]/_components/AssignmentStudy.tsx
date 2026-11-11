@@ -1,4 +1,5 @@
 'use client';
+import { CourseAssignmentEditor } from '../../../../_components/CourseAssignmentEditor';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../../../../_components/SessionRecovery';
 import { useRef, useState } from 'react';
@@ -30,6 +31,7 @@ export function AssignmentStudy({
   initial: Assignment;
   canSubmit: boolean;
 }) {
+  const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(initial);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [confirmed, setConfirmed] = useState(false);
@@ -157,6 +159,20 @@ export function AssignmentStudy({
 
   return (
     <div className={styles.page}>
+      {!canSubmit && (
+        <Button onClick={() => setEditing(true)}>과제 수정</Button>
+      )}
+      {editing && (
+        <CourseAssignmentEditor
+          courseId={value.courseId}
+          language={value.source.language}
+          assignment={value}
+          onClose={() => {
+            setEditing(false);
+            void refresh();
+          }}
+        />
+      )}
       <ButtonLink
         href={`/courses/${encodeURIComponent(value.courseId)}`}
         variant='ghost'>

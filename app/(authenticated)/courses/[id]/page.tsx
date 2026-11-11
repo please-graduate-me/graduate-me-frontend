@@ -1,3 +1,4 @@
+import { CourseManagement } from '../_components/CourseManagement';
 import { requireSession } from '../../requireSession';
 import { getCourse } from '@/domains/courses/api/courses';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
@@ -33,6 +34,7 @@ export default async function CoursePage({
           보존됩니다.
         </p>
       )}
+      <CourseManagement value={value} />
       {value.assignments.length === 0 && <p>아직 배정된 과제가 없습니다.</p>}
       {value.assignments.map((item) => (
         <article
