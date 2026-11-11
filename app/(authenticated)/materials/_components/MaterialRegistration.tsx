@@ -131,7 +131,7 @@ export function MaterialRegistration({
       description={
         replacement
           ? '이전 원본과 연결된 발췌·답안·설명은 당시 버전에 보존됩니다.'
-          : '내가 보고 싶은 원문에서 학습을 시작해 보세요.'
+          : 'PDF 등록 후 최대 30페이지의 자료 소개·전체 번역·핵심 단어·요약을 자동으로 준비합니다. AI 사용 한도를 소모하며, 정리는 내 해설 언어로 저장됩니다.'
       }>
       <form
         onSubmit={(event) => void submit(event)}

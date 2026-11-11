@@ -176,11 +176,11 @@ export const notice = style({
   lineHeight: 1.7,
 });
 
-/** 탭은 설명·개인 기록·공유 질문의 작업 맥락을 구분한다. */
+/** 문서 전체 정리와 구절별 학습을 같은 높이의 탭으로 구분한다. */
 export const tabs = style({
   display: 'grid',
-  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-  gap: 24,
+  gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+  gap: 8,
   marginBottom: 20,
 });
 

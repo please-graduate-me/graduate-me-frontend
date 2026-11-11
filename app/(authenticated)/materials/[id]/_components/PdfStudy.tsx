@@ -17,6 +17,7 @@ import { TextArea } from '@/components/ui/primitives/TextArea';
 import { EmptyState } from '@/components/ui/composites/EmptyState';
 import { listAnnotations } from '@/domains/materials/api/records';
 import type { Annotation } from '@/domains/materials/model/records';
+import { MaterialAnalysisPanel } from './MaterialAnalysisPanel';
 import { MaterialPreparation } from './MaterialPreparation';
 import { AnnotationList } from '../../../../_components/AnnotationList';
 import { LearningAiPanel } from '../../../../_components/LearningAiPanel';
@@ -52,9 +53,9 @@ export function PdfStudy({
   const [thumbnailsOpen, setThumbnailsOpen] = useState(true);
   const [selectionMode, setSelectionMode] = useState(true);
 
-  const [tab, setTab] = useState<'explanation' | 'records' | 'questions'>(
-    'explanation'
-  );
+  const [tab, setTab] = useState<
+    'overview' | 'explanation' | 'records' | 'questions'
+  >(selection ? 'explanation' : 'overview');
 
   const [panelOpen, setPanelOpen] = useState(true);
 
@@ -607,22 +608,24 @@ export function PdfStudy({
         <aside
           className={styles.sidebar}
           hidden={!panelOpen}
-          aria-label='구절 학습 패널'>
+          aria-label='PDF 학습 패널'>
           <div className={styles.panelHeading}>
             <Icon
               name='sparkles'
               size={18}
             />
             <h2>
-              {savingExpression
-                ? '표현 저장'
-                : tab === 'records'
-                  ? '내 학습 기록'
-                  : '구절 살펴보기'}
+              {tab === 'overview'
+                ? '자료 전체 정리'
+                : savingExpression
+                  ? '표현 저장'
+                  : tab === 'records'
+                    ? '내 학습 기록'
+                    : '구절 살펴보기'}
             </h2>
             <IconButton
               name='x'
-              label='구절 학습 패널 닫기'
+              label='PDF 학습 패널 닫기'
               onClick={() => setPanelOpen(false)}
             />
           </div>
@@ -632,6 +635,7 @@ export function PdfStudy({
             aria-label='구절 학습 보기'>
             {(
               [
+                ['overview', '전체 정리'],
                 ['explanation', '설명'],
                 ['records', '내 기록'],
                 ['questions', '질문'],
@@ -650,17 +654,22 @@ export function PdfStudy({
                   setSavingExpression(false);
                 }}
                 onKeyDown={(event) => {
-                  const keys = ['explanation', 'records', 'questions'] as const;
+                  const keys = [
+                    'overview',
+                    'explanation',
+                    'records',
+                    'questions',
+                  ] as const;
 
                   const next =
                     event.key === 'ArrowRight'
-                      ? (index + 1) % 3
+                      ? (index + 1) % 4
                       : event.key === 'ArrowLeft'
-                        ? (index + 2) % 3
+                        ? (index + 3) % 4
                         : event.key === 'Home'
                           ? 0
                           : event.key === 'End'
-                            ? 2
+                            ? 3
                             : -1;
 
                   if (next < 0) return;
@@ -676,7 +685,7 @@ export function PdfStudy({
               </button>
             ))}
           </div>
-          {quote && (
+          {quote && tab !== 'overview' && (
             <blockquote className={styles.quote}>
               <small>
                 PDF · {page}페이지 · 원본 v{source.version}
@@ -685,6 +694,19 @@ export function PdfStudy({
               <p>{quote}</p>
             </blockquote>
           )}
+          <div
+            role='tabpanel'
+            id='pdf-panel-overview'
+            aria-labelledby='pdf-tab-overview'
+            hidden={tab !== 'overview'}>
+            <MaterialAnalysisPanel
+              materialId={initial.id}
+              version={initial.version ?? 1}
+              owned={initial.owned ?? false}
+              pageCount={initial.pageCount}
+              onPage={(target) => void changePage(target)}
+            />
+          </div>
           <div
             role='tabpanel'
             id='pdf-panel-explanation'
