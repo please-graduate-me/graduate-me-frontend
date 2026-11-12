@@ -82,7 +82,7 @@ export const lessonSchema = z.object({
     liked: z.boolean(),
     likeCount: z.number().int().nonnegative(),
     language: z.enum(['en', 'th']).optional(),
-    analysisVersion: z.number().optional(),
+    analysisVersion: z.string().optional(),
   }),
   job: z
     .object({
