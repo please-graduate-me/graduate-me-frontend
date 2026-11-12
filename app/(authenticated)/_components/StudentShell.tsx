@@ -11,6 +11,7 @@ const destinations: { href: string; label: string; icon: IconName }[] = [
   { href: '/expressions', label: '개인 표현집', icon: 'bookmark' },
   { href: '/practice', label: '연습·복습', icon: 'repeat-2' },
   { href: '/history', label: '학습 기록', icon: 'chart-no-axes-column' },
+  { href: '/ranking', label: '학습 성장·랭킹', icon: 'chart-no-axes-column' },
   { href: '/insights', label: '학습 분석', icon: 'chart-no-axes-column' },
   { href: '/recommendations', label: '추천 영상', icon: 'play' },
   { href: '/courses', label: '내 수업과 과제', icon: 'users' },

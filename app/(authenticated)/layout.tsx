@@ -1,3 +1,4 @@
+import { GrowthFeedback } from '../_components/GrowthFeedback';
 import { getLearningProfile } from '@/domains/users/api/profile';
 import { requireSession } from './requireSession';
 import { StudentShell } from './_components/StudentShell';
@@ -12,10 +13,13 @@ export default async function AuthenticatedLayout({
   const profile = await getLearningProfile(transport);
 
   return (
-    <StudentShell
-      name={session.user.name ?? '학습자'}
-      isHelper={profile.isHelper}>
-      {children}
-    </StudentShell>
+    <>
+      <GrowthFeedback />
+      <StudentShell
+        name={session.user.name ?? '학습자'}
+        isHelper={profile.isHelper}>
+        {children}
+      </StudentShell>
+    </>
   );
 }

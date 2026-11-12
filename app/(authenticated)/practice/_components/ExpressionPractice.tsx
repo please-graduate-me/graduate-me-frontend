@@ -1,4 +1,5 @@
 'use client';
+import { notifyLearningReward } from '@/domains/growth/lib/rewardEvents';
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import type { Expression } from '@/domains/expressions/model/contracts';
@@ -41,13 +42,14 @@ export function ExpressionPractice({
       if (attempt.current?.key !== key)
         attempt.current = { key, id: crypto.randomUUID() };
 
-      await savePracticeAttempt({
+      const saved = await savePracticeAttempt({
         requestId: attempt.current.id,
         expressionId: expression.id,
         answer,
         correct: result,
       });
 
+      notifyLearningReward(saved.reward);
       attempt.current = null;
       setCorrect((value) => value + Number(result));
       setIndex((value) => value + 1);

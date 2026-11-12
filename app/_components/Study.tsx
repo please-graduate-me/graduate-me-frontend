@@ -1,4 +1,5 @@
 'use client';
+import { notifyLearningReward } from '@/domains/growth/lib/rewardEvents';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
 import { useWatchPosition } from './useWatchPosition';
@@ -484,6 +485,7 @@ export function Study({
       });
 
       submission.current = null;
+      notifyLearningReward(result.reward);
       setFeedback(result.grade!);
 
       if (result.grade?.correct) {

@@ -1,4 +1,5 @@
 'use client';
+import { notifyLearningReward } from '@/domains/growth/lib/rewardEvents';
 import { aiProviderLabel } from '@/domains/ai/lib/providerLabel';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -133,6 +134,7 @@ export function ExerciseSolver({
       });
 
       setSessionExpired(false);
+      notifyLearningReward(value.reward);
       setResult(value);
       request.current = null;
       setReload((value) => value + 1);

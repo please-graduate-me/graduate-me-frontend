@@ -1,3 +1,4 @@
+import { GrowthCard } from '../_components/GrowthCard';
 import * as styles from './page.css';
 import { requireSession } from '../requireSession';
 import { Dashboard } from './_components/Dashboard';
@@ -30,6 +31,7 @@ export default async function LibraryPage() {
           자료 추가
         </ButtonLink>
       </div>
+      <GrowthCard />
       <Dashboard />
     </div>
   );
