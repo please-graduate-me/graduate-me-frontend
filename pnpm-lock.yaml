@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      '@rive-app/react-canvas':
+        specifier: 4.39.0
+        version: 4.39.0(react@19.2.4)
       '@vanilla-extract/css':
         specifier: ^1.21.3
         version: 1.21.3
@@ -725,6 +728,14 @@ packages:
     resolution: {integrity: sha512-IaYGml/nSOiZWROfPtuIL7neuu9qDOZ3TNvNljUIrhDMxiGTgPjzj/g9p9RxpS2tSepPDRY+UwAaEeiKtUvIAg==}
     engines: {node: '>=20'}
     hasBin: true
+
+  '@rive-app/canvas@2.50.0':
+    resolution: {integrity: sha512-9D92BeRK3yzIh2Fy/YxTfrjKQxDIdzEoasMuD5nupJ67aW1JFrSt8bW0Bg7EP9Hm7r5D+u3g/Q+kqRQ2rpH8+g==}
+
+  '@rive-app/react-canvas@4.39.0':
+    resolution: {integrity: sha512-xIzrlFgLNTIfBDKibLjtOblSXk7mJkl/Gw6ABU9WFENB8UDPf8FpNCVuElhdPBT01/TUell1wXfY22hHu5wbDQ==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0
 
   '@rolldown/binding-android-arm-eabi@1.2.16':
     resolution: {integrity: sha512-ia3DwAs0OsMGS7+IConptSiyk9pEXkOx/AbJ2n/lAGxH3QkWQus1t8d7gnAT38FCU2sQu8lUbeR6AiZFv4JxaA==}
@@ -3401,6 +3412,13 @@ snapshots:
     dependencies:
       playwright: 1.64.1
     optional: true
+
+  '@rive-app/canvas@2.50.0': {}
+
+  '@rive-app/react-canvas@4.39.0(react@19.2.4)':
+    dependencies:
+      '@rive-app/canvas': 2.50.0
+      react: 19.2.4
 
   '@rolldown/binding-android-arm-eabi@1.2.16':
     optional: true
