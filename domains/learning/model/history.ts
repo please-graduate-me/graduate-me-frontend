@@ -1,3 +1,4 @@
+import { rewardReceiptSchema } from '@/domains/growth/model/contracts';
 import { z } from 'zod';
 
 /** 실제 저장된 학습 활동만 기록 화면에 표시한다. */
@@ -30,6 +31,7 @@ export type LearningHistory = z.infer<typeof learningHistorySchema>['items'];
 
 /** 자가점검 결과의 저장 식별자를 확인한다. */
 export const practiceResultSchema = z.object({
+  reward: rewardReceiptSchema.nullable().optional(),
   id: z.string(),
   createdAt: z.string(),
 });

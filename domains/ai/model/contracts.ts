@@ -1,3 +1,4 @@
+import { rewardReceiptSchema } from '@/domains/growth/model/contracts';
 import { z } from 'zod';
 import { sourceSchema } from '@/domains/materials/model/source';
 
@@ -56,6 +57,7 @@ export const conversationSchema = z.object({
 
 /** 제출 시점의 정답·해설·근거 버전은 현재 문제와 구분해 보존한다. */
 export const exerciseResultSchema = z.object({
+  reward: rewardReceiptSchema.nullable().optional(),
   id: z.string(),
   artifactId: z.string(),
   version: z.number(),

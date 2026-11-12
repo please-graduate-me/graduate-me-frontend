@@ -1,3 +1,4 @@
+import { rewardReceiptSchema } from '@/domains/growth/model/contracts';
 import { modeSchema } from './mode';
 import { z } from 'zod';
 import { learningSettingsSchema } from '../../users/model/settings';
@@ -126,6 +127,7 @@ export type Lesson = z.infer<typeof lessonSchema>;
 
 /** 제출 결과를 반영하기 전에 응답 형식을 확인한다. */
 export const actionResultSchema = z.object({
+  reward: rewardReceiptSchema.nullable().optional(),
   grade: gradeSchema.optional(),
   nextIndex: z.number().optional(),
   text: z.string().optional(),
