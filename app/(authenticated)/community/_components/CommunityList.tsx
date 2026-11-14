@@ -1,7 +1,7 @@
 'use client';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useState } from 'react';

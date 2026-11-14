@@ -1,13 +1,13 @@
 'use client';
-import { AlertDialog } from '@astryxdesign/core/AlertDialog';
-import { Card } from '@astryxdesign/core/Card';
+import { AlertDialog } from '@/components/ui/composites/AlertDialog';
+import { Card } from '@/components/ui/primitives/Card';
 
-import { Banner } from '@astryxdesign/core/Banner';
+import { Banner } from '@/components/ui/composites/Banner';
 
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { Input } from '@/components/ui/primitives/Input';
-import { Collapsible } from '@astryxdesign/core/Collapsible';
+import { Collapsible } from '@/components/ui/composites/Collapsible';
 
 import { useConfirmation } from '@/lib/hooks/useConfirmation';
 import { notifyLearningReward } from '@/domains/growth/lib/rewardEvents';
@@ -15,14 +15,14 @@ import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
 import { GraduationStamp } from './GraduationStamp';
 import { StudyFeedbackSheet } from './StudyFeedbackSheet';
-import { ProgressBar } from '@astryxdesign/core/ProgressBar';
+import { ProgressBar } from '@/components/ui/primitives/ProgressBar';
 import { useWatchPosition } from './useWatchPosition';
 import { useAnswerViewport } from './useAnswerViewport';
 import { Button } from '@/components/ui/primitives/Button';
 import { Panel } from '@/components/ui/layouts/Panel';
 import * as styles from './Study.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import type {
   Lesson,
   SegmentState,

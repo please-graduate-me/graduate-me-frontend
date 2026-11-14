@@ -1,16 +1,16 @@
 'use client';
-import { AlertDialog } from '@astryxdesign/core/AlertDialog';
+import { AlertDialog } from '@/components/ui/composites/AlertDialog';
 import { useConfirmation } from '@/lib/hooks/useConfirmation';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Blockquote } from '@astryxdesign/core/Blockquote';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Section } from '@astryxdesign/core/Section';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Section } from '@/components/ui/layouts/Section';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useState } from 'react';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import {
   deleteExpression,

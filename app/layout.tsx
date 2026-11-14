@@ -1,9 +1,5 @@
 import type { Metadata } from 'next';
-import '@astryxdesign/core/reset.css';
-import '@astryxdesign/core/astryx.css';
-import '@/lib/styles/pgm.css';
 import './globals.css';
-import { Providers } from './Providers';
 
 /** 검색 결과와 브라우저에서 서비스 설명을 일관되게 제공한다. */
 export const metadata: Metadata = {
@@ -16,11 +12,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang='ko'
-      data-astryx-theme='pgm'
       data-theme='light'>
-      <body>
-        <Providers>{children}</Providers>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

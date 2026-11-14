@@ -1,11 +1,11 @@
 'use client';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
-import { Collapsible } from '@astryxdesign/core/Collapsible';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
+import { Collapsible } from '@/components/ui/composites/Collapsible';
 import { Select } from '@/components/ui/primitives/Select';
-import { Card } from '@astryxdesign/core/Card';
+import { Card } from '@/components/ui/primitives/Card';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useState } from 'react';

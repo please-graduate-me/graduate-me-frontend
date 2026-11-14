@@ -1,12 +1,12 @@
 'use client';
-import { Card } from '@astryxdesign/core/Card';
+import { Card } from '@/components/ui/primitives/Card';
 
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { useState } from 'react';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import { useRouter } from 'next/navigation';
 import { request, jsonBody } from '@/lib/api/request';
 import { okSchema } from '@/lib/api/contracts';

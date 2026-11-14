@@ -1,5 +1,5 @@
 'use client';
-import { ClickableCard } from '@astryxdesign/core/ClickableCard';
+import { ClickableCard } from '@/components/ui/composites/ClickableCard';
 import { Icon } from '@/components/ui/primitives/Icon';
 import * as styles from './MaterialAddTile.css';
 

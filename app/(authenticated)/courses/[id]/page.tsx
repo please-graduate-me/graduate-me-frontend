@@ -1,7 +1,7 @@
-import { Banner } from '@astryxdesign/core/Banner';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
-import { Card } from '@astryxdesign/core/Card';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
+import { Card } from '@/components/ui/primitives/Card';
 import { CourseManagement } from '../_components/CourseManagement';
 import { requireSession } from '../../requireSession';
 import { getCourse } from '@/domains/courses/api/courses';

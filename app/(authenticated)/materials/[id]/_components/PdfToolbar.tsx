@@ -1,7 +1,7 @@
 'use client';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
-import { Toolbar } from '@astryxdesign/core/Toolbar';
+import { Toolbar } from '@/components/ui/composites/Toolbar';
 import { useState } from 'react';
 import { IconButton } from '@/components/ui/primitives/IconButton';
 import * as styles from './PdfToolbar.css';

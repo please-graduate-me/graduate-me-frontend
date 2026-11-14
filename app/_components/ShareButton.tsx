@@ -1,6 +1,6 @@
 'use client';
 import { Input } from '@/components/ui/primitives/Input';
-import { Text } from '@astryxdesign/core/Text';
+import { Text } from '@/components/ui/primitives/Text';
 
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/primitives/Button';

@@ -1,7 +1,7 @@
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { Panel } from '@/components/ui/layouts/Panel';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 
 /** 없는 자원에서 학습 목록으로 복귀할 경로를 제공한다. */
 export default function NotFound() {

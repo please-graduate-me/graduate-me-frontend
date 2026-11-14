@@ -1,11 +1,11 @@
 'use client';
-import { AlertDialog } from '@astryxdesign/core/AlertDialog';
+import { AlertDialog } from '@/components/ui/composites/AlertDialog';
 import { useConfirmation } from '@/lib/hooks/useConfirmation';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Section } from '@astryxdesign/core/Section';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Section } from '@/components/ui/layouts/Section';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { CourseDetail } from '@/domains/courses/model/contracts';

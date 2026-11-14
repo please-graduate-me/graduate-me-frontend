@@ -1,12 +1,6 @@
 'use client';
-import {
-  DateTimeInput,
-  type ISODateTimeString,
-} from '@astryxdesign/core/DateTimeInput';
-import { FileInput } from '@astryxdesign/core/FileInput';
-import { NumberInput } from '@astryxdesign/core/NumberInput';
-import { TextInput, type TextInputType } from '@astryxdesign/core/TextInput';
-import { useState, type ComponentProps } from 'react';
+import { useId, useState, type ComponentProps } from 'react';
+import * as styles from '@/lib/styles/field.css';
 
 type InputChange = {
   target: {
@@ -58,188 +52,51 @@ type InputProps = Pick<
   onChange?: (event: InputChange) => void;
 };
 
-/** 기존 값·파일·폼 계약을 종류별 Astryx 입력에 연결한다. */
+/** 네이티브 입력에 보이는 라벨이나 숨은 접근성 이름을 붙이고 초기값만 받은 필드도 제어 상태로 유지한다. */
 export function Input({
+  id,
   type = 'text',
   value,
   defaultValue,
   onChange,
-  disabled,
-  required,
-  readOnly,
-  name,
-  autoFocus,
-  spellCheck,
   className,
   style,
-  min,
-  max,
-  step,
-  multiple,
-  accept,
   label,
-  autoCorrect,
-  autoCapitalize,
-  onFocus,
-  onBlur,
-  onKeyDown,
   ...props
 }: InputProps) {
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
   const [draft, setDraft] = useState(String(defaultValue ?? ''));
-  const [files, setFiles] = useState<File | File[] | null>(null);
-  const current = String(value ?? draft);
-
-  const accessibleLabel =
-    label ?? props['aria-label'] ?? props.placeholder ?? name ?? '입력';
-
-  const common = {
-    label: accessibleLabel,
-    isLabelHidden: !label,
-    isDisabled: disabled,
-    isRequired: required,
-    required,
-    containerClassName: className,
-    containerStyle: style,
-  };
-
-  const commit = (next: string, selected: File[] | FileList | null = null) => {
-    setDraft(next);
-
-    const target = {
-      value: next,
-      valueAsNumber: next === '' ? NaN : Number(next),
-      files: selected,
-    };
-
-    onChange?.({ target, currentTarget: target });
-  };
-
-  if (type === 'file') {
-    return (
-      <FileInput
-        {...props}
-        {...common}
-        accept={accept}
-        isMultiple={multiple}
-        value={files}
-        onChange={(next) => {
-          setFiles(next);
-
-          const selected =
-            next === null ? [] : Array.isArray(next) ? next : [next];
-
-          commit(selected[0]?.name ?? '', selected);
-        }}
-      />
-    );
-  }
-
-  if (type === 'number') {
-    return (
-      <NumberInput
-        {...props}
-        {...common}
-        htmlName={name}
-        value={current === '' ? null : Number(current)}
-        min={min === undefined ? undefined : Number(min)}
-        max={max === undefined ? undefined : Number(max)}
-        step={step === undefined || step === 'any' ? undefined : Number(step)}
-        isReadOnly={readOnly}
-        hasAutoFocus={autoFocus}
-        hasClear
-        // 숫자 필드는 확정 전에도 입력값을 알려 페이지 이동 같은 기존 blur 동작을 보존한다.
-        onInput={(event) => {
-          if (event.currentTarget instanceof HTMLInputElement)
-            commit(event.currentTarget.value);
-        }}
-        onBlur={onBlur}
-        onFocus={onFocus}
-        onKeyDown={onKeyDown}
-        onChange={(next) => commit(next === null ? '' : String(next))}
-      />
-    );
-  }
-
-  if (type === 'datetime-local') {
-    // 지역 시각 문자열을 그대로 전달해 과제 마감 시각의 시간대 해석을 유지한다.
-    return (
-      <>
-        <DateTimeInput
-          {...props}
-          {...common}
-          value={dateTimeValue(current)}
-          min={dateTimeValue(min)}
-          max={dateTimeValue(max)}
-          onChange={(next) => commit(next ?? '')}
-        />
-        {name && (
-          <input
-            type='hidden'
-            name={name}
-            value={current}
-            disabled={disabled}
-          />
-        )}
-      </>
-    );
-  }
-
-  const textType: TextInputType =
-    type === 'email' ||
-    type === 'password' ||
-    type === 'search' ||
-    type === 'tel' ||
-    type === 'url'
-      ? (type as TextInputType)
-      : 'text';
+  const classes = [styles.control, type === 'search' && styles.search];
 
   return (
-    <TextInput
-      {...props}
-      {...common}
-      type={textType}
-      htmlName={name}
-      value={current}
-      isReadOnly={readOnly}
-      hasAutoFocus={autoFocus}
-      hasSpellCheck={typeof spellCheck === 'boolean' ? spellCheck : undefined}
-      hasAutoCorrect={autoCorrect !== 'off'}
-      autoCapitalize={
-        autoCapitalize === 'off' || autoCapitalize === 'none'
-          ? 'none'
-          : autoCapitalize === 'words'
-            ? 'words'
-            : autoCapitalize === 'characters'
-              ? 'characters'
-              : 'sentences'
-      }
-      onKeyDown={onKeyDown}
-      onBlur={
-        onBlur
-          ? (event) => onBlur(event as React.FocusEvent<HTMLInputElement>)
-          : undefined
-      }
-      onFocus={
-        onFocus
-          ? (event) => onFocus(event as React.FocusEvent<HTMLInputElement>)
-          : undefined
-      }
-      onChange={(next, event) => {
-        setDraft(next);
-        onChange?.(event);
-      }}
-    />
+    <div
+      className={[styles.field, className].filter(Boolean).join(' ')}
+      style={style}>
+      {label && (
+        <label
+          htmlFor={inputId}
+          className={styles.label}>
+          {label}
+        </label>
+      )}
+      <input
+        {...props}
+        id={inputId}
+        type={type}
+        aria-label={
+          label
+            ? undefined
+            : (props['aria-label'] ?? props.placeholder ?? props.name ?? '입력')
+        }
+        className={classes.filter(Boolean).join(' ')}
+        // 파일 선택은 브라우저만 값을 쓸 수 있어 제어하지 않는다.
+        {...(type === 'file' ? {} : { value: String(value ?? draft) })}
+        onChange={(event) => {
+          setDraft(event.target.value);
+          onChange?.(event);
+        }}
+      />
+    </div>
   );
-}
-
-function dateTimeValue(
-  value: string | number | undefined
-): ISODateTimeString | undefined {
-  if (
-    value === undefined ||
-    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(String(value))
-  )
-    return undefined;
-
-  return String(value) as ISODateTimeString;
 }

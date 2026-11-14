@@ -1,7 +1,7 @@
 'use client';
-import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
 
-import { Banner } from '@astryxdesign/core/Banner';
+import { Banner } from '@/components/ui/composites/Banner';
 
 import { useState } from 'react';
 import type { SourceInput } from '@/domains/materials/model/source';

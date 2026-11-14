@@ -84,7 +84,7 @@ globalStyle(`${textLayer} ::selection`, {
   color: 'transparent',
 });
 
-/** 원문 좌표에 투명 기준점만 두고 툴팁 외형과 포털 배치는 Astryx에 맡긴다. */
+/** 원문 좌표에 투명 기준점만 두고 툴팁 외형과 포털 배치는 공통 Tooltip에 맡긴다. */
 export const meaningAnchor = style({
   position: 'absolute',
   width: 1,

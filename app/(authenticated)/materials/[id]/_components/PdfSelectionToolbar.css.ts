@@ -1,4 +1,5 @@
 import { keyframes, style } from '@vanilla-extract/css';
+import { vars } from '@/lib/styles/theme.css';
 
 const popIn = keyframes({
   from: { opacity: 0, transform: 'translateY(6px) scale(0.92)' },
@@ -11,7 +12,9 @@ export const root = style({
   zIndex: 4,
   padding: 6,
   borderRadius: 14,
-  background: '#16181D',
+  background: vars.color.ink,
+  // ghost 버튼은 부모 글자색을 따르므로 막대에 흰 글자를 주면 어두운 바탕에서도 읽힌다.
+  color: vars.color.onAccent,
   boxShadow: '0 10px 24px rgb(22 24 29 / 24%)',
   transformOrigin: 'center bottom',
   animation: `${popIn} 0.3s cubic-bezier(0.3, 1.5, 0.5, 1)`,

@@ -1,5 +1,5 @@
 'use client';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import type { VideoHistory } from '@/domains/videos/model/contracts';
 import { formatDate } from '@/domains/learning/lib/format';
 import { Badge } from '@/components/ui/primitives/Badge';

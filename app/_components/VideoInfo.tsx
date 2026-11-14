@@ -1,7 +1,7 @@
 'use client';
-import { Banner } from '@astryxdesign/core/Banner';
+import { Banner } from '@/components/ui/composites/Banner';
 
-import { Text } from '@astryxdesign/core/Text';
+import { Text } from '@/components/ui/primitives/Text';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/primitives/Button';

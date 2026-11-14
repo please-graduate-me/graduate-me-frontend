@@ -1,17 +1,16 @@
 'use client';
-import { Switch as AstryxControl } from '@astryxdesign/core/Switch';
 import { useState, type ComponentProps } from 'react';
+import * as styles from './Switch.css';
 
-/** 기존 체크 상태와 입력 이벤트를 Astryx Switch에 연결한다. */
+/** 네이티브 체크 상자를 switch 역할로 알리고 초기값만 받은 상태도 제어 상태로 유지한다. */
 export function Switch({
   checked,
   defaultChecked,
   onChange,
-  disabled,
-  required,
-  name,
-  value: _value,
+  readOnly,
   label,
+  className,
+  style,
   ...props
 }: Pick<
   ComponentProps<'input'>,
@@ -30,21 +29,30 @@ export function Switch({
 > & { label?: string }) {
   const [draft, setDraft] = useState(defaultChecked ?? false);
 
-  return (
-    <AstryxControl
-      {...props}
-      label={label ?? props['aria-label'] ?? name ?? '선택'}
-      isLabelHidden={!label}
-      htmlName={name}
-      value={checked ?? draft}
-      isDisabled={disabled}
-      isRequired={required}
-      {...(_value === undefined ? {} : { 'data-form-value': String(_value) })}
+  const classes = [styles.root, props.disabled && styles.disabled, className];
 
-      onChange={(next, event) => {
-        setDraft(next);
-        onChange?.(event);
-      }}
-    />
+  return (
+    <label
+      className={classes.filter(Boolean).join(' ')}
+      style={style}>
+      <input
+        {...props}
+        type='checkbox'
+        role='switch'
+        aria-label={
+          label ? undefined : (props['aria-label'] ?? props.name ?? '선택')
+        }
+        aria-readonly={readOnly || undefined}
+        className={styles.track}
+        checked={checked ?? draft}
+        onChange={(event) => {
+          // 읽기 전용이면 제어값을 바꾸지 않아 React가 원래 상태로 되돌린다.
+          if (readOnly) return;
+          setDraft(event.target.checked);
+          onChange?.(event);
+        }}
+      />
+      {label && <span>{label}</span>}
+    </label>
   );
 }

@@ -1,11 +1,12 @@
 'use client';
-import { List, ListItem } from '@astryxdesign/core/List';
+import { List } from '@/components/ui/composites/List';
+import { ListItem } from '@/components/ui/composites/ListItem';
 
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
-import { Section } from '@astryxdesign/core/Section';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
+import { Section } from '@/components/ui/layouts/Section';
 import { useState } from 'react';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import { sourceLabel, formatDate } from '@/domains/learning/lib/format';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';

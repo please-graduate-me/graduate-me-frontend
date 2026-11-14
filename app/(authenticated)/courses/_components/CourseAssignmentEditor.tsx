@@ -1,6 +1,6 @@
 'use client';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Banner } from '@astryxdesign/core/Banner';
+import { Banner } from '@/components/ui/composites/Banner';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Assignment } from '@/domains/courses/model/contracts';

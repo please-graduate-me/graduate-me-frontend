@@ -1,8 +1,15 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
+/** 언어 필터는 본문 폭을 다 쓰지 않는 보조 조작으로 두고 아래 영역과 띄운다. */
+export const filter = style({ maxWidth: 240, marginBottom: vars.space.xl });
+
 /** 자료 영역의 제목과 다음 학습 카드 사이를 일정하게 유지한다. */
-export const root = style({ margin: '0 0 26px' });
+export const root = style({
+  display: 'grid',
+  gap: vars.space.md,
+  margin: '0 0 40px',
+});
 
 /** 최근 자료 카드를 같은 크기로 배치하고 좁은 화면에서는 한 열로 내린다. */
 export const resume = style({
@@ -19,7 +26,7 @@ export const heading = style({
   gap: 12,
 });
 
-/** 필터 아래의 목록과 간격만 정하고 조작 외형은 Astryx가 담당한다. */
+/** 필터 아래의 목록과 간격만 정하고 조작 외형은 공통 UI가 담당한다. */
 export const tabs = style({ marginBottom: 20 });
 
 /** 목록의 기본 들여쓰기를 제거한다. */

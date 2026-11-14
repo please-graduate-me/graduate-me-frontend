@@ -1,6 +1,6 @@
 'use client';
 import { Select } from '@/components/ui/primitives/Select';
-import { Text } from '@astryxdesign/core/Text';
+import { Text } from '@/components/ui/primitives/Text';
 import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import type {
   Mode,

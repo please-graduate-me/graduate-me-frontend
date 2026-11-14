@@ -1,10 +1,10 @@
 'use client';
-import { Card } from '@astryxdesign/core/Card';
-import { Heading } from '@astryxdesign/core/Heading';
-import { ProgressBar } from '@astryxdesign/core/ProgressBar';
-import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@/components/ui/primitives/Card';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { ProgressBar } from '@/components/ui/primitives/ProgressBar';
+import { Text } from '@/components/ui/primitives/Text';
 import { useEffect, useState } from 'react';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import { getGrowth } from '@/domains/growth/api/growth';
 import { rewardEventName } from '@/domains/growth/lib/rewardEvents';
 import type { GrowthSummary } from '@/domains/growth/model/contracts';

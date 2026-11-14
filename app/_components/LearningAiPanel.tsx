@@ -1,12 +1,12 @@
 'use client';
-import { Section } from '@astryxdesign/core/Section';
-import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Section } from '@/components/ui/layouts/Section';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
 
-import { Banner } from '@astryxdesign/core/Banner';
+import { Banner } from '@/components/ui/composites/Banner';
 
-import { Text } from '@astryxdesign/core/Text';
-import { Collapsible } from '@astryxdesign/core/Collapsible';
-import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@/components/ui/primitives/Text';
+import { Collapsible } from '@/components/ui/composites/Collapsible';
+import { Heading } from '@/components/ui/primitives/Heading';
 
 import { ApiError } from '@/lib/api/request';
 import { canStartNewGeneration } from '@/domains/ai/lib/generationFailure';

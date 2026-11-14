@@ -8,7 +8,7 @@ export const card = style({
   selectors: {
     '&:hover, &:focus-within': {
       transform: 'translateY(-2px)',
-      // Astryx 카드의 box-shadow 목록을 건드리지 않도록 그림자는 filter로 더한다.
+      // 공통 Card의 테두리 외형을 덮지 않도록 그림자는 filter로 더한다.
       filter: 'drop-shadow(0 10px 24px rgba(22, 24, 29, 0.07))',
     },
   },

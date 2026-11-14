@@ -1,9 +1,9 @@
 'use client';
-import { Section } from '@astryxdesign/core/Section';
-import { Text } from '@astryxdesign/core/Text';
-import { Card } from '@astryxdesign/core/Card';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Link } from '@astryxdesign/core/Link';
+import { Section } from '@/components/ui/layouts/Section';
+import { Text } from '@/components/ui/primitives/Text';
+import { Card } from '@/components/ui/primitives/Card';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Link } from '@/components/ui/primitives/Link';
 import type { SourceInput } from '@/domains/materials/model/source';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import { materialPaths } from '@/domains/materials/config/paths';

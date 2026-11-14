@@ -1,5 +1,5 @@
-import { Text } from '@astryxdesign/core/Text';
-import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@/components/ui/primitives/Text';
+import { Heading } from '@/components/ui/primitives/Heading';
 import { GrowthCard } from '../_components/GrowthCard';
 import * as styles from './page.css';
 import { requireSession } from '../requireSession';

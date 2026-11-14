@@ -1,9 +1,9 @@
-import { Blockquote } from '@astryxdesign/core/Blockquote';
-import { Card } from '@astryxdesign/core/Card';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
-import { Link } from '@astryxdesign/core/Link';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
+import { Card } from '@/components/ui/primitives/Card';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
+import { Link } from '@/components/ui/primitives/Link';
 import type { ArchivedVideoSource as Archive } from '@/domains/videos/model/archive';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { SourceActions } from '../../../../_components/SourceActions';

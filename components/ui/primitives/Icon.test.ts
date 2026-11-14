@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { Icon } from './Icon';
 
-describe('서비스 아이콘의 Astryx 연결', () => {
+describe('서비스 아이콘 표시', () => {
   it('장식 아이콘을 읽지 않고 서비스 SVG와 요청 크기를 유지한다', () => {
     const html = renderToStaticMarkup(
       createElement(Icon, { name: 'file-text', size: 24 })

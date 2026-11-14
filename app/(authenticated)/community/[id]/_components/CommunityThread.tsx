@@ -1,18 +1,18 @@
 'use client';
-import { AlertDialog } from '@astryxdesign/core/AlertDialog';
+import { AlertDialog } from '@/components/ui/composites/AlertDialog';
 import { useConfirmation } from '@/lib/hooks/useConfirmation';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Avatar } from '@astryxdesign/core/Avatar';
-import { Badge } from '@astryxdesign/core/Badge';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Section } from '@astryxdesign/core/Section';
-import { Collapsible } from '@astryxdesign/core/Collapsible';
+import { Avatar } from '@/components/ui/primitives/Avatar';
+import { Badge } from '@/components/ui/primitives/Badge';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Section } from '@/components/ui/layouts/Section';
+import { Collapsible } from '@/components/ui/composites/Collapsible';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../../_components/SessionRecovery';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import type { CommunityPost } from '@/domains/community/model/contracts';
 import {
   getCommunityPost,
@@ -109,27 +109,20 @@ export function CommunityThread({ initial }: { initial: CommunityPost }) {
         학습 커뮤니티
       </ButtonLink>
       <div className={styles.badges}>
-        <Badge
-          variant={value.visibility === 'public' ? 'purple' : 'blue'}
-          label={
-            value.visibility === 'public' ? '공개 글' : '지정 계정에게 공개'
-          }
-        />
-        <Badge
-          variant='neutral'
-          label={value.language === 'en' ? '영어' : '태국어'}
-        />
+        <Badge tone={value.visibility === 'public' ? 'review' : 'info'}>
+          {value.visibility === 'public' ? '공개 글' : '지정 계정에게 공개'}
+        </Badge>
+        <Badge tone='neutral'>
+          {value.language === 'en' ? '영어' : '태국어'}
+        </Badge>
         {answered && (
-          <Badge
-            variant='teal'
-            icon={
-              <Icon
-                name='check'
-                size={12}
-              />
-            }
-            label='조교 답변'
-          />
+          <Badge tone='brand'>
+            <Icon
+              name='check'
+              size={12}
+            />
+            조교 답변
+          </Badge>
         )}
       </div>
       <Heading level={1}>{value.title}</Heading>
@@ -146,12 +139,7 @@ export function CommunityThread({ initial }: { initial: CommunityPost }) {
         <div className={styles.authorInfo}>
           <p className={styles.authorName}>
             {authorName}
-            {value.author.isHelper && (
-              <Badge
-                variant='teal'
-                label='조교'
-              />
-            )}
+            {value.author.isHelper && <Badge tone='brand'>조교</Badge>}
           </p>
           <p className={styles.authorMeta}>{formatDate(value.createdAt)}</p>
         </div>

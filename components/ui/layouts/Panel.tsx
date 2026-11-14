@@ -1,16 +1,15 @@
-'use client';
-import { Card } from '@astryxdesign/core/Card';
 import type { ComponentProps } from 'react';
+import { Card } from '../primitives/Card';
 
-/** 기존 영역의 시맨틱 태그를 보존하며 Astryx 카드로 내용을 구분한다. */
+/** 기존 영역의 시맨틱 태그를 카드 면 한 겹으로 그려 화면의 className이 카드에 바로 적용되게 한다. */
 export function Panel({
-  as: Tag = 'section',
-  children,
+  as = 'section',
   ...props
 }: ComponentProps<'section'> & { as?: 'section' | 'article' }) {
   return (
-    <Tag {...props}>
-      <Card>{children}</Card>
-    </Tag>
+    <Card
+      as={as}
+      {...props}
+    />
   );
 }

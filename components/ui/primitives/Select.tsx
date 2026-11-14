@@ -1,52 +1,45 @@
 'use client';
-import { Selector } from '@astryxdesign/core/Selector';
 import {
   Children,
   isValidElement,
+  useId,
   useState,
   type ComponentProps,
   type ReactNode,
 } from 'react';
+import * as fieldStyles from '@/lib/styles/field.css';
 import { contentLabel } from './contentLabel';
+import { Icon } from './Icon';
+import * as styles from './Select.css';
 
-type Option = { value: string; label: string; isDisabled?: boolean };
-
-function collectOptions(children: ReactNode): Option[] {
-  return Children.toArray(children).flatMap((child): Option[] => {
+/** 선언한 option 중 첫 값을 찾아 초기값이 없을 때 제출할 값으로 쓴다. */
+function firstOption(children: ReactNode): string | undefined {
+  for (const child of Children.toArray(children)) {
     if (
       !isValidElement<{
         children?: ReactNode;
         value?: string | number;
-        disabled?: boolean;
       }>(child)
     )
-      return [];
+      continue;
 
-    if (child.type === 'option') {
-      const label = contentLabel(child.props.children);
+    if (child.type === 'option')
+      return String(child.props.value ?? contentLabel(child.props.children));
+    const nested = firstOption(child.props.children);
 
-      return [
-        {
-          value: String(child.props.value ?? label),
-          label,
-          isDisabled: child.props.disabled,
-        },
-      ];
-    }
+    if (nested !== undefined) return nested;
+  }
 
-    return collectOptions(child.props.children);
-  });
+  return undefined;
 }
 
-/** 네이티브 옵션 선언과 폼 이름을 Astryx 선택 목록으로 변환한다. */
+/** 네이티브 select에 라벨과 화살표 외형을 붙이고 초기값만 받은 선택도 제어 상태로 유지한다. */
 export function Select({
+  id,
   children,
   value,
   defaultValue,
   onChange,
-  disabled,
-  required,
-  name,
   className,
   style,
   label,
@@ -70,30 +63,45 @@ export function Select({
     currentTarget: { value: string };
   }) => void;
 }) {
-  const options = collectOptions(children);
+  const generatedId = useId();
+  const selectId = id ?? generatedId;
 
   const [draft, setDraft] = useState(
-    String(defaultValue ?? options[0]?.value ?? '')
+    String(defaultValue ?? firstOption(children) ?? '')
   );
 
   return (
-    <Selector
-      {...props}
-      label={label ?? props['aria-label'] ?? name ?? '선택'}
-      isLabelHidden={!label}
-      htmlName={name}
-      isDisabled={disabled}
-      isRequired={required}
-      containerClassName={className}
-      containerStyle={style}
-      options={options}
-      value={String(value ?? draft)}
-      onChange={(next) => {
-        setDraft(next);
-        const target = { value: next };
-
-        onChange?.({ target, currentTarget: target });
-      }}
-    />
+    <div
+      className={[fieldStyles.field, className].filter(Boolean).join(' ')}
+      style={style}>
+      {label && (
+        <label
+          htmlFor={selectId}
+          className={fieldStyles.label}>
+          {label}
+        </label>
+      )}
+      <div className={styles.box}>
+        <select
+          {...props}
+          id={selectId}
+          aria-label={
+            label ? undefined : (props['aria-label'] ?? props.name ?? '선택')
+          }
+          className={`${fieldStyles.control} ${styles.select}`}
+          value={String(value ?? draft)}
+          onChange={(event) => {
+            setDraft(event.target.value);
+            onChange?.(event);
+          }}>
+          {children}
+        </select>
+        <Icon
+          name='chevron-down'
+          size={18}
+          className={styles.chevron}
+        />
+      </div>
+    </div>
   );
 }

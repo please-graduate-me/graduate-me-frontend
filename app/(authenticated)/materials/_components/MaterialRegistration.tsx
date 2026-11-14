@@ -1,8 +1,8 @@
 'use client';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Banner } from '@astryxdesign/core/Banner';
-import { FileInput } from '@astryxdesign/core/FileInput';
-import { Text } from '@astryxdesign/core/Text';
+import { Banner } from '@/components/ui/composites/Banner';
+import { FileInput } from '@/components/ui/primitives/FileInput';
+import { Text } from '@/components/ui/primitives/Text';
 import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';

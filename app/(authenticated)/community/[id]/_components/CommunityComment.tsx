@@ -1,6 +1,6 @@
 'use client';
-import { Avatar } from '@astryxdesign/core/Avatar';
-import { Card } from '@astryxdesign/core/Card';
+import { Avatar } from '@/components/ui/primitives/Avatar';
+import { Card } from '@/components/ui/primitives/Card';
 import type { CommunityPost } from '@/domains/community/model/contracts';
 import { formatDate } from '@/domains/learning/lib/format';
 import { Button } from '@/components/ui/primitives/Button';

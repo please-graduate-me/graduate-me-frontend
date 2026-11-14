@@ -2,15 +2,13 @@
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { Icon, type IconName } from '@/components/ui/primitives/Icon';
-import { AppShell } from '@astryxdesign/core/AppShell';
-import {
-  TopNav,
-  TopNavHeading,
-  TopNavItem,
-  TopNavMenu,
-} from '@astryxdesign/core/TopNav';
-import { Avatar } from '@astryxdesign/core/Avatar';
-import { HStack } from '@astryxdesign/core/HStack';
+import { AppShell } from '@/components/ui/layouts/AppShell';
+import { TopNav } from '@/components/ui/layouts/TopNav';
+import { TopNavHeading } from '@/components/ui/layouts/TopNavHeading';
+import { TopNavItem } from '@/components/ui/layouts/TopNavItem';
+import { TopNavMenu } from '@/components/ui/layouts/TopNavMenu';
+import { Avatar } from '@/components/ui/primitives/Avatar';
+import { HStack } from '@/components/ui/layouts/HStack';
 import { BrandLogo } from '../../_components/BrandLogo';
 import { HeaderGrowth } from './HeaderGrowth';
 import * as styles from './StudentShell.css';

@@ -1,10 +1,10 @@
 'use client';
-import { AlertDialog } from '@astryxdesign/core/AlertDialog';
+import { AlertDialog } from '@/components/ui/composites/AlertDialog';
 import { useConfirmation } from '@/lib/hooks/useConfirmation';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { Select } from '@/components/ui/primitives/Select';
 import { useEffect, useState } from 'react';
 import type { MaterialSummary } from '@/domains/materials/model/contracts';
@@ -170,6 +170,7 @@ export function MaterialLibrary({
         </div>
         <div className={libraryStyles.filters}>
           <Select
+            className={libraryStyles.language}
             label={contentLabel(<>학습 언어 </>)}
             aria-label='학습 언어 필터'
             value={language}

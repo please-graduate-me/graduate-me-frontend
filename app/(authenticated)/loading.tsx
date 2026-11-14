@@ -1,5 +1,5 @@
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { Panel } from '@/components/ui/layouts/Panel';
 import { Icon } from '@/components/ui/primitives/Icon';
 

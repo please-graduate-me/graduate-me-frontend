@@ -1,20 +1,18 @@
-'use client';
-import { Badge as AstryxBadge } from '@astryxdesign/core/Badge';
 import type { ComponentProps } from 'react';
+import * as styles from './Badge.css';
 
-/** 서비스 상태의 의미를 Astryx 배지 변형에 대응한다. */
+/** 서비스 상태의 의미를 시안의 색 짝으로 표시하는 작은 표지다. */
 export function Badge({
   tone = 'neutral',
-  children,
+  className,
   ...props
-}: ComponentProps<'span'> & {
-  tone?: 'neutral' | 'brand' | 'success' | 'warning' | 'error' | 'review';
-}) {
+}: ComponentProps<'span'> & { tone?: keyof typeof styles.tone }) {
   return (
-    <AstryxBadge
+    <span
       {...props}
-      label={children}
-      variant={tone === 'brand' ? 'info' : tone === 'review' ? 'purple' : tone}
+      className={[styles.root, styles.tone[tone], className]
+        .filter(Boolean)
+        .join(' ')}
     />
   );
 }

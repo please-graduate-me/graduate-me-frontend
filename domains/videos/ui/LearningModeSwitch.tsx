@@ -1,8 +1,6 @@
 'use client';
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from '@astryxdesign/core/SegmentedControl';
+import { SegmentedControl } from '@/components/ui/primitives/SegmentedControl';
+import { SegmentedControlItem } from '@/components/ui/primitives/SegmentedControlItem';
 import type { Mode } from '../model/mode';
 import * as styles from './LearningModeSwitch.css';
 

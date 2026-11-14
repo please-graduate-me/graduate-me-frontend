@@ -1,9 +1,10 @@
 'use client';
-import { Card } from '@astryxdesign/core/Card';
+import { Card } from '@/components/ui/primitives/Card';
 
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
-import { List, ListItem } from '@astryxdesign/core/List';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
+import { List } from '@/components/ui/composites/List';
+import { ListItem } from '@/components/ui/composites/ListItem';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import * as styles from './VideoTranscript.css';

@@ -1,7 +1,7 @@
 'use client';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Text } from '@astryxdesign/core/Text';
-import { StatusDot } from '@astryxdesign/core/StatusDot';
+import { Text } from '@/components/ui/primitives/Text';
+import { StatusDot } from '@/components/ui/primitives/StatusDot';
 import type { LearningSettings } from '@/domains/users/model/settings';
 import { useLearningSettings } from '../../../_components/useLearningSettings';
 import * as styles from './SettingsEditor.css';

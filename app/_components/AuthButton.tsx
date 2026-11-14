@@ -1,5 +1,5 @@
 'use client';
-import { Banner } from '@astryxdesign/core/Banner';
+import { Banner } from '@/components/ui/composites/Banner';
 
 import { Button } from '@/components/ui/primitives/Button';
 import { getCsrfToken, signIn, signOut } from '@/domains/auth/api/auth';

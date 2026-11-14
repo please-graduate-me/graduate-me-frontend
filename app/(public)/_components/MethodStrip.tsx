@@ -1,4 +1,4 @@
-import { Text } from '@astryxdesign/core/Text';
+import { Text } from '@/components/ui/primitives/Text';
 import * as styles from './MethodStrip.css';
 
 const methods = [

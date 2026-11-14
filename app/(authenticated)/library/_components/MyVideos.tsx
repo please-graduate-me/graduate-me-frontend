@@ -1,19 +1,18 @@
 'use client';
-import { List, ListItem } from '@astryxdesign/core/List';
-import {
-  SegmentedControl,
-  SegmentedControlItem,
-} from '@astryxdesign/core/SegmentedControl';
-import { Banner } from '@astryxdesign/core/Banner';
+import { List } from '@/components/ui/composites/List';
+import { ListItem } from '@/components/ui/composites/ListItem';
+import { SegmentedControl } from '@/components/ui/primitives/SegmentedControl';
+import { SegmentedControlItem } from '@/components/ui/primitives/SegmentedControlItem';
+import { Banner } from '@/components/ui/composites/Banner';
 
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Section } from '@astryxdesign/core/Section';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
-import { DropdownMenu } from '@astryxdesign/core/DropdownMenu';
+import { Section } from '@/components/ui/layouts/Section';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
+import { DropdownMenu } from '@/components/ui/composites/DropdownMenu';
 import { Select } from '@/components/ui/primitives/Select';
 import { useEffect, useState } from 'react';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import { Button } from '@/components/ui/primitives/Button';
 import { Icon } from '@/components/ui/primitives/Icon';
 import { Badge } from '@/components/ui/primitives/Badge';
@@ -139,7 +138,7 @@ export function MyVideos({
 
   return (
     <>
-      <div>
+      <div className={styles.filter}>
         <Select
           label={contentLabel(<>학습 언어 </>)}
           aria-label='학습 언어 필터'

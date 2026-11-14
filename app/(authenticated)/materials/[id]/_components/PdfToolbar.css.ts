@@ -1,7 +1,7 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 도구 모음의 외형과 키보드 이동은 Astryx에 맡긴다. */
+/** 도구 모음의 외형과 키보드 이동은 공통 Toolbar에 맡긴다. */
 export const toolbar = style({
   position: 'relative',
   minHeight: 56,

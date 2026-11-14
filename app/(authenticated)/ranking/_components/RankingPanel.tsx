@@ -1,13 +1,14 @@
 'use client';
-import { Card } from '@astryxdesign/core/Card';
+import { Card } from '@/components/ui/primitives/Card';
 
-import { List, ListItem } from '@astryxdesign/core/List';
+import { List } from '@/components/ui/composites/List';
+import { ListItem } from '@/components/ui/composites/ListItem';
 
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
-import { Link } from '@astryxdesign/core/Link';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
+import { Link } from '@/components/ui/primitives/Link';
 import { useId, useState } from 'react';
 import { BooMascot } from '@/domains/growth/ui/BooMascot';
 import {

@@ -1,7 +1,7 @@
 'use client';
-import { Card } from '@astryxdesign/core/Card';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@/components/ui/primitives/Card';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { useEffect, useRef } from 'react';
 import { recordRecommendationEvent } from '@/domains/recommendations/api/recommendations';
 import type { Recommendations } from '@/domains/recommendations/model/contracts';

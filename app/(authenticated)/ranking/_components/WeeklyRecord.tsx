@@ -1,8 +1,8 @@
 'use client';
-import { Card } from '@astryxdesign/core/Card';
-import { Heading } from '@astryxdesign/core/Heading';
-import { ProgressBar } from '@astryxdesign/core/ProgressBar';
-import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@/components/ui/primitives/Card';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { ProgressBar } from '@/components/ui/primitives/ProgressBar';
+import { Text } from '@/components/ui/primitives/Text';
 import type { GrowthSummary } from '@/domains/growth/model/contracts';
 import { videoPaths } from '@/domains/videos/config/paths';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';

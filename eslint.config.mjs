@@ -7,8 +7,6 @@ import architecture from './rules/architecture.mjs';
 
 /** 도구 설정을 한 진입점에서 적용해 실행 환경의 차이를 줄인다. */
 export default defineConfig([
-  // astryx theme build가 만든 산출물은 직접 고치지 않고 pnpm theme:build로 다시 생성한다.
-  { ignores: ['lib/styles/pgm.*'] },
   ...nextVitals,
   ...nextTypeScript,
   prettier,

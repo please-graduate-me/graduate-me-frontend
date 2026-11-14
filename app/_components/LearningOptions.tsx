@@ -1,7 +1,7 @@
 'use client';
 import { Select } from '@/components/ui/primitives/Select';
-import { Card } from '@astryxdesign/core/Card';
-import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@/components/ui/primitives/Card';
+import { Text } from '@/components/ui/primitives/Text';
 import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import type { LearningSettings } from '@/domains/users/model/settings';
 import * as styles from './LearningOptions.css';

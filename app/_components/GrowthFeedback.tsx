@@ -1,7 +1,7 @@
 'use client';
-import { Text } from '@astryxdesign/core/Text';
-import { Toast } from '@astryxdesign/core/Toast';
-import { Stack } from '@astryxdesign/core/Stack';
+import { Text } from '@/components/ui/primitives/Text';
+import { Toast } from '@/components/ui/composites/Toast';
+import { Stack } from '@/components/ui/layouts/Stack';
 import { IconButton } from '@/components/ui/primitives/IconButton';
 
 import { useEffect, useRef, useState } from 'react';

@@ -1,9 +1,9 @@
 'use client';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Blockquote } from '@astryxdesign/core/Blockquote';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Collapsible } from '@astryxdesign/core/Collapsible';
-import { Text } from '@astryxdesign/core/Text';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Collapsible } from '@/components/ui/composites/Collapsible';
+import { Text } from '@/components/ui/primitives/Text';
 import { useEffect, useState } from 'react';
 import type { Explanation } from '@/domains/ai/model/contracts';
 import { AiExplanation } from '../../../../_components/AiExplanation';

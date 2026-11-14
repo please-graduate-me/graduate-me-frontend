@@ -85,7 +85,7 @@ export const information = style({
   gap: 10,
 });
 
-/** 실제 진행 표시의 외형은 Astryx에 맡기고 간격만 유지한다. */
+/** 실제 진행 표시의 외형은 공통 ProgressBar에 맡기고 간격만 유지한다. */
 export const progress = style({ marginTop: 18 });
 
 /** 자료에서 확인한 실제 영상 썸네일을 표지 비율 안에 표시한다. */

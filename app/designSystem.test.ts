@@ -5,7 +5,8 @@ import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
 const projectRoot = fileURLToPath(new URL('..', import.meta.url));
-const roots = ['app', 'domains', 'components'];
+const roots = ['app', 'domains', 'components', 'lib'];
+const designSystem = path.join(projectRoot, 'components', 'ui') + path.sep;
 
 const controls = new Set([
   'Button',
@@ -49,8 +50,11 @@ const files = roots.flatMap((directory) =>
   sourceFiles(path.join(projectRoot, directory))
 );
 
-describe('Astryx 기본 UI와 서비스 전용 스타일의 경계', () => {
-  it('화면용 기본 제어와 툴팁을 직접 구현하거나 이전 UI 토큰을 사용하지 않는다', () => {
+// 디자인 시스템은 기본 제어를 네이티브 요소로 직접 구현하므로 화면 검사에서 뺀다.
+const screens = files.filter((file) => !file.startsWith(designSystem));
+
+describe('사내 디자인 시스템과 서비스 전용 스타일의 경계', () => {
+  it('이전 UI 라이브러리와 토큰을 사용하지 않는다', () => {
     const violations: string[] = [];
 
     for (const file of files) {
@@ -58,7 +62,20 @@ describe('Astryx 기본 UI와 서비스 전용 스타일의 경계', () => {
 
       if (/--ant-[\w-]+|\.ant-[\w-]+/.test(source))
         violations.push(`${file}: 이전 UI 토큰`);
+      if (/['"]@astryxdesign\//.test(source))
+        violations.push(`${file}: Astryx import`);
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('화면용 기본 제어와 툴팁을 직접 구현하지 않는다', () => {
+    const violations: string[] = [];
+
+    for (const file of screens) {
       if (!file.endsWith('.tsx')) continue;
+
+      const source = readFileSync(file, 'utf8');
 
       const ast = ts.createSourceFile(
         file,
@@ -107,7 +124,7 @@ describe('Astryx 기본 UI와 서비스 전용 스타일의 경계', () => {
     expect(violations).toEqual([]);
   });
 
-  it('기본 제어에 연결하는 클래스가 Astryx 외형을 다시 그리지 않는다', () => {
+  it('기본 제어에 연결하는 클래스가 공통 UI 외형을 다시 그리지 않는다', () => {
     const violations: string[] = [];
 
     const compilerOptions: ts.CompilerOptions = {
@@ -116,7 +133,7 @@ describe('Astryx 기본 UI와 서비스 전용 스타일의 경계', () => {
       paths: { '@/*': ['./*'] },
     };
 
-    for (const file of files.filter((name) => name.endsWith('.tsx'))) {
+    for (const file of screens.filter((name) => name.endsWith('.tsx'))) {
       const ast = ts.createSourceFile(
         file,
         readFileSync(file, 'utf8'),

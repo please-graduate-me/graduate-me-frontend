@@ -1,10 +1,12 @@
 'use client';
-import { Heading } from '@astryxdesign/core/Heading';
+import { Heading } from '@/components/ui/primitives/Heading';
 import { Button } from '@/components/ui/primitives/Button';
-import { TabList, Tab } from '@astryxdesign/core/TabList';
-import { List, ListItem } from '@astryxdesign/core/List';
-import { Card } from '@astryxdesign/core/Card';
-import { Text } from '@astryxdesign/core/Text';
+import { TabList } from '@/components/ui/primitives/TabList';
+import { Tab } from '@/components/ui/primitives/Tab';
+import { List } from '@/components/ui/composites/List';
+import { ListItem } from '@/components/ui/composites/ListItem';
+import { Card } from '@/components/ui/primitives/Card';
+import { Text } from '@/components/ui/primitives/Text';
 
 import type { SourceInput } from '@/domains/materials/model/source';
 import { useState } from 'react';

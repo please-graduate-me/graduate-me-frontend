@@ -1,8 +1,8 @@
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
-import { Card } from '@astryxdesign/core/Card';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
+import { Card } from '@/components/ui/primitives/Card';
 import { requireSession } from '../requireSession';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import { getLearningSettings } from '@/domains/users/api/settings';
 import * as styles from './page.css';
 import { SettingsEditor } from './_components/SettingsEditor';

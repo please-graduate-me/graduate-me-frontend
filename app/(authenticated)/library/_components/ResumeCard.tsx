@@ -1,11 +1,11 @@
 'use client';
-import { ProgressBar } from '@astryxdesign/core/ProgressBar';
-import { Card } from '@astryxdesign/core/Card';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { ProgressBar } from '@/components/ui/primitives/ProgressBar';
+import { Card } from '@/components/ui/primitives/Card';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { useState } from 'react';
 import Image from 'next/image';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import type { MaterialSummary } from '@/domains/materials/model/contracts';
 import type { VideoHistory } from '@/domains/videos/model/contracts';
 import { videoPaths } from '@/domains/videos/config/paths';

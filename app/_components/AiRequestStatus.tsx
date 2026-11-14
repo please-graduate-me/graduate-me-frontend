@@ -1,5 +1,5 @@
-import { Banner } from '@astryxdesign/core/Banner';
-import { Text } from '@astryxdesign/core/Text';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Text } from '@/components/ui/primitives/Text';
 import { Button } from '@/components/ui/primitives/Button';
 import * as styles from '@/lib/styles/workspace.css';
 

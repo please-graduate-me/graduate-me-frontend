@@ -1,6 +1,6 @@
-import { Card } from '@astryxdesign/core/Card';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@/components/ui/primitives/Card';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
 import { Icon } from '@/components/ui/primitives/Icon';
 import * as styles from './LearningPreview.css';

@@ -1,8 +1,8 @@
 'use client';
-import type { AlertDialogProps } from '@astryxdesign/core/AlertDialog';
+import type { AlertDialogProps } from '@/components/ui/composites/AlertDialog';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-/** 확인 결과를 비동기로 기다려 삭제와 화면 이동을 공식 대화상자에 연결한다. */
+/** 확인 결과를 비동기로 기다려 삭제와 화면 이동을 확인 대화상자에 연결한다. */
 export function useConfirmation() {
   const [request, setRequest] = useState<{
     title: string;

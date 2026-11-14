@@ -1,5 +1,5 @@
 'use client';
-import { DropdownMenu } from '@astryxdesign/core/DropdownMenu';
+import { DropdownMenu } from '@/components/ui/composites/DropdownMenu';
 import type { MaterialSummary } from '@/domains/materials/model/contracts';
 import { formatDate } from '@/domains/learning/lib/format';
 import { Badge } from '@/components/ui/primitives/Badge';

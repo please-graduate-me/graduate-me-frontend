@@ -1,9 +1,9 @@
 'use client';
-import { Text } from '@astryxdesign/core/Text';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Section } from '@astryxdesign/core/Section';
+import { Text } from '@/components/ui/primitives/Text';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Section } from '@/components/ui/layouts/Section';
 import { useEffect, useState } from 'react';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import { Panel } from '@/components/ui/layouts/Panel';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
 import { Button } from '@/components/ui/primitives/Button';

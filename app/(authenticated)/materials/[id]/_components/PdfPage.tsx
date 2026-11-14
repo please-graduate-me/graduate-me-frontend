@@ -1,8 +1,8 @@
 'use client';
-import { Tooltip } from '@astryxdesign/core/Tooltip';
-import { Stack } from '@astryxdesign/core/Stack';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Text } from '@astryxdesign/core/Text';
+import { Tooltip } from '@/components/ui/primitives/Tooltip';
+import { Stack } from '@/components/ui/layouts/Stack';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Text } from '@/components/ui/primitives/Text';
 import { useEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy, RenderTask, TextLayer } from 'pdfjs-dist';
 import type { Expression } from '@/domains/expressions/model/contracts';

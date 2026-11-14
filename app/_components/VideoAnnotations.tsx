@@ -1,5 +1,5 @@
 'use client';
-import { Banner } from '@astryxdesign/core/Banner';
+import { Banner } from '@/components/ui/composites/Banner';
 
 import { useEffect, useState } from 'react';
 import { listAnnotations } from '@/domains/materials/api/records';

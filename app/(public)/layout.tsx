@@ -1,7 +1,8 @@
-import { Link } from '@astryxdesign/core/Link';
-import { TopNav, TopNavHeading } from '@astryxdesign/core/TopNav';
-import { HStack } from '@astryxdesign/core/HStack';
-import { Text } from '@astryxdesign/core/Text';
+import { Link } from '@/components/ui/primitives/Link';
+import { TopNav } from '@/components/ui/layouts/TopNav';
+import { TopNavHeading } from '@/components/ui/layouts/TopNavHeading';
+import { HStack } from '@/components/ui/layouts/HStack';
+import { Text } from '@/components/ui/primitives/Text';
 import type { ReactNode } from 'react';
 import * as styles from './layout.css';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';

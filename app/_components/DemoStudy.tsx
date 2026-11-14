@@ -1,8 +1,8 @@
 'use client';
-import { Section } from '@astryxdesign/core/Section';
-import { Banner } from '@astryxdesign/core/Banner';
+import { Section } from '@/components/ui/layouts/Section';
+import { Banner } from '@/components/ui/composites/Banner';
 
-import { Text } from '@astryxdesign/core/Text';
+import { Text } from '@/components/ui/primitives/Text';
 
 import { useEffect, useState } from 'react';
 import { getDemoLesson } from '@/domains/videos/api/demo';

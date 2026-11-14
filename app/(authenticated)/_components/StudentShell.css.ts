@@ -7,7 +7,7 @@ export const immersive = style({
   background: vars.color.background,
 });
 
-/** 탐색 UI 외형은 Astryx에 맡기고 본문 폭과 반응형 여백만 조정한다. */
+/** 탐색 UI 외형은 공통 TopNav에 맡기고 본문 폭과 반응형 여백만 조정한다. */
 export const content = style({
   maxWidth: 1200,
   marginInline: 'auto',

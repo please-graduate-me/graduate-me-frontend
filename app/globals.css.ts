@@ -1,4 +1,5 @@
 import { globalFontFace, globalStyle } from '@vanilla-extract/css';
+import { resetLayer } from '@/lib/styles/layers.css';
 import { vars } from '@/lib/styles/theme.css';
 
 globalFontFace('Noto Sans KR', {
@@ -22,16 +23,13 @@ globalFontFace('Source Serif 4', {
   fontDisplay: 'swap',
 });
 
-// Astryx를 걷어 내는 동안 남은 Astryx 컴포넌트도 서비스 글꼴을 쓰게 한다.
-globalStyle(':root, [data-astryx-theme="pgm"]', {
-  colorScheme: 'light',
-  vars: {
-    '--font-family-body': vars.font.body,
-    '--font-family-heading': vars.font.body,
-  },
-});
+// 서비스는 밝은 화면만 지원하므로 OS 어두운 모드에서도 기본 제어와 스크롤 막대를 밝게 둔다.
+globalStyle(':root', { colorScheme: 'light' });
 
-globalStyle('*, *::before, *::after', { boxSizing: 'border-box' });
+// 초기화는 가장 낮은 계층에 두어 공통 UI의 글꼴, 색, 포커스 표시를 덮지 않게 한다.
+globalStyle('*, *::before, *::after', {
+  '@layer': { [resetLayer]: { boxSizing: 'border-box' } },
+});
 
 globalStyle('body', {
   margin: 0,
@@ -44,19 +42,26 @@ globalStyle('body', {
   WebkitFontSmoothing: 'antialiased',
 });
 
-globalStyle('h1, h2, h3, h4, h5, h6, p, figure, blockquote', { margin: 0 });
+globalStyle('h1, h2, h3, h4, h5, h6, p, figure, blockquote', {
+  '@layer': { [resetLayer]: { margin: 0 } },
+});
 
 globalStyle('button, input, select, textarea', {
-  font: 'inherit',
-  color: 'inherit',
+  '@layer': { [resetLayer]: { font: 'inherit', color: 'inherit' } },
 });
 
 globalStyle(':focus-visible', {
-  outline: `2px solid ${vars.color.focus}`,
-  outlineOffset: 2,
+  '@layer': {
+    [resetLayer]: {
+      outline: `2px solid ${vars.color.focus}`,
+      outlineOffset: 2,
+    },
+  },
 });
 
-globalStyle('fieldset', { border: 0, padding: 0, margin: 0, minWidth: 0 });
+globalStyle('fieldset', {
+  '@layer': { [resetLayer]: { border: 0, padding: 0, margin: 0, minWidth: 0 } },
+});
 
 // 모션 축소 설정에서는 개별 컴포넌트가 빠뜨린 애니메이션까지 한 번에 멈춘다.
 globalStyle('*, *::before, *::after', {

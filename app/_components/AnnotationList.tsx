@@ -1,9 +1,9 @@
 'use client';
-import { Blockquote } from '@astryxdesign/core/Blockquote';
-import { Banner } from '@astryxdesign/core/Banner';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
+import { Banner } from '@/components/ui/composites/Banner';
 
-import { Collapsible } from '@astryxdesign/core/Collapsible';
-import { Card } from '@astryxdesign/core/Card';
+import { Collapsible } from '@/components/ui/composites/Collapsible';
+import { Card } from '@/components/ui/primitives/Card';
 
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';

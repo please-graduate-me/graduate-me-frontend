@@ -42,6 +42,9 @@ export const filters = style({
   gap: vars.space.sm,
 });
 
+/** 언어 선택이 좁은 줄에서도 선택지 이름을 자르지 않게 최소 폭을 둔다. */
+export const language = style({ minWidth: 150 });
+
 /** 학습 중인 자료와 완료한 자료 묶음 사이를 크게 띄운다. */
 export const sections = style({
   display: 'flex',

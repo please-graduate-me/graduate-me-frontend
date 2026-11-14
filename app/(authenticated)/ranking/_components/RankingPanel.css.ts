@@ -65,7 +65,7 @@ export const board = style({
   minWidth: 0,
 });
 
-/** 카드 안 요소 간격만 정하고 외형은 Astryx Card에 맡긴다. */
+/** 카드 안 요소 간격만 정하고 외형은 공통 Card에 맡긴다. */
 export const panel = style({
   display: 'grid',
   gap: vars.space.md,

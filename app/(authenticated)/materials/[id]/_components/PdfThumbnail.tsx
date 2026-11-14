@@ -1,4 +1,4 @@
-import { SelectableCard } from '@astryxdesign/core/SelectableCard';
+import { SelectableCard } from '@/components/ui/composites/SelectableCard';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { PdfPage } from './PdfPage';
 import * as styles from './PdfThumbnail.css';

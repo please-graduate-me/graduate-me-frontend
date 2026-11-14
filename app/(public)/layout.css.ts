@@ -1,7 +1,7 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 공개 화면도 Astryx의 공통 배경과 본문 폭을 따른다. */
+/** 공개 화면도 학습 공간과 같은 공통 배경과 본문 폭을 따른다. */
 export const root = style({
   minHeight: '100dvh',
   background: vars.color.background,

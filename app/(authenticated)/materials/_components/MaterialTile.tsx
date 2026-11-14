@@ -1,7 +1,7 @@
 'use client';
-import { ClickableCard } from '@astryxdesign/core/ClickableCard';
-import { ProgressBar } from '@astryxdesign/core/ProgressBar';
-import { Text } from '@astryxdesign/core/Text';
+import { ClickableCard } from '@/components/ui/composites/ClickableCard';
+import { ProgressBar } from '@/components/ui/primitives/ProgressBar';
+import { Text } from '@/components/ui/primitives/Text';
 import type { ReactNode } from 'react';
 import * as styles from './MaterialTile.css';
 

@@ -1,9 +1,11 @@
 'use client';
-import { Slider as AstryxSlider } from '@astryxdesign/core/Slider';
+import { assignInlineVars } from '@vanilla-extract/dynamic';
 import type { ComponentProps } from 'react';
+import * as styles from './Slider.css';
 
-/** 재생 위치의 숫자 변경과 접근성 문구를 Astryx 탐색 컨트롤에 연결한다. */
+/** 재생 위치를 네이티브 범위 입력으로 조작하고 채워진 구간을 청록으로 표시한다. */
 export function Slider({
+  id,
   min = 0,
   max = 100,
   value,
@@ -27,25 +29,29 @@ export function Slider({
     currentTarget: { value: string; valueAsNumber: number };
   }) => void;
 }) {
-  return (
-    <AstryxSlider
-      label={label}
-      isLabelHidden
-      min={min}
-      max={Math.max(min, max)}
-      step={step === undefined || step === 'any' ? undefined : Number(step)}
-      value={value}
-      isDisabled={disabled}
-      htmlName={name}
-      containerClassName={className}
-      containerStyle={style}
-      valueDisplay='none'
-      formatValue={valueText ? () => valueText : undefined}
-      onChange={(next: number) => {
-        const target = { value: String(next), valueAsNumber: next };
+  const upper = Math.max(min, max);
+  const ratio = upper === min ? 0 : (value - min) / (upper - min);
 
-        onChange?.({ target, currentTarget: target });
+  return (
+    <input
+      id={id}
+      type='range'
+      min={min}
+      max={upper}
+      step={step}
+      value={value}
+      disabled={disabled}
+      name={name}
+      aria-label={label}
+      aria-valuetext={valueText}
+      className={[styles.root, className].filter(Boolean).join(' ')}
+      style={{
+        ...style,
+        ...assignInlineVars({
+          [styles.fill]: `${Math.min(1, Math.max(0, ratio)) * 100}%`,
+        }),
       }}
+      onChange={onChange}
     />
   );
 }

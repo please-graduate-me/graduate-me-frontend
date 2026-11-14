@@ -74,7 +74,7 @@ export const studyGrid = style({
 /** 영상과 답안은 같은 읽기 순서로 이어진다. */
 export const main = style({ display: 'grid', gap: vars.space.lg, minWidth: 0 });
 
-/** 영상과 재생 조작은 하나의 Astryx 카드로 묶는다. */
+/** 영상과 재생 조작은 하나의 공통 Card로 묶는다. */
 export const playerPanel = style({
   display: 'grid',
   gap: vars.space.md,
@@ -149,7 +149,7 @@ export const blankSentence = style({
   minHeight: 84,
 });
 
-/** Astryx 입력은 문장 사이에서 일정한 폭을 확보한다. */
+/** 빈칸 입력은 문장 사이에서 일정한 폭을 확보한다. */
 export const blankInput = style({
   display: 'inline-block',
   width: 160,

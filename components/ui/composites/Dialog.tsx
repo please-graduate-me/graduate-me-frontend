@@ -1,12 +1,11 @@
 'use client';
-import {
-  Dialog as AstryxDialog,
-  DialogHeader,
-} from '@astryxdesign/core/Dialog';
-import { Layout, LayoutContent, LayoutFooter } from '@astryxdesign/core/Layout';
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
+import * as buttonStyles from '@/lib/styles/button.css';
+import { Icon } from '../primitives/Icon';
+import * as styles from './Dialog.css';
+import { Modal } from './Modal';
 
-/** 입력 중 배경 클릭을 막고 기존 열림 계약을 Astryx 모달에 연결한다. */
+/** 배경 클릭으로는 닫히지 않는 입력용 모달이며 닫기 버튼과 Escape는 onClose에 판단을 맡긴다. */
 export function Dialog({
   open,
   onClose,
@@ -19,32 +18,51 @@ export function Dialog({
   onClose: () => void;
   title: string;
   description?: string;
-  children: ReactNode;
+  children?: ReactNode;
   footer?: ReactNode;
 }) {
-  const changeOpen = (isOpen: boolean) => {
-    if (!isOpen) onClose();
-  };
+  const titleId = useId();
+  const descriptionId = useId();
 
   return (
-    <AstryxDialog
-      isOpen={open}
-      onOpenChange={changeOpen}
-      purpose='form'
-      width={640}>
-      <Layout
-        header={
-          <DialogHeader
-            title={title}
-            subtitle={description}
-            onOpenChange={changeOpen}
+    <Modal
+      open={open}
+      onCancel={onClose}
+      labelledBy={titleId}
+      describedBy={description ? descriptionId : undefined}>
+      <header className={styles.header}>
+        <div className={styles.heading}>
+          <h2
+            id={titleId}
+            className={styles.title}>
+            {title}
+          </h2>
+          {description && (
+            <p
+              id={descriptionId}
+              className={styles.description}>
+              {description}
+            </p>
+          )}
+        </div>
+        <button
+          type='button'
+          aria-label='닫기'
+          className={[
+            buttonStyles.base,
+            buttonStyles.variant.ghost,
+            buttonStyles.iconOnly.medium,
+            styles.close,
+          ].join(' ')}
+          onClick={onClose}>
+          <Icon
+            name='x'
+            size={20}
           />
-        }
-        content={<LayoutContent>{children}</LayoutContent>}
-        footer={
-          footer ? <LayoutFooter hasDivider>{footer}</LayoutFooter> : undefined
-        }
-      />
-    </AstryxDialog>
+        </button>
+      </header>
+      <div className={styles.content}>{children}</div>
+      {footer && <footer className={styles.footer}>{footer}</footer>}
+    </Modal>
   );
 }

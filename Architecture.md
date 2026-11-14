@@ -32,7 +32,8 @@
 │       ├── api/                      # 범용 HTTP 처리, 서버 전송 어댑터
 │       ├── hooks/                    # 여러 도메인 화면이 쓰는 범용 훅
 │       └── styles/
-│           └── theme.css.ts          # 공통 디자인 토큰과 테마
+│           ├── theme.css.ts          # 공통 디자인 토큰
+│           └── layers.css.ts         # CSS 계층 순서와 layered()
 └── graduate-me-backend/                      # API와 서버 업무 처리
     ├── src/database/             # TypeORM 엔티티, DB 연결, 마이그레이션, seed
     └── src/worker/               # 별도 음성 처리 API를 호출하는 NestJS 작업 관리자
@@ -96,19 +97,22 @@
 - 테스트와 스토리는 소스 옆에 둔다.
 - 불필요한 `index.ts`와 래퍼는 만들지 않는다. 도메인 내부의 명시적인 재내보내기는 허용한다.
 
-## Astryx UI
+## 사내 디자인 시스템
 
-- 기본 UI는 Astryx의 공식 컴포넌트를 사용하고 개별 경로에서 import한다. 화면의 의미에 따라 Heading·Text·Card·Section·Table·Collapsible·Banner 등을 조합한다.
-- 앱 초기화는 `app/Providers.tsx`에서 한국어 안내, 사전 빌드된 pgm 테마와 Next.js LinkProvider를 연결한다. 루트 레이아웃에서 reset, Astryx CSS, 테마 CSS를 순서대로 불러온다.
-- pgm 테마는 `lib/styles/pgmTheme.ts`에서 neutral 테마를 확장해 정의한다. 원본을 바꾼 뒤 `pnpm theme:build`로 `lib/styles/pgm.*` 산출물을 다시 만들고, 산출물은 직접 수정하지 않는다.
-- `components/ui/`의 어댑터는 기존 폼의 값 변경·ref·이벤트·접근성 계약을 Astryx에 연결한다. 단순 외형 재구현이나 앱 간 공통 패키지는 만들지 않는다.
-- 영상·PDF 캔버스·OCR 위치·채점 강조·마스코트는 서비스 전용 표현으로 유지하고 주변 조작 UI는 Astryx를 사용한다.
+- 기본 UI는 `components/ui/`의 사내 디자인 시스템 컴포넌트를 사용하고 컴포넌트마다 개별 경로에서 import한다. 화면의 의미에 따라 Heading·Text·Card·Section·Table·Collapsible·Banner 등을 조합한다.
+- `primitives/`에는 Button·Input·Text·Badge처럼 낱개로 쓰는 부품, `composites/`에는 Dialog·Table·DropdownMenu·Toast처럼 여러 요소를 묶은 부품, `layouts/`에는 AppShell·TopNav·Stack·Section처럼 업무를 모르는 배치 틀을 둔다. 하위 항목(TableRow, ListItem, Tab 등)도 한 파일에 하나씩 둔다.
+- 공통 컴포넌트의 기본 외형은 `lib/styles/layers.css.ts`의 `layered()`로 `ui` CSS 계층 안에 작성한다. 계층 순서는 `reset` → `ui` → 계층 밖 스타일이며, 화면 className은 계층 밖에 있어 불러온 순서와 관계없이 기본 외형보다 우선한다.
+- 버튼과 입력처럼 여러 컴포넌트가 공유하는 외형은 `lib/styles/button.css.ts`, `lib/styles/field.css.ts`에 둔다.
+- 색·간격·반경·그림자·모션 토큰은 `lib/styles/theme.css.ts`에서 `:root`에 정의한다. 글꼴은 Noto Sans KR(본문), Space Grotesk(숫자), Source Serif 4(문서)이며 `public/fonts/`의 파일을 `app/globals.css.ts`에서 불러온다.
+- 기본 제어는 네이티브 요소로 구현한다. 대화상자는 `<dialog>`의 `showModal()`, 펼침 영역은 `<details>`/`<summary>`를 쓴다. Radix는 드롭다운 메뉴, 툴팁, 토스트의 동작에만 사용하며 각 컴포넌트가 필요한 Provider를 스스로 감싼다. 앱 전역 Provider는 두지 않는다.
+- 내부 주소 링크는 `Link`, `ButtonLink`, TopNav 계열이 `next/link`로 직접 렌더링한다.
+- 영상·PDF 캔버스·OCR 위치·채점 강조·마스코트는 서비스 전용 표현으로 유지하고 주변 조작 UI는 디자인 시스템 컴포넌트를 사용한다.
 
 ## 스타일 규칙
 
 - 스타일은 vanilla-extract로 작성한다. 컴포넌트 옆에 `컴포넌트명.css.ts`를 두고 컴포넌트와 함께 이동한다.
-- 공통 색상, 간격, 글꼴 등의 토큰과 테마는 `lib/styles/theme.css.ts`에 두고 Astryx CSS 변수를 연결한다. Astryx 기본 외형은 props와 테마로 설정한다. 한 컴포넌트만 쓰는 값은 해당 스타일 파일에 둔다.
-- 전역 초기화와 기본 스타일은 `app/globals.css.ts`에 두고 루트 `layout.tsx`에서 불러온다. 테마 적용도 루트에서 담당한다.
+- 공통 색상, 간격, 글꼴 등의 토큰은 `lib/styles/theme.css.ts`에 둔다. 공통 컴포넌트의 기본 외형은 props로 고르고, 화면 스타일에서 배경·테두리·그림자를 다시 그리지 않는다. 한 컴포넌트만 쓰는 값은 해당 스타일 파일에 둔다.
+- 전역 초기화와 기본 스타일은 `app/globals.css.ts`에 두고 루트 `layout.tsx`에서 불러온다. 전역 초기화는 `reset` 계층 안에 둔다.
 - 스타일 파일에도 같은 의존 방향을 적용한다. 다른 컴포넌트의 내부 스타일을 직접 import하거나 전역 선택자로 덮어쓰지 않는다. 반복되는 UI는 공통 컴포넌트로 추출한다.
 - `.css.ts`에는 빌드 시 생성할 스타일만 정의한다. API 호출, 브라우저 접근, 사용자 상태 판정은 넣지 않는다. 상태별 클래스 선택과 실행 중 변하는 CSS 변수 값의 전달은 컴포넌트에서 처리한다.
 

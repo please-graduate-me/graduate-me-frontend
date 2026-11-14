@@ -1,6 +1,7 @@
 'use client';
-import { List, ListItem } from '@astryxdesign/core/List';
-import { Text } from '@astryxdesign/core/Text';
+import { List } from '@/components/ui/composites/List';
+import { ListItem } from '@/components/ui/composites/ListItem';
+import { Text } from '@/components/ui/primitives/Text';
 import { useEffect, useRef } from 'react';
 import * as styles from './SegmentList.css';
 

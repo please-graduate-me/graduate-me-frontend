@@ -46,7 +46,7 @@ export const questionColumns = style({
 /** 카드 안의 긴 내용이 화면 너비를 밀어내지 않게 한다. */
 export const panel = style({ minWidth: 0 });
 
-/** 출처 카드의 내용 너비만 제한하고 외형은 Astryx 변형으로 정한다. */
+/** 출처 카드의 내용 너비만 제한하고 외형은 공통 Card 변형으로 정한다. */
 export const sourcePanel = style({ minWidth: 0 });
 
 /** 본문 안의 주요 표현을 명확한 크기로 읽게 한다. */
@@ -192,5 +192,5 @@ export const tabs = style({
   marginBottom: vars.space.lg,
 });
 
-/** 분류 버튼의 외형은 Astryx가 담당한다. */
+/** 분류 버튼의 외형은 공통 UI가 담당한다. */
 export const tab = style({ flexShrink: 0 });

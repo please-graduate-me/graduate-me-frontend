@@ -1,4 +1,4 @@
-import { Collapsible } from '@astryxdesign/core/Collapsible';
+import { Collapsible } from '@/components/ui/composites/Collapsible';
 import { requireSession } from '../requireSession';
 import { listExpressions } from '@/domains/expressions/api/expressions';
 import { ExpressionPractice } from './_components/ExpressionPractice';

@@ -4,7 +4,7 @@ import { vars } from '@/lib/styles/theme.css';
 /** 연속 학습, 레벨, 주간 XP 카드를 홈 왼쪽 열에 세로로 쌓는다. */
 export const stack = style({ display: 'grid', gap: vars.space.md });
 
-/** 카드 안 요소 간격만 정하고 외형은 Astryx Card에 맡긴다. */
+/** 카드 안 요소 간격만 정하고 외형은 공통 Card에 맡긴다. */
 export const card = style({
   display: 'grid',
   gap: vars.space.compact,
@@ -30,7 +30,7 @@ export const streak = style({
   gap: vars.space.xs,
 });
 
-/** 시안의 큰 숫자 위계를 Astryx 글자 크기 단계 밖에서 유지한다. */
+/** 시안의 큰 숫자 위계를 공통 글자 크기 단계 밖에서 유지한다. */
 export const bigNumber = style({
   fontSize: 40,
   fontWeight: 700,

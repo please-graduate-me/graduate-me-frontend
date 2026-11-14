@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import { getGrowth } from '@/domains/growth/api/growth';
 import { rewardEventName } from '@/domains/growth/lib/rewardEvents';
 import type { GrowthSummary } from '@/domains/growth/model/contracts';

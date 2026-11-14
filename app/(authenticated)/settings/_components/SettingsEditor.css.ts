@@ -30,7 +30,7 @@ export const note = style({
   margin: '18px 0 0',
 });
 
-/** 상태점과 저장 안내의 배치만 정하고 외형은 Astryx에 맡긴다. */
+/** 상태점과 저장 안내의 배치만 정하고 외형은 공통 UI에 맡긴다. */
 export const status = style({
   display: 'flex',
   alignItems: 'center',

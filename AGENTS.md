@@ -10,10 +10,12 @@
 
 ## UI 시스템
 
-- 기본 UI는 Astryx를 사용한다. 공식 컴포넌트, props와 테마를 먼저 확인하고 `@astryxdesign/core/<컴포넌트>`에서 가져온다.
-- 스타일은 vanilla-extract를 유지한다. 페이지 배치와 서비스 전용 표현을 작성하되 Astryx 컴포넌트의 내부 선택자와 기본 외형을 덮어쓰지 않는다.
-- 기존 공통 UI 어댑터는 폼 값·이벤트·접근성 계약을 연결하는 경우에만 유지한다. 새 기본 UI를 직접 구현하지 않는다.
-- 공통 디자인 값은 Astryx CSS 변수를 기준으로 `lib/styles/theme.css.ts`에서 연결한다. 앱 전체 테마·한국어 안내·Next.js 링크는 `app/Providers.tsx`에서 제공한다.
+- 기본 UI는 `components/ui/`의 사내 디자인 시스템 컴포넌트를 먼저 사용한다. 필요한 컴포넌트와 props가 이미 있는지 확인하고 `@/components/ui/<primitives|composites|layouts>/<컴포넌트>`에서 가져온다.
+- 화면은 버튼, 입력, 대화상자, 표, 툴팁 같은 기본 제어를 직접 만들지 않는다. 필요한 기본 제어가 없으면 `components/ui/`에 추가한 뒤 사용한다.
+- 공통 디자인 값(색, 간격, 글꼴, 반경, 그림자, 모션)은 `lib/styles/theme.css.ts`의 토큰을 사용한다.
+- 공통 컴포넌트의 기본 외형은 `lib/styles/layers.css.ts`의 `layered()`로 `ui` CSS 계층 안에 둔다. 화면 className은 계층 밖에 있어 불러온 순서와 관계없이 기본 외형보다 우선한다.
+- 스타일은 vanilla-extract를 유지한다. 페이지 배치와 서비스 전용 표현은 해당 화면의 `.css.ts`에 두고, 공통 컴포넌트의 배경·테두리 같은 기본 외형을 화면에서 다시 그리지 않는다.
+- Radix는 드롭다운 메뉴, 툴팁, 토스트의 동작에만 사용한다. 나머지 기본 제어는 네이티브 요소로 구현한다.
 
 ## 주석
 

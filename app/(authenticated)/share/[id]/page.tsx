@@ -1,7 +1,7 @@
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { requireSession } from '../../requireSession';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import { notFound } from 'next/navigation';
 import { getSharedLesson } from '@/domains/shares/api/shares';
 import { videoPaths } from '@/domains/videos/config/paths';

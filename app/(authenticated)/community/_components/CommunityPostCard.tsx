@@ -1,10 +1,10 @@
 'use client';
-import { Avatar } from '@astryxdesign/core/Avatar';
-import { Badge } from '@astryxdesign/core/Badge';
-import { Card } from '@astryxdesign/core/Card';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Link } from '@astryxdesign/core/Link';
-import { Text } from '@astryxdesign/core/Text';
+import { Avatar } from '@/components/ui/primitives/Avatar';
+import { Badge } from '@/components/ui/primitives/Badge';
+import { Card } from '@/components/ui/primitives/Card';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Link } from '@/components/ui/primitives/Link';
+import { Text } from '@/components/ui/primitives/Text';
 import type { CommunityPosts } from '@/domains/community/model/contracts';
 import { formatDate, sourceLabel } from '@/domains/learning/lib/format';
 import { Icon } from '@/components/ui/primitives/Icon';
@@ -22,10 +22,9 @@ export function CommunityPostCard({
     <Card className={styles.card}>
       <div className={styles.content}>
         <div className={styles.header}>
-          <Badge
-            variant={item.visibility === 'public' ? 'purple' : 'blue'}
-            label={item.visibility === 'public' ? '공개 글' : '지정 계정'}
-          />
+          <Badge tone={item.visibility === 'public' ? 'review' : 'info'}>
+            {item.visibility === 'public' ? '공개 글' : '지정 계정'}
+          </Badge>
           <span className={styles.time}>{formatDate(item.createdAt)}</span>
         </div>
         <Heading level={2}>
@@ -58,12 +57,7 @@ export function CommunityPostCard({
               />
             </span>
             {authorName}
-            {item.author.isHelper && (
-              <Badge
-                variant='teal'
-                label='조교'
-              />
-            )}
+            {item.author.isHelper && <Badge tone='brand'>조교</Badge>}
           </span>
           {item.taggedHelpers.map((helper) => (
             <span

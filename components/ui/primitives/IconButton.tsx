@@ -1,15 +1,16 @@
 'use client';
-import { IconButton as AstryxIconButton } from '@astryxdesign/core/IconButton';
 import type { ComponentProps } from 'react';
+import * as styles from '@/lib/styles/button.css';
+import { Tooltip } from './Tooltip';
 import { Icon, type IconName } from './Icon';
 
-/** 서비스 아이콘 이름과 선택 상태를 Astryx 아이콘 동작에 연결한다. */
+/** 아이콘만 보이는 원형 버튼이며 이름을 말풍선과 접근성 이름으로 함께 제공한다. */
 export function IconButton({
   label,
   name,
   selected,
-  disabled,
   size = 'small',
+  className,
   ...props
 }: Omit<ComponentProps<'button'>, 'children'> & {
   label: string;
@@ -17,22 +18,26 @@ export function IconButton({
   selected?: boolean;
   size?: 'small' | 'medium';
 }) {
+  const classes = [
+    styles.base,
+    styles.variant.ghost,
+    styles.iconOnly[size],
+    className,
+  ];
+
   return (
-    <AstryxIconButton
-      {...props}
-      type={props.type ?? 'button'}
-      label={label}
-      tooltip={label}
-      isDisabled={disabled}
-      aria-pressed={selected}
-      variant={selected ? 'secondary' : 'ghost'}
-      size={size === 'small' ? 'sm' : 'md'}
-      icon={
+    <Tooltip content={label}>
+      <button
+        {...props}
+        type={props.type ?? 'button'}
+        aria-label={label}
+        aria-pressed={selected}
+        className={classes.filter(Boolean).join(' ')}>
         <Icon
           name={name}
           size={size === 'small' ? 16 : 20}
         />
-      }
-    />
+      </button>
+    </Tooltip>
   );
 }

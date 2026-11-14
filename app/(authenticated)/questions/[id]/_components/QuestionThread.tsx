@@ -1,18 +1,18 @@
 'use client';
-import { AlertDialog } from '@astryxdesign/core/AlertDialog';
+import { AlertDialog } from '@/components/ui/composites/AlertDialog';
 import { useConfirmation } from '@/lib/hooks/useConfirmation';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Blockquote } from '@astryxdesign/core/Blockquote';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
-import { Section } from '@astryxdesign/core/Section';
-import { Card } from '@astryxdesign/core/Card';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
+import { Section } from '@/components/ui/layouts/Section';
+import { Card } from '@/components/ui/primitives/Card';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../../_components/SessionRecovery';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import type { Question } from '@/domains/questions/model/contracts';
 import {
   addQuestionMessage,

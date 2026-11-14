@@ -1,14 +1,14 @@
 'use client';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Blockquote } from '@astryxdesign/core/Blockquote';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Text } from '@astryxdesign/core/Text';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Card } from '@astryxdesign/core/Card';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Text } from '@/components/ui/primitives/Text';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Card } from '@/components/ui/primitives/Card';
 import { notifyLearningReward } from '@/domains/growth/lib/rewardEvents';
 import { aiProviderLabel } from '@/domains/ai/lib/providerLabel';
 import { useEffect, useRef, useState } from 'react';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import type { Exercise, ExerciseResult } from '@/domains/ai/model/contracts';
 import {
   answerExercise,
@@ -18,7 +18,8 @@ import {
 } from '@/domains/ai/api/learning';
 import { materialPaths } from '@/domains/materials/config/paths';
 import { sourceLabel } from '@/domains/learning/lib/format';
-import { RadioList, RadioListItem } from '@astryxdesign/core/RadioList';
+import { RadioList } from '@/components/ui/primitives/RadioList';
+import { RadioListItem } from '@/components/ui/primitives/RadioListItem';
 import { Button } from '@/components/ui/primitives/Button';
 import { TextArea } from '@/components/ui/primitives/TextArea';
 import { Badge } from '@/components/ui/primitives/Badge';

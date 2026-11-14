@@ -1,15 +1,16 @@
 'use client';
-import { Card } from '@astryxdesign/core/Card';
+import { Card } from '@/components/ui/primitives/Card';
 
-import { List, ListItem } from '@astryxdesign/core/List';
+import { List } from '@/components/ui/composites/List';
+import { ListItem } from '@/components/ui/composites/ListItem';
 
-import { Blockquote } from '@astryxdesign/core/Blockquote';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Text } from '@astryxdesign/core/Text';
-import { Section } from '@astryxdesign/core/Section';
-import { Heading } from '@astryxdesign/core/Heading';
-import { ProgressBar } from '@astryxdesign/core/ProgressBar';
-import { Collapsible } from '@astryxdesign/core/Collapsible';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Text } from '@/components/ui/primitives/Text';
+import { Section } from '@/components/ui/layouts/Section';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { ProgressBar } from '@/components/ui/primitives/ProgressBar';
+import { Collapsible } from '@/components/ui/composites/Collapsible';
 import { useEffect, useRef, useState } from 'react';
 import {
   getMaterialAnalysis,

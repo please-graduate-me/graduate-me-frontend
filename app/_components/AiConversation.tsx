@@ -1,15 +1,15 @@
 'use client';
-import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
 
-import { Banner } from '@astryxdesign/core/Banner';
+import { Banner } from '@/components/ui/composites/Banner';
 
-import { Text } from '@astryxdesign/core/Text';
-import { Card } from '@astryxdesign/core/Card';
+import { Text } from '@/components/ui/primitives/Text';
+import { Card } from '@/components/ui/primitives/Card';
 
 import { aiProviderLabel } from '@/domains/ai/lib/providerLabel';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import { materialPaths } from '@/domains/materials/config/paths';
 import { useEffect, useRef, useState } from 'react';
 import type { Conversation } from '@/domains/ai/model/contracts';

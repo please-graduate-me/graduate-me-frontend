@@ -1,6 +1,6 @@
-import { StatusDot } from '@astryxdesign/core/StatusDot';
-import { Text } from '@astryxdesign/core/Text';
-import { Stack } from '@astryxdesign/core/Stack';
+import { StatusDot } from '@/components/ui/primitives/StatusDot';
+import { Text } from '@/components/ui/primitives/Text';
+import { Stack } from '@/components/ui/layouts/Stack';
 
 /** 플레이어의 실제 상태를 영상 밖에서도 글자와 움직임으로 확인하게 한다. */
 export function PlaybackStatus({

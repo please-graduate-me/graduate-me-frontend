@@ -1,9 +1,9 @@
 'use client';
-import { Blockquote } from '@astryxdesign/core/Blockquote';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Collapsible } from '@astryxdesign/core/Collapsible';
-import { Text } from '@astryxdesign/core/Text';
-import { Card } from '@astryxdesign/core/Card';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Collapsible } from '@/components/ui/composites/Collapsible';
+import { Text } from '@/components/ui/primitives/Text';
+import { Card } from '@/components/ui/primitives/Card';
 import { useState } from 'react';
 import type { ExerciseResult } from '@/domains/ai/model/contracts';
 import { listExerciseAttempts } from '@/domains/ai/api/learning';

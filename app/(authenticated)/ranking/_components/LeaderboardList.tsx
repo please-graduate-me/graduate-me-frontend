@@ -1,6 +1,6 @@
 'use client';
-import { Avatar } from '@astryxdesign/core/Avatar';
-import { VisuallyHidden } from '@astryxdesign/core/VisuallyHidden';
+import { Avatar } from '@/components/ui/primitives/Avatar';
+import { VisuallyHidden } from '@/components/ui/primitives/VisuallyHidden';
 import { Fragment } from 'react';
 import type { Leaderboard } from '@/domains/growth/model/contracts';
 import { Icon } from '@/components/ui/primitives/Icon';

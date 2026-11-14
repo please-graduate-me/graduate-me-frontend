@@ -1,6 +1,6 @@
 'use client';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { useId, type ReactNode } from 'react';
 import { Icon, type IconName } from '@/components/ui/primitives/Icon';
 import * as styles from './MaterialSection.css';

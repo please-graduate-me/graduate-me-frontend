@@ -1,10 +1,10 @@
 'use client';
-import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
 
-import { Banner } from '@astryxdesign/core/Banner';
+import { Banner } from '@/components/ui/composites/Banner';
 
-import { Text } from '@astryxdesign/core/Text';
-import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@/components/ui/primitives/Text';
+import { Heading } from '@/components/ui/primitives/Heading';
 
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';

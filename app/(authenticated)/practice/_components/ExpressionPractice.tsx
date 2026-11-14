@@ -1,14 +1,14 @@
 'use client';
-import { Card } from '@astryxdesign/core/Card';
+import { Card } from '@/components/ui/primitives/Card';
 
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Blockquote } from '@astryxdesign/core/Blockquote';
-import { Banner } from '@astryxdesign/core/Banner';
-import { Heading } from '@astryxdesign/core/Heading';
-import { Text } from '@astryxdesign/core/Text';
+import { Blockquote } from '@/components/ui/primitives/Blockquote';
+import { Banner } from '@/components/ui/composites/Banner';
+import { Heading } from '@/components/ui/primitives/Heading';
+import { Text } from '@/components/ui/primitives/Text';
 import { notifyLearningReward } from '@/domains/growth/lib/rewardEvents';
 import { useRef, useState } from 'react';
-import { Link } from '@astryxdesign/core/Link';
+import { Link } from '@/components/ui/primitives/Link';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import { savePracticeAttempt } from '@/domains/learning/api/history';
 import { materialPaths } from '@/domains/materials/config/paths';

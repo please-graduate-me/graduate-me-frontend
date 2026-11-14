@@ -7,7 +7,7 @@ import { Select } from './Select';
 import { Button } from './Button';
 
 // 외형이 바뀌어도 이름·값·제출 방식은 기존 업무 폼이 기대하는 계약을 따른다.
-describe('Astryx 전환 후 업무 폼 계약', () => {
+describe('공통 입력 부품의 업무 폼 계약', () => {
   it('제목 입력의 초기값과 폼 이름 및 필수 조건을 유지한다', () => {
     const html = renderToStaticMarkup(
       createElement(Input, {
@@ -33,9 +33,9 @@ describe('Astryx 전환 후 업무 폼 계약', () => {
       })
     );
 
-    expect(html).toContain(
-      'type="hidden" name="dueAt" value="2026-11-20T13:45"'
-    );
+    expect(html).toContain('type="datetime-local"');
+    expect(html).toContain('name="dueAt"');
+    expect(html).toContain('value="2026-11-20T13:45"');
   });
 
   it('수정하지 않은 메모도 폼에 초기값으로 전달한다', () => {
@@ -68,7 +68,7 @@ describe('Astryx 전환 후 업무 폼 계약', () => {
       )
     );
 
-    expect(html).toContain('role="combobox"');
+    expect(html).toContain('<select');
     expect(html).toContain('id="language"');
     expect(html).toContain('name="language"');
     expect(html).toContain('value="th"');
