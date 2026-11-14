@@ -34,7 +34,7 @@ export function GraduationStamp({ size = 96 }: { size?: number }) {
         fill='#0B7A62'
       />
       <text
-        fontFamily='"DM Sans", sans-serif'
+        fontFamily='"Space Grotesk", sans-serif'
         fontWeight='700'
         fontSize='11.5'
         letterSpacing='2.4'
@@ -47,7 +47,7 @@ export function GraduationStamp({ size = 96 }: { size?: number }) {
         x='60'
         y='67'
         textAnchor='middle'
-        fontFamily='"DM Sans", sans-serif'
+        fontFamily='"Space Grotesk", sans-serif'
         fontWeight='700'
         fontSize='20'
         fill='#FFFFFF'>
