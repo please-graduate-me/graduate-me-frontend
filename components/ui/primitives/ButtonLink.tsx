@@ -1,27 +1,31 @@
+'use client';
+import { Button as AstryxButton } from '@astryxdesign/core/Button';
 import type { ComponentProps } from 'react';
-import * as styles from '@/lib/styles/button.css';
+import { contentLabel } from './contentLabel';
 
-/** 화면 이동을 버튼과 같은 위계로 보여 주면서 링크의 기본 동작을 유지한다. */
+/** 이동 링크의 기존 변형 이름과 접근성 문구를 Astryx에 연결한다. */
 export function ButtonLink({
   variant = 'primary',
   size = 'medium',
-  className,
+  children,
+  onClick,
   ...props
-}: ComponentProps<'a'> & {
-  variant?: keyof typeof styles.variants;
-  size?: keyof typeof styles.sizes;
+}: Pick<
+  ComponentProps<'a'>,
+  'href' | 'target' | 'rel' | 'className' | 'style' | 'children' | 'aria-label'
+> & {
+  onClick?: () => void;
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  size?: 'small' | 'medium';
 }) {
   return (
-    <a
+    <AstryxButton
       {...props}
-      className={[
-        styles.root,
-        styles.variants[variant],
-        styles.sizes[size],
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
-    />
+      onClick={onClick}
+      label={props['aria-label'] ?? contentLabel(children)}
+      variant={variant === 'danger' ? 'destructive' : variant}
+      size={size === 'small' ? 'sm' : 'md'}>
+      {children}
+    </AstryxButton>
   );
 }

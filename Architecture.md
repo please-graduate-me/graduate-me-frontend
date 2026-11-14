@@ -96,10 +96,17 @@
 - 테스트와 스토리는 소스 옆에 둔다.
 - 불필요한 `index.ts`와 래퍼는 만들지 않는다. 도메인 내부의 명시적인 재내보내기는 허용한다.
 
+## Astryx UI
+
+- 기본 UI는 Astryx의 공식 컴포넌트를 사용하고 개별 경로에서 import한다. 화면의 의미에 따라 Heading·Text·Card·Section·Table·Collapsible·Banner 등을 조합한다.
+- 앱 초기화는 `app/Providers.tsx`에서 한국어 안내, 사전 빌드된 neutral 테마와 Next.js LinkProvider를 연결한다. 루트 레이아웃에서 reset, Astryx CSS, 테마 CSS를 순서대로 불러온다.
+- `components/ui/`의 어댑터는 기존 폼의 값 변경·ref·이벤트·접근성 계약을 Astryx에 연결한다. 단순 외형 재구현이나 앱 간 공통 패키지는 만들지 않는다.
+- 영상·PDF 캔버스·OCR 위치·채점 강조·마스코트는 서비스 전용 표현으로 유지하고 주변 조작 UI는 Astryx를 사용한다.
+
 ## 스타일 규칙
 
 - 스타일은 vanilla-extract로 작성한다. 컴포넌트 옆에 `컴포넌트명.css.ts`를 두고 컴포넌트와 함께 이동한다.
-- 공통 색상, 간격, 글꼴 등의 토큰과 테마는 `lib/styles/theme.css.ts`에 둔다. 한 컴포넌트만 쓰는 값은 해당 스타일 파일에 둔다.
+- 공통 색상, 간격, 글꼴 등의 토큰과 테마는 `lib/styles/theme.css.ts`에 두고 Astryx CSS 변수를 연결한다. Astryx 기본 외형은 props와 테마로 설정한다. 한 컴포넌트만 쓰는 값은 해당 스타일 파일에 둔다.
 - 전역 초기화와 기본 스타일은 `app/globals.css.ts`에 두고 루트 `layout.tsx`에서 불러온다. 테마 적용도 루트에서 담당한다.
 - 스타일 파일에도 같은 의존 방향을 적용한다. 다른 컴포넌트의 내부 스타일을 직접 import하거나 전역 선택자로 덮어쓰지 않는다. 반복되는 UI는 공통 컴포넌트로 추출한다.
 - `.css.ts`에는 빌드 시 생성할 스타일만 정의한다. API 호출, 브라우저 접근, 사용자 상태 판정은 넣지 않는다. 상태별 클래스 선택과 실행 중 변하는 CSS 변수 값의 전달은 컴포넌트에서 처리한다.

@@ -1,6 +1,7 @@
+'use client';
+import { Button as AstryxButton } from '@astryxdesign/core/Button';
 import type { ComponentProps } from 'react';
-import * as styles from '@/lib/styles/button.css';
-import { Icon } from './Icon';
+import { contentLabel } from './contentLabel';
 
 type ButtonProps = ComponentProps<'button'> & {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -8,37 +9,32 @@ type ButtonProps = ComponentProps<'button'> & {
   loading?: boolean;
 };
 
-/** 버튼 상태와 변형의 표현이 사용처마다 달라지지 않게 한다. */
+/** 기존 폼 제출 계약과 동작 상태를 Astryx 버튼에 연결한다. */
 export function Button({
   variant = 'primary',
   size = 'medium',
   loading = false,
   disabled,
   children,
-  className,
+  type = 'submit',
   ...props
 }: ButtonProps) {
   return (
-    <button
+    <AstryxButton
       {...props}
-      disabled={disabled || loading}
-      aria-busy={loading || undefined}
-      className={[
-        styles.root,
-        styles.variants[variant],
-        styles.sizes[size],
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}>
-      {loading && (
-        <Icon
-          name='loader-circle'
-          size={size === 'small' ? 16 : 18}
-          className={styles.spinner}
-        />
-      )}
+      type={type}
+      label={props['aria-label'] ?? contentLabel(children)}
+      isDisabled={disabled}
+      isLoading={loading}
+      variant={
+        variant === 'danger'
+          ? 'destructive'
+          : props['aria-pressed'] === true
+            ? 'primary'
+            : variant
+      }
+      size={size === 'small' ? 'sm' : 'md'}>
       {children}
-    </button>
+    </AstryxButton>
   );
 }

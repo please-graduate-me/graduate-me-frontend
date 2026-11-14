@@ -1,36 +1,50 @@
-import { assignInlineVars } from '@vanilla-extract/dynamic';
+'use client';
+import { Slider as AstryxSlider } from '@astryxdesign/core/Slider';
 import type { ComponentProps } from 'react';
-import * as styles from './Slider.css';
 
-/** 진행률 표시와 구분되는 키보드·포인터 재생 탐색을 제공한다. */
+/** 재생 위치의 숫자 변경과 접근성 문구를 Astryx 탐색 컨트롤에 연결한다. */
 export function Slider({
   min = 0,
   max = 100,
   value,
+  step,
+  disabled,
+  name,
   className,
   style,
-  ...props
+  onChange,
+  'aria-label': label = '재생 위치',
+  'aria-valuetext': valueText,
 }: Omit<
   ComponentProps<'input'>,
-  'type' | 'min' | 'max' | 'value' | 'defaultValue'
-> & { min?: number; max?: number; value: number }) {
-  const percent =
-    max > min
-      ? Math.max(0, Math.min(100, (100 * (value - min)) / (max - min)))
-      : 0;
-
+  'type' | 'min' | 'max' | 'value' | 'defaultValue' | 'onChange'
+> & {
+  min?: number;
+  max?: number;
+  value: number;
+  onChange?: (event: {
+    target: { value: string; valueAsNumber: number };
+    currentTarget: { value: string; valueAsNumber: number };
+  }) => void;
+}) {
   return (
-    <input
-      {...props}
-      type='range'
+    <AstryxSlider
+      label={label}
+      isLabelHidden
       min={min}
-      max={max}
+      max={Math.max(min, max)}
+      step={step === undefined || step === 'any' ? undefined : Number(step)}
       value={value}
-      className={[styles.root, className].filter(Boolean).join(' ')}
-      style={{
-        ...style,
-        // CSS 변수 참조 자체를 속성 이름으로 쓰면 트랙의 채움 값이 전달되지 않는다.
-        ...assignInlineVars({ [styles.progress]: `${percent}%` }),
+      isDisabled={disabled}
+      htmlName={name}
+      containerClassName={className}
+      containerStyle={style}
+      valueDisplay='none'
+      formatValue={valueText ? () => valueText : undefined}
+      onChange={(next: number) => {
+        const target = { value: String(next), valueAsNumber: next };
+
+        onChange?.({ target, currentTarget: target });
       }}
     />
   );

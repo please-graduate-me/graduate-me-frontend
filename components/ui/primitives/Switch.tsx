@@ -1,17 +1,50 @@
-import type { ComponentProps } from 'react';
-import { root } from './Switch.css';
+'use client';
+import { Switch as AstryxControl } from '@astryxdesign/core/Switch';
+import { useState, type ComponentProps } from 'react';
 
-/** 저장되는 설정의 켜짐과 꺼짐을 접근 가능한 스위치로 표시한다. */
+/** 기존 체크 상태와 입력 이벤트를 Astryx Switch에 연결한다. */
 export function Switch({
-  className,
+  checked,
+  defaultChecked,
+  onChange,
+  disabled,
+  required,
+  name,
+  value: _value,
+  label,
   ...props
-}: Omit<ComponentProps<'input'>, 'type' | 'role'>) {
+}: Pick<
+  ComponentProps<'input'>,
+  | 'id'
+  | 'checked'
+  | 'defaultChecked'
+  | 'onChange'
+  | 'disabled'
+  | 'required'
+  | 'name'
+  | 'value'
+  | 'readOnly'
+  | 'className'
+  | 'style'
+  | 'aria-label'
+> & { label?: string }) {
+  const [draft, setDraft] = useState(defaultChecked ?? false);
+
   return (
-    <input
+    <AstryxControl
       {...props}
-      type='checkbox'
-      role='switch'
-      className={[root, className].filter(Boolean).join(' ')}
+      label={label ?? props['aria-label'] ?? name ?? '선택'}
+      isLabelHidden={!label}
+      htmlName={name}
+      value={checked ?? draft}
+      isDisabled={disabled}
+      isRequired={required}
+      {...(_value === undefined ? {} : { 'data-form-value': String(_value) })}
+
+      onChange={(next, event) => {
+        setDraft(next);
+        onChange?.(event);
+      }}
     />
   );
 }

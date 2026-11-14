@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
+import '@astryxdesign/core/reset.css';
+import '@astryxdesign/core/astryx.css';
+import '@astryxdesign/theme-neutral/theme.css';
 import './globals.css';
+import { Providers } from './Providers';
 
 /** 검색 결과와 브라우저에서 서비스 설명을 일관되게 제공한다. */
 export const metadata: Metadata = {
@@ -10,8 +14,13 @@ export const metadata: Metadata = {
 /** 페이지 전환에도 공통 화면 틀과 기본 스타일을 유지한다. */
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang='ko'>
-      <body>{children}</body>
+    <html
+      lang='ko'
+      data-astryx-theme='neutral'
+      data-theme='light'>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

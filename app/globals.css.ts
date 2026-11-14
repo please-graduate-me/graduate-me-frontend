@@ -22,75 +22,22 @@ globalFontFace('Noto Serif', {
   fontDisplay: 'swap',
 });
 
-globalStyle('*', { boxSizing: 'border-box' });
+// 서비스 글꼴만 연결하고 기본 UI 외형은 Astryx 테마가 담당한다.
+globalStyle(':root, [data-astryx-theme="neutral"]', {
+  colorScheme: 'light',
+  vars: {
+    '--font-family-body': vars.font.body,
+    '--font-family-heading': vars.font.body,
+  },
+});
 
 globalStyle('body', {
-  margin: '0',
+  margin: 0,
+  minWidth: 320,
   background: vars.color.background,
   color: vars.color.ink,
   fontFamily: vars.font.body,
   lineHeight: '1.6',
-  minWidth: '1200px',
 });
 
-globalStyle('a', { color: vars.color.accent, textUnderlineOffset: '4px' });
-globalStyle('h1, h2, h3, p', { marginTop: '0' });
-
-globalStyle('h1', {
-  fontSize: vars.fontSize.heading2,
-  lineHeight: '34px',
-  letterSpacing: '-0.5px',
-  marginBottom: '18px',
-});
-
-globalStyle('h2', { fontSize: vars.fontSize.heading3, lineHeight: '28px' });
-
-globalStyle('h3', {
-  fontSize: vars.fontSize.body,
-  lineHeight: vars.lineHeight.body,
-});
-
-globalStyle('section', { marginBottom: vars.space.xl });
-globalStyle('button, input, textarea, select', { font: 'inherit' });
-
-globalStyle(':focus-visible', {
-  outline: `3px solid ${vars.color.focus}`,
-  outlineOffset: '3px',
-});
-
-globalStyle(
-  'input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select',
-  {
-    border: `1px solid ${vars.color.inputBorder}`,
-    borderRadius: vars.radius.control,
-    padding: '10px 12px',
-    color: vars.color.ink,
-    background: vars.color.surface,
-  }
-);
-
-globalStyle('input, textarea', { minWidth: '0' });
-
-globalStyle('textarea', {
-  width: '100%',
-  minHeight: '155px',
-  resize: 'vertical',
-  margin: '8px 0 16px',
-  fontSize: vars.fontSize.small,
-});
-
-globalStyle('label', { fontSize: '14px', fontWeight: '500' });
-globalStyle('details', { marginTop: '20px', fontSize: '14px' });
-globalStyle('summary', { cursor: 'pointer' });
-
-globalStyle('progress', {
-  width: '100%',
-  height: '6px',
-  accentColor: vars.color.accent,
-  margin: '16px 0 8px',
-});
-
-globalStyle(':root', { colorScheme: 'light' });
-
-// 입력 묶음은 브라우저 기본 테두리 대신 화면의 패널 간격을 따른다.
 globalStyle('fieldset', { border: 0, padding: 0, margin: 0, minWidth: 0 });

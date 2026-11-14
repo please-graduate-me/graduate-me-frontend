@@ -1,14 +1,15 @@
+'use client';
+import { IconButton as AstryxIconButton } from '@astryxdesign/core/IconButton';
 import type { ComponentProps } from 'react';
 import { Icon, type IconName } from './Icon';
-import { root, sizes } from './IconButton.css';
 
-/** 아이콘만 있는 동작에도 키보드와 스크린리더용 이름을 제공한다. */
+/** 서비스 아이콘 이름과 선택 상태를 Astryx 아이콘 동작에 연결한다. */
 export function IconButton({
   label,
   name,
   selected,
+  disabled,
   size = 'small',
-  className,
   ...props
 }: Omit<ComponentProps<'button'>, 'children'> & {
   label: string;
@@ -17,17 +18,21 @@ export function IconButton({
   size?: 'small' | 'medium';
 }) {
   return (
-    <button
-      type='button'
+    <AstryxIconButton
       {...props}
-      aria-label={label}
-      data-tooltip={label}
+      type={props.type ?? 'button'}
+      label={label}
+      tooltip={label}
+      isDisabled={disabled}
       aria-pressed={selected}
-      className={[root, sizes[size], className].filter(Boolean).join(' ')}>
-      <Icon
-        name={name}
-        size={size === 'small' ? 16 : 20}
-      />
-    </button>
+      variant={selected ? 'secondary' : 'ghost'}
+      size={size === 'small' ? 'sm' : 'md'}
+      icon={
+        <Icon
+          name={name}
+          size={size === 'small' ? 16 : 20}
+        />
+      }
+    />
   );
 }

@@ -1,16 +1,52 @@
-import type { ComponentProps } from 'react';
-import { root } from './Checkbox.css';
+'use client';
+import { CheckboxInput as AstryxControl } from '@astryxdesign/core/CheckboxInput';
+import { useState, type ComponentProps } from 'react';
 
-/** 브라우저의 체크 상태와 폼 전달을 그대로 사용하는 선택 컨트롤이다. */
+/** 기존 체크 상태와 입력 이벤트를 Astryx Checkbox에 연결한다. */
 export function Checkbox({
-  className,
+  checked,
+  defaultChecked,
+  onChange,
+  disabled,
+  required,
+  name,
+  value: _value,
+  readOnly,
+  label,
   ...props
-}: Omit<ComponentProps<'input'>, 'type'>) {
+}: Pick<
+  ComponentProps<'input'>,
+  | 'id'
+  | 'checked'
+  | 'defaultChecked'
+  | 'onChange'
+  | 'disabled'
+  | 'required'
+  | 'name'
+  | 'value'
+  | 'readOnly'
+  | 'className'
+  | 'style'
+  | 'aria-label'
+> & { label?: string }) {
+  const [draft, setDraft] = useState(defaultChecked ?? false);
+
   return (
-    <input
+    <AstryxControl
       {...props}
-      type='checkbox'
-      className={[root, className].filter(Boolean).join(' ')}
+      label={label ?? props['aria-label'] ?? name ?? '선택'}
+      isLabelHidden={!label}
+      htmlName={name}
+      value={checked ?? draft}
+      isDisabled={disabled}
+      isRequired={required}
+      {...{ required }}
+      {...(_value === undefined ? {} : { 'data-form-value': String(_value) })}
+      isReadOnly={readOnly}
+      onChange={(next, event) => {
+        setDraft(next);
+        onChange?.(event);
+      }}
     />
   );
 }
