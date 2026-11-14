@@ -1,4 +1,9 @@
 'use client';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Collapsible } from '@astryxdesign/core/Collapsible';
+import { Text } from '@astryxdesign/core/Text';
 import { useEffect, useState } from 'react';
 import type { Explanation } from '@/domains/ai/model/contracts';
 import { AiExplanation } from '../../../../_components/AiExplanation';
@@ -126,29 +131,33 @@ export function MaterialPreparation({
   }
 
   return (
-    <details>
-      <summary>자료 기본 번역·설명 준비</summary>
+    <Collapsible trigger={<> 자료 기본 번역·설명 준비 </>}>
       <form
         className={styles.stack}
         onSubmit={(event) => void prepare(event)}>
-        <p className={styles.meta}>
+        <Text
+          as='p'
+          display='block'
+          className={styles.meta}>
           {preparationPages
             ? `한 번에 최대 ${preparationPages}페이지를 준비합니다. `
             : '준비 정책을 확인하지 못했습니다. 새 요청은 잠시 후 자료를 다시 열어 확인해 주세요. '}
           원본 읽기와 별도의 요청입니다. 준비할 범위를 정해 주세요. 저장된
           결과는 재사용하고 최초 준비에 실패한 페이지는 자동·수동 재분석하지
           않습니다.
-        </p>
+        </Text>
         {historical && (
-          <p className={styles.notice}>
+          <Banner
+            status='info'
+            title='안내'>
             보관된 원본은 저장 결과를 조회합니다. 새 기본 준비는 현재 원본에서
             요청해 주세요.
-          </p>
+          </Banner>
         )}
         <div className={styles.row}>
-          <label>
-            시작
+          <div>
             <Input
+              label={contentLabel(<>시작</>)}
               type='number'
               min={1}
               max={total}
@@ -156,10 +165,10 @@ export function MaterialPreparation({
               required
               onChange={(event) => setFrom(event.target.value)}
             />
-          </label>
-          <label>
-            끝
+          </div>
+          <div>
             <Input
+              label={contentLabel(<>끝</>)}
               type='number'
               min={Number(from) || 1}
               max={Math.min(
@@ -170,7 +179,7 @@ export function MaterialPreparation({
               required
               onChange={(event) => setTo(event.target.value)}
             />
-          </label>
+          </div>
         </div>
         <Button
           size='small'
@@ -179,44 +188,50 @@ export function MaterialPreparation({
           선택 범위 준비 요청
         </Button>
         {validRange && !rangeAllowed && (
-          <p className={styles.notice}>
+          <Banner
+            status='info'
+            title='안내'>
             선택한 범위에 새 AI 준비가 가능한 페이지가 없습니다.{' '}
             {selectedEligibility.find((value) => value?.reason)?.reason} 원본
             읽기와 OCR은 계속 이용할 수 있습니다.
-          </p>
+          </Banner>
         )}
         {message && (
-          <p
-            role='status'
-            className={styles.notice}>
+          <Banner
+            status='info'
+            title='안내'
+            role='status'>
             {message}
-          </p>
+          </Banner>
         )}
         {error && (
-          <p
-            role='alert'
-            className={styles.error}>
+          <Banner
+            status='error'
+            title='확인이 필요해요'
+            role='alert'>
             {error}
-          </p>
+          </Banner>
         )}
       </form>
-      <details>
-        <summary>이 페이지의 저장된 설명 {items.length}개</summary>
+      <Collapsible trigger={<> 이 페이지의 저장된 설명 {items.length}개 </>}>
         {items.map((item) => (
           <div key={item.id}>
-            <blockquote className={styles.quote}>
+            <Blockquote className={styles.quote}>
               {item.source.quote}
-            </blockquote>
+            </Blockquote>
             <AiExplanation value={item} />
           </div>
         ))}
         {!items.length && (
-          <p className={styles.meta}>
+          <Text
+            as='p'
+            display='block'
+            className={styles.meta}>
             이 페이지에 저장된 설명이 없습니다. 원본 읽기와 구절 선택은 계속
             이용할 수 있습니다.
-          </p>
+          </Text>
         )}
-      </details>
-    </details>
+      </Collapsible>
+    </Collapsible>
   );
 }

@@ -1,5 +1,7 @@
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
 import { requireSession } from '../../requireSession';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import { notFound } from 'next/navigation';
 import { getSharedLesson } from '@/domains/shares/api/shares';
 import { videoPaths } from '@/domains/videos/config/paths';
@@ -40,8 +42,11 @@ export default async function SharedVideo({
       </Link>
       <div className={styles.page}>
         <div className={styles.info}>
-          <h1>{lesson.video.title}</h1>
-          <p className={styles.meta}>
+          <Heading level={1}>{lesson.video.title}</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.meta}>
             <span>{lesson.segment ? '공유받은 구절' : '공유받은 영상'}</span>
             <span>{lesson.video.category ?? '미분류'}</span>
             {lesson.segment && (
@@ -50,7 +55,7 @@ export default async function SharedVideo({
                 {lesson.segment.end.toFixed(1)}초
               </span>
             )}
-          </p>
+          </Text>
         </div>
         <iframe
           className={styles.player}

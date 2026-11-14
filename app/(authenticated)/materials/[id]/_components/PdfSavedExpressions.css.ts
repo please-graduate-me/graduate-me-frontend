@@ -1,4 +1,4 @@
-import { globalStyle, style } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
 /** 원문에 연결된 개인 표현은 저장 이후에도 같은 탭에서 확인한다. */
@@ -23,16 +23,6 @@ export const savedNotice = style({
   color: vars.color.match,
   fontSize: 12,
 });
-
-globalStyle(`${savedRecord} h3`, {
-  fontSize: 24,
-  fontWeight: 500,
-  lineHeight: '34px',
-  margin: 0,
-});
-
-globalStyle(`${savedRecord} p`, { margin: 0, whiteSpace: 'pre-wrap' });
-globalStyle(`${savedRecord} > a`, { fontSize: 12 });
 
 /** 목록 조회 실패를 저장 결과와 구분해 안내한다. */
 export const description = style({

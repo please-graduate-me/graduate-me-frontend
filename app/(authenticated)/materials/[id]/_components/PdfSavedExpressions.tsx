@@ -1,5 +1,9 @@
 'use client';
-import Link from 'next/link';
+import { Section } from '@astryxdesign/core/Section';
+import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@astryxdesign/core/Card';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Link } from '@astryxdesign/core/Link';
 import type { SourceInput } from '@/domains/materials/model/source';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import { materialPaths } from '@/domains/materials/config/paths';
@@ -24,33 +28,58 @@ export function PdfSavedExpressions({
   );
 
   return (
-    <section
+    <Section
       className={styles.records}
       aria-label='선택한 원문의 저장 표현'>
-      {loading && <p role='status'>저장한 표현을 불러오고 있어요.</p>}
+      {loading && (
+        <Text
+          as='p'
+          display='block'
+          role='status'>
+          저장한 표현을 불러오고 있어요.
+        </Text>
+      )}
       {error && (
-        <p
+        <Text
+          as='p'
+          display='block'
           role='alert'
           className={styles.description}>
           {error}
-        </p>
+        </Text>
       )}
       {!loading && !error && items.length === 0 && (
-        <p className={styles.description}>
+        <Text
+          as='p'
+          display='block'
+          className={styles.description}>
           이 원문의 저장 표현이 없습니다. 설명 탭에서 표현을 저장해 보세요.
-        </p>
+        </Text>
       )}
       {items.map((item) => (
-        <article
+        <Card
           key={item.id}
           className={styles.savedRecord}>
-          <p className={styles.savedNotice}>표현집에 저장했어요.</p>
-          <h3>{item.text}</h3>
-          <p>{item.meaning}</p>
+          <Text
+            as='p'
+            display='block'
+            className={styles.savedNotice}>
+            표현집에 저장했어요.
+          </Text>
+          <Heading level={3}>{item.text}</Heading>
+          <Text
+            as='p'
+            display='block'>
+            {item.meaning}
+          </Text>
           {item.note && (
             <>
               <small>내 메모</small>
-              <p>{item.note}</p>
+              <Text
+                as='p'
+                display='block'>
+                {item.note}
+              </Text>
             </>
           )}
           <Link href={materialPaths.source(item.source)}>
@@ -62,8 +91,8 @@ export function PdfSavedExpressions({
             이 표현으로 연습하기
           </ButtonLink>
           <Link href='/expressions'>표현집에서 자세히 보기 →</Link>
-        </article>
+        </Card>
       ))}
-    </section>
+    </Section>
   );
 }

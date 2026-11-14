@@ -1,4 +1,6 @@
 'use client';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
 import { Button } from '@/components/ui/primitives/Button';
 import { Panel } from '@/components/ui/layouts/Panel';
 
@@ -6,10 +8,12 @@ import { Panel } from '@/components/ui/layouts/Panel';
 export default function ErrorPage({ reset }: { reset: () => void }) {
   return (
     <Panel>
-      <h1>화면을 불러오지 못했어요.</h1>
-      <p>
+      <Heading level={1}>화면을 불러오지 못했어요.</Heading>
+      <Text
+        as='p'
+        display='block'>
         조회 중 문제가 발생했습니다. 잠시 후 저장된 자료를 다시 확인해 주세요.
-      </p>
+      </Text>
       <Button onClick={reset}>화면 다시 조회</Button>
     </Panel>
   );

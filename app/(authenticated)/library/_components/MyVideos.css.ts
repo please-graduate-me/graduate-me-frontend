@@ -1,15 +1,8 @@
-import { style, globalStyle } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
 /** 자료 영역의 제목과 다음 학습 카드 사이를 일정하게 유지한다. */
 export const root = style({ margin: '0 0 26px' });
-
-globalStyle('.' + root + ' h2', {
-  fontSize: vars.fontSize.body,
-  lineHeight: vars.lineHeight.body,
-  fontWeight: 500,
-  margin: '0 0 22px',
-});
 
 /** 최근 자료 카드를 같은 크기의 두 열로 배치한다. */
 export const resume = style({
@@ -30,12 +23,6 @@ export const heading = style({
   alignItems: 'baseline',
   justifyContent: 'space-between',
   gap: 12,
-});
-
-globalStyle('.' + heading + ' a', {
-  color: vars.color.muted,
-  fontSize: vars.fontSize.caption,
-  textDecoration: 'none',
 });
 
 /** 자료 종류는 시안의 밑줄 탭으로 바꾼다. */
@@ -97,25 +84,6 @@ export const fileType = style({
 /** 제목이 길어져도 날짜와 관리 동작을 밀어내지 않게 한다. */
 export const information = style({ flex: 1, minWidth: 0 });
 
-globalStyle('.' + information + ' h3', {
-  margin: '0 0 4px',
-  fontSize: vars.fontSize.small,
-  lineHeight: vars.lineHeight.small,
-  fontWeight: 500,
-  overflowWrap: 'anywhere',
-});
-
-globalStyle('.' + information + ' h3 a', {
-  color: vars.color.ink,
-  textDecoration: 'none',
-});
-
-globalStyle('.' + information + ' p', {
-  fontSize: vars.fontSize.caption,
-  color: vars.color.muted,
-  margin: '0 0 6px',
-});
-
 /** 활동 시각은 자료 제목보다 낮은 위계로 읽게 한다. */
 export const updated = style({
   flex: 'none',
@@ -127,22 +95,6 @@ export const updated = style({
 
 /** 자주 쓰지 않는 목록 관리 동작은 더보기 안에 둔다. */
 export const menu = style({ position: 'relative', margin: 0, flex: 'none' });
-
-globalStyle('.' + menu + ' summary', {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 28,
-  height: 28,
-  listStyle: 'none',
-  margin: 0,
-  borderRadius: vars.radius.control,
-  color: vars.color.muted,
-});
-
-globalStyle('.' + menu + ' summary::-webkit-details-marker', {
-  display: 'none',
-});
 
 /** 메뉴는 실제 관리 버튼을 포함하는 작은 팝오버로 표시한다. */
 export const menuContent = style({
@@ -156,26 +108,6 @@ export const menuContent = style({
   borderRadius: vars.radius.control,
   background: vars.color.surface,
   boxShadow: vars.shadow.popover,
-});
-
-globalStyle('.' + menuContent + ' button', {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-  width: '100%',
-  minHeight: 36,
-  padding: '8px 10px',
-  textAlign: 'left',
-  border: 0,
-  background: 'transparent',
-  color: vars.color.ink,
-  fontSize: vars.fontSize.caption,
-  cursor: 'pointer',
-  borderRadius: 4,
-});
-
-globalStyle('.' + menuContent + ' button:hover', {
-  background: vars.color.selected,
 });
 
 /** PDF는 추가 관리 메뉴 없이 원문 이동을 제공한다. */
@@ -207,8 +139,6 @@ export const error = style({
   fontSize: vars.fontSize.small,
   marginBottom: 20,
 });
-
-globalStyle('.' + error + ' p', { margin: '0 0 12px' });
 
 /** 삭제 확인 대상은 긴 제목도 줄바꿈한다. */
 export const removalTitle = style({

@@ -1,7 +1,14 @@
 'use client';
+import { List, ListItem } from '@astryxdesign/core/List';
+
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Section } from '@astryxdesign/core/Section';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { DropdownMenu } from '@astryxdesign/core/DropdownMenu';
 import { Select } from '@/components/ui/primitives/Select';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import { Button } from '@/components/ui/primitives/Button';
 import { Icon } from '@/components/ui/primitives/Icon';
 import { Badge } from '@/components/ui/primitives/Badge';
@@ -127,9 +134,9 @@ export function MyVideos({
 
   return (
     <>
-      <label>
-        학습 언어{' '}
+      <div>
         <Select
+          label={contentLabel(<>학습 언어 </>)}
           aria-label='학습 언어 필터'
           value={language}
           onChange={(event) =>
@@ -139,11 +146,15 @@ export function MyVideos({
           <option value='en'>영어</option>
           <option value='th'>태국어</option>
         </Select>
-      </label>
-      <section
+      </div>
+      <Section
         className={styles.root}
         aria-labelledby='resume-title'>
-        <h2 id='resume-title'>이어서 학습하기</h2>
+        <Heading
+          level={2}
+          id='resume-title'>
+          이어서 학습하기
+        </Heading>
         {recent.length > 0 ? (
           <div className={styles.resume}>
             {recent.map((item) => (
@@ -154,11 +165,13 @@ export function MyVideos({
             ))}
           </div>
         ) : loading ? (
-          <p
+          <Text
+            as='p'
+            display='block'
             className={styles.loading}
             role='status'>
             최근 학습을 불러오고 있어요.
-          </p>
+          </Text>
         ) : (
           <div className={styles.empty}>
             <EmptyState
@@ -174,12 +187,16 @@ export function MyVideos({
             </EmptyState>
           </div>
         )}
-      </section>
-      <section
+      </Section>
+      <Section
         className={styles.root}
         aria-labelledby='recent-materials-title'>
         <div className={styles.heading}>
-          <h2 id='recent-materials-title'>최근 자료</h2>
+          <Heading
+            level={2}
+            id='recent-materials-title'>
+            최근 자료
+          </Heading>
           <Link href='/materials'>전체 보기</Link>
         </div>
         <div
@@ -193,7 +210,8 @@ export function MyVideos({
               ['video', '영상', videos.length],
             ] as const
           ).map(([value, label, count]) => (
-            <button
+            <Button
+              variant='secondary'
               key={value}
               type='button'
               className={styles.tab}
@@ -201,14 +219,18 @@ export function MyVideos({
               onClick={() => setFilter(value)}>
               {label}
               {!loading && <span>{count}</span>}
-            </button>
+            </Button>
           ))}
         </div>
         {error && (
           <div
             className={styles.error}
             role='alert'>
-            <p>{error}</p>
+            <Text
+              as='p'
+              display='block'>
+              {error}
+            </Text>
             <Button
               variant='secondary'
               size='small'
@@ -218,7 +240,7 @@ export function MyVideos({
           </div>
         )}
         {items.length > 0 ? (
-          <ul className={styles.list}>
+          <List className={styles.list}>
             {items.map((item) => {
               const video = 'videoId' in item;
               const id = video ? item.videoId : item.id;
@@ -228,107 +250,110 @@ export function MyVideos({
                 : materialPaths.detail(item.id, item.currentPage);
 
               return (
-                <li
+                <ListItem
                   key={id}
-                  className={styles.item}>
-                  <span
-                    className={styles.fileType}
-                    data-kind={video ? 'video' : 'pdf'}>
-                    <Icon
-                      name={video ? 'play' : 'file-text'}
-                      size={18}
-                    />
-                  </span>
-                  <div className={styles.information}>
-                    <h3>
-                      <Link href={href}>{item.title}</Link>
-                    </h3>
-                    <p>
-                      {video
-                        ? (item.language === 'th' ? '태국어' : '영어') +
-                          ' · 영상 · 정답 구절 ' +
-                          Math.min(item.completedCount ?? 0, item.count) +
-                          ' / ' +
-                          item.count
-                        : (item.language === 'th' ? '태국어' : '영어') +
-                          ' · 읽기 자료 · ' +
-                          item.pageCount +
-                          '페이지'}
-                    </p>
-                    {video && item.status !== 'ready' && (
-                      <Badge
-                        tone={item.status === 'failed' ? 'error' : 'warning'}>
-                        {jobLabels[item.status] ?? item.status}
-                      </Badge>
-                    )}
-                  </div>
-                  <time
-                    className={styles.updated}
-                    dateTime={item.updatedAt}>
-                    {formatDate(item.updatedAt)}
-                  </time>
-                  {video ? (
-                    <details className={styles.menu}>
-                      <summary aria-label={item.title + ' 관리'}>
+                  className={styles.item}
+                  label={
+                    <>
+                      <span
+                        className={styles.fileType}
+                        data-kind={video ? 'video' : 'pdf'}>
                         <Icon
-                          name='ellipsis'
+                          name={video ? 'play' : 'file-text'}
                           size={18}
                         />
-                      </summary>
-                      <div className={styles.menuContent}>
-                        <button
-                          type='button'
-                          disabled={busy !== null}
-                          onClick={() => void favorite(item)}>
-                          <Icon
-                            name='bookmark'
-                            size={16}
-                          />
-                          {item.favorite ? '관심 해제' : '관심 영상으로 저장'}
-                        </button>
-                        <button
-                          type='button'
-                          disabled={busy !== null}
-                          onClick={() => setRemoving(item)}>
-                          <Icon
-                            name='x'
-                            size={16}
-                          />
-                          내 목록에서 제거
-                        </button>
+                      </span>
+                      <div className={styles.information}>
+                        <Heading level={3}>
+                          <Link href={href}>{item.title}</Link>
+                        </Heading>
+                        <Text
+                          as='p'
+                          display='block'>
+                          {video
+                            ? (item.language === 'th' ? '태국어' : '영어') +
+                              ' · 영상 · 정답 구절 ' +
+                              Math.min(item.completedCount ?? 0, item.count) +
+                              ' / ' +
+                              item.count
+                            : (item.language === 'th' ? '태국어' : '영어') +
+                              ' · 읽기 자료 · ' +
+                              item.pageCount +
+                              '페이지'}
+                        </Text>
+                        {video && item.status !== 'ready' && (
+                          <Badge
+                            tone={
+                              item.status === 'failed' ? 'error' : 'warning'
+                            }>
+                            {jobLabels[item.status] ?? item.status}
+                          </Badge>
+                        )}
                       </div>
-                    </details>
-                  ) : (
-                    <Link
-                      href={href}
-                      className={styles.open}
-                      aria-label={item.title + ' 열기'}>
-                      <Icon
-                        name='arrow-up-right'
-                        size={18}
-                      />
-                    </Link>
-                  )}
-                </li>
+                      <time
+                        className={styles.updated}
+                        dateTime={item.updatedAt}>
+                        {formatDate(item.updatedAt)}
+                      </time>
+                      {video ? (
+                        <DropdownMenu
+                          button={{
+                            label: item.title + ' 관리',
+                            variant: 'ghost',
+                          }}
+                          items={[
+                            {
+                              label: item.favorite
+                                ? '관심 해제'
+                                : '관심 영상으로 저장',
+                              isDisabled: busy !== null,
+                              onClick: () => void favorite(item),
+                            },
+                            {
+                              label: '내 목록에서 제거',
+                              isDisabled: busy !== null,
+                              onClick: () => setRemoving(item),
+                            },
+                          ]}
+                        />
+                      ) : (
+                        <Link
+                          href={href}
+                          className={styles.open}
+                          aria-label={item.title + ' 열기'}>
+                          <Icon
+                            name='arrow-up-right'
+                            size={18}
+                          />
+                        </Link>
+                      )}
+                    </>
+                  }
+                />
               );
             })}
-          </ul>
+          </List>
         ) : loading ? (
-          <p
+          <Text
+            as='p'
+            display='block'
             className={styles.loading}
             role='status'>
             자료를 불러오고 있어요.
-          </p>
+          </Text>
         ) : (
           <EmptyState
             title='이 종류의 자료가 아직 없어요'
             description='새 자료를 추가하거나 다른 종류의 자료를 선택해 보세요.'
           />
         )}
-        <p className={styles.listNote}>
+        <Text
+          as='p'
+          display='block'
+          className={styles.listNote}>
           최근 활동한 자료를 최대 4개까지 보여 드려요.
-        </p>
-      </section>
+        </Text>
+      </Section>
       <Dialog
         open={removing !== null}
         onClose={() => {
@@ -352,7 +377,12 @@ export function MyVideos({
             </Button>
           </>
         }>
-        <p className={styles.removalTitle}>{removing?.title}</p>
+        <Text
+          as='p'
+          display='block'
+          className={styles.removalTitle}>
+          {removing?.title}
+        </Text>
       </Dialog>
     </>
   );

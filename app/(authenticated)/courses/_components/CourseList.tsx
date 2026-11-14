@@ -1,4 +1,11 @@
 'use client';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Collapsible } from '@astryxdesign/core/Collapsible';
+import { Select } from '@/components/ui/primitives/Select';
+import { Card } from '@astryxdesign/core/Card';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useState } from 'react';
@@ -43,29 +50,31 @@ export function CourseList({ initial }: { initial: Courses }) {
     <div className={styles.page}>
       <div className={styles.heading}>
         <div>
-          <h1>내 수업과 과제</h1>
-          <p className={styles.description}>
+          <Heading level={1}>내 수업과 과제</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             개인 학습과 과제 제출 기록을 따로 보관합니다.
-          </p>
+          </Text>
         </div>
       </div>
       <form
         className={styles.filters}
         onSubmit={(event) => void join(event)}>
-        <label className={styles.field}>
-          수업 초대 코드
+        <div className={styles.field}>
           <Input
+            label={contentLabel(<>수업 초대 코드</>)}
             value={code}
             required
             maxLength={36}
             placeholder='담당자가 공유한 초대 코드'
             onChange={(event) => setCode(event.target.value)}
           />
-        </label>
+        </div>
         <Button loading={busy}>수업 참여</Button>
       </form>
-      <details>
-        <summary>수업 개설</summary>
+      <Collapsible trigger={<> 수업 개설 </>}>
         <form
           className={styles.stack}
           onSubmit={async (event) => {
@@ -85,36 +94,38 @@ export function CourseList({ initial }: { initial: Courses }) {
               setBusy(false);
             }
           }}>
-          <label className={styles.field}>
-            수업 이름
+          <div className={styles.field}>
             <Input
+              label={contentLabel(<>수업 이름</>)}
               required
               value={title}
               maxLength={200}
               onChange={(event) => setTitle(event.target.value)}
             />
-          </label>
-          <label className={styles.field}>
-            언어
-            <select
+          </div>
+          <div className={styles.field}>
+            <Select
+              label={contentLabel(<>언어</>)}
               value={language}
               onChange={(event) =>
                 setLanguage(event.target.value as 'en' | 'th')
               }>
               <option value='en'>영어</option>
               <option value='th'>태국어</option>
-            </select>
-          </label>
+            </Select>
+          </div>
           <Button loading={busy}>수업 만들기</Button>
         </form>
-      </details>
+      </Collapsible>
       {sessionExpired && <SessionRecovery />}
       {error && (
-        <p
-          className={styles.error}
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+
           role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
       {!initial.items.length ? (
         <EmptyState
@@ -124,24 +135,26 @@ export function CourseList({ initial }: { initial: Courses }) {
         />
       ) : (
         initial.items.map((item) => (
-          <article
+          <Card
             className={styles.message}
             key={item.id}>
-            <h2>{item.title}</h2>
-            <p>
+            <Heading level={2}>{item.title}</Heading>
+            <Text
+              as='p'
+              display='block'>
               {item.language === 'en' ? '영어' : '태국어'} ·{' '}
               {item.role === 'teacher'
                 ? '교수·담당자'
                 : item.role === 'assistant'
                   ? '조교'
                   : '수강생'}
-            </p>
+            </Text>
             <ButtonLink
               href={`/courses/${encodeURIComponent(item.id)}`}
               variant='secondary'>
               과제 확인
             </ButtonLink>
-          </article>
+          </Card>
         ))
       )}
       <ButtonLink

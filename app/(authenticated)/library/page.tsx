@@ -1,3 +1,5 @@
+import { Text } from '@astryxdesign/core/Text';
+import { Heading } from '@astryxdesign/core/Heading';
 import { GrowthCard } from '../_components/GrowthCard';
 import * as styles from './page.css';
 import { requireSession } from '../requireSession';
@@ -20,8 +22,14 @@ export default async function LibraryPage() {
     <div className={styles.root}>
       <div className={styles.intro}>
         <div>
-          <p>{today}</p>
-          <h1>{session.user.name ?? '학습자'}님, 오늘은 어디서 이어갈까요?</h1>
+          <Text
+            as='p'
+            display='block'>
+            {today}
+          </Text>
+          <Heading level={1}>
+            {session.user.name ?? '학습자'}님, 오늘은 어디서 이어갈까요?
+          </Heading>
         </div>
         <ButtonLink href='/materials?add=1'>
           <Icon

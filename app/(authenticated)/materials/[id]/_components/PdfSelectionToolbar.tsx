@@ -1,3 +1,5 @@
+import { Toolbar } from '@astryxdesign/core/Toolbar';
+import { Button } from '@/components/ui/primitives/Button';
 import { Icon } from '@/components/ui/primitives/Icon';
 import { pdfSelectionToolbarPosition } from '@/domains/materials/lib/pdfSelection';
 import * as styles from './PdfSelectionToolbar.css';
@@ -15,39 +17,45 @@ export function PdfSelectionToolbar({
   onAction: (action: 'meaning' | 'translation' | 'save') => void;
 }) {
   return (
-    <div
-      role='toolbar'
-      aria-label='선택한 구절 도구'
+    <Toolbar
+      label='선택한 구절 도구'
       className={styles.root}
       style={pdfSelectionToolbarPosition(rect, width, height)}
-      onPointerDown={(event) => event.preventDefault()}>
-      <button
-        type='button'
-        onClick={() => onAction('meaning')}>
-        <Icon
-          name='sparkles'
-          size={16}
-        />
-        설명
-      </button>
-      <button
-        type='button'
-        onClick={() => onAction('translation')}>
-        <Icon
-          name='book-open'
-          size={16}
-        />
-        번역
-      </button>
-      <button
-        type='button'
-        onClick={() => onAction('save')}>
-        <Icon
-          name='bookmark'
-          size={16}
-        />
-        저장
-      </button>
-    </div>
+      onPointerDown={(event) => event.preventDefault()}
+      startContent={
+        <>
+          <Button
+            variant='secondary'
+            type='button'
+            onClick={() => onAction('meaning')}>
+            <Icon
+              name='sparkles'
+              size={16}
+            />
+            설명
+          </Button>
+          <Button
+            variant='secondary'
+            type='button'
+            onClick={() => onAction('translation')}>
+            <Icon
+              name='book-open'
+              size={16}
+            />
+            번역
+          </Button>
+          <Button
+            variant='secondary'
+            type='button'
+            onClick={() => onAction('save')}>
+            <Icon
+              name='bookmark'
+              size={16}
+            />
+            저장
+          </Button>
+        </>
+      }
+    />
   );
 }

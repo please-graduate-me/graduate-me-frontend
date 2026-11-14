@@ -1,4 +1,4 @@
-import { globalStyle, style } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
 /** 캐릭터와 개인 성장 목표를 작은 화면에서도 나란히 읽을 수 있게 감싼다. */
@@ -26,12 +26,6 @@ export const table = style({
   width: '100%',
   borderCollapse: 'collapse',
   textAlign: 'left',
-});
-
-globalStyle(`${table} th, ${table} td`, {
-  padding: vars.space.md,
-  borderBottom: '1px solid ' + vars.color.line,
-  overflowWrap: 'anywhere',
 });
 
 /** 내 기록을 색상과 별도 문구로 함께 식별한다. */

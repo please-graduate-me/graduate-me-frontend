@@ -1,7 +1,16 @@
 'use client';
+import { List, ListItem } from '@astryxdesign/core/List';
+
+import { AlertDialog } from '@astryxdesign/core/AlertDialog';
+import { useConfirmation } from '@/lib/hooks/useConfirmation';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { DropdownMenu } from '@astryxdesign/core/DropdownMenu';
 import { Select } from '@/components/ui/primitives/Select';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import type { MaterialSummary } from '@/domains/materials/model/contracts';
 import type { VideoHistory } from '@/domains/videos/model/contracts';
 import { listVideos } from '@/domains/videos/api/videos';
@@ -26,6 +35,7 @@ export function MaterialLibrary({
   initial: MaterialSummary[];
   initiallyAdding: boolean;
 }) {
+  const confirmation = useConfirmation();
   const [materials, setMaterials] = useState(initial);
   const [videos, setVideos] = useState<VideoHistory>([]);
   const [kind, setKind] = useState<'all' | 'pdf' | 'video'>('all');
@@ -69,9 +79,9 @@ export function MaterialLibrary({
 
   async function remove(material: MaterialSummary) {
     if (
-      !window.confirm(
+      !(await confirmation.confirm(
         `‘${material.title}’ 원본 자료를 삭제할까요? 연결된 질문과 표현의 발췌는 보존됩니다.`
-      )
+      ))
     )
       return;
     setRemoving(material.id);
@@ -111,12 +121,16 @@ export function MaterialLibrary({
 
   return (
     <div className={styles.page}>
+      <AlertDialog {...confirmation.dialog} />
       <div className={styles.heading}>
         <div>
-          <h1>자료 보관함</h1>
-          <p className={styles.description}>
+          <Heading level={1}>자료 보관함</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             학습하고 싶은 PDF와 영상을 한곳에 모아 두세요.
-          </p>
+          </Text>
         </div>
         <Button onClick={() => setAdding(true)}>
           <Icon
@@ -134,7 +148,8 @@ export function MaterialLibrary({
             ['video', '영상'],
           ] as const
         ).map(([value, label]) => (
-          <button
+          <Button
+            variant='secondary'
             key={value}
             type='button'
             className={styles.tab}
@@ -146,13 +161,13 @@ export function MaterialLibrary({
               : value === 'pdf'
                 ? materials.length
                 : videos.length}
-          </button>
+          </Button>
         ))}
       </div>
       <div className={styles.filters}>
-        <label>
-          학습 언어{' '}
+        <div>
           <Select
+            label={contentLabel(<>학습 언어 </>)}
             aria-label='학습 언어 필터'
             value={language}
             onChange={(event) =>
@@ -162,7 +177,7 @@ export function MaterialLibrary({
             <option value='en'>영어</option>
             <option value='th'>태국어</option>
           </Select>
-        </label>
+        </div>
         <Input
           aria-label='자료 이름 검색'
           placeholder='자료 이름으로 찾기'
@@ -172,8 +187,10 @@ export function MaterialLibrary({
       </div>
       {sessionExpired && <SessionRecovery />}
       {error && (
-        <p
-          className={styles.error}
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+
           role='alert'>
           {error}
           <Button
@@ -185,14 +202,16 @@ export function MaterialLibrary({
             }}>
             영상 목록 다시 조회
           </Button>
-        </p>
+        </Banner>
       )}
       {loading && (
-        <p
+        <Text
+          as='p'
+          display='block'
           className={styles.meta}
           role='status'>
           저장된 영상 목록을 불러오고 있어요.
-        </p>
+        </Text>
       )}
       {!loading && !pdfs.length && !filteredVideos.length ? (
         <EmptyState
@@ -217,132 +236,141 @@ export function MaterialLibrary({
           </div>
         </EmptyState>
       ) : (
-        <ul
+        <List
           className={libraryStyles.list}
           aria-label='내 PDF와 영상 자료'>
           {pdfs.map((material) => (
-            <li
+            <ListItem
               key={material.id}
-              className={libraryStyles.row}>
-              <span
-                className={libraryStyles.cover}
-                data-kind='pdf'>
-                <Icon
-                  name='file-text'
-                  size={18}
-                />
-              </span>
-              <div className={libraryStyles.info}>
-                <Link
-                  className={styles.link}
-                  href={`/materials/${encodeURIComponent(material.id)}`}>
-                  {material.title}
-                </Link>
-                <p className={styles.meta}>
-                  {material.language === 'en' ? '영어' : '태국어'} · 읽기 자료 ·{' '}
-                  {material.pageCount}페이지 · 원본 v{material.version ?? 1}
-                </p>
-                <span className={styles.meta}>
-                  {material.visibility === 'public'
-                    ? '공개 자료'
-                    : material.visibility === 'accounts'
-                      ? '지정 계정 공유'
-                      : '나만 보기'}{' '}
-                  · {material.currentPage}페이지에서 이어 읽기
-                </span>
-              </div>
-              <span className={libraryStyles.status}>
-                <Badge tone='success'>원본 준비 완료</Badge>
-                <time className={styles.meta}>
-                  {formatDate(material.updatedAt)}
-                </time>
-              </span>
-              {material.owned && (
-                <details className={libraryStyles.menu}>
-                  <summary aria-label={`${material.title} 관리`}>
+              className={libraryStyles.row}
+              label={
+                <>
+                  <span
+                    className={libraryStyles.cover}
+                    data-kind='pdf'>
                     <Icon
-                      name='ellipsis'
-                      size={16}
+                      name='file-text'
+                      size={18}
                     />
-                  </summary>
-                  <div className={libraryStyles.actions}>
-                    <Button
-                      variant='ghost'
-                      size='small'
-                      onClick={() => setReplacement(material)}>
-                      새 원본 버전 등록
-                    </Button>
-                    <Button
-                      variant='danger'
-                      size='small'
-                      disabled={removing === material.id}
-                      onClick={() => void remove(material)}>
-                      내 PDF 삭제
-                    </Button>
+                  </span>
+                  <div className={libraryStyles.info}>
+                    <Link
+                      className={styles.link}
+                      href={`/materials/${encodeURIComponent(material.id)}`}>
+                      {material.title}
+                    </Link>
+                    <Text
+                      as='p'
+                      display='block'
+                      className={styles.meta}>
+                      {material.language === 'en' ? '영어' : '태국어'} · 읽기
+                      자료 · {material.pageCount}페이지 · 원본 v
+                      {material.version ?? 1}
+                    </Text>
+                    <span className={styles.meta}>
+                      {material.visibility === 'public'
+                        ? '공개 자료'
+                        : material.visibility === 'accounts'
+                          ? '지정 계정 공유'
+                          : '나만 보기'}{' '}
+                      · {material.currentPage}페이지에서 이어 읽기
+                    </span>
                   </div>
-                </details>
-              )}
-            </li>
+                  <span className={libraryStyles.status}>
+                    <Badge tone='success'>원본 준비 완료</Badge>
+                    <time className={styles.meta}>
+                      {formatDate(material.updatedAt)}
+                    </time>
+                  </span>
+                  {material.owned && (
+                    <DropdownMenu
+                      button={{
+                        label: material.title + ' 관리',
+                        variant: 'ghost',
+                      }}
+                      items={[
+                        {
+                          label: '새 원본 버전 등록',
+                          onClick: () => setReplacement(material),
+                        },
+                        {
+                          label: '내 PDF 삭제',
+                          isDisabled: removing === material.id,
+                          onClick: () => void remove(material),
+                        },
+                      ]}
+                    />
+                  )}
+                </>
+              }
+            />
           ))}
           {filteredVideos.map((video) => (
-            <li
+            <ListItem
               key={video.videoId}
-              className={libraryStyles.row}>
-              <span
-                className={libraryStyles.cover}
-                data-kind='video'>
-                <Icon
-                  name='play'
-                  size={18}
-                />
-              </span>
-              <div className={libraryStyles.info}>
-                <Link
-                  className={styles.link}
-                  href={`/learn/${encodeURIComponent(video.videoId)}`}>
-                  {video.title}
-                </Link>
-                <p className={styles.meta}>
-                  {video.language === 'th' ? '태국어' : '영어'} · 영상 · 정답
-                  구절 {video.completedCount ?? 0} / {video.count}
-                </p>
-                <span className={styles.meta}>
-                  {video.isComplete
-                    ? '모든 학습 구절 정답 통과'
-                    : '저장한 위치에서 이어 학습'}
-                </span>
-              </div>
-              <span className={libraryStyles.status}>
-                <Badge
-                  tone={
-                    video.status === 'ready'
-                      ? 'success'
-                      : video.status === 'failed'
-                        ? 'error'
-                        : 'warning'
-                  }>
-                  {video.status === 'ready'
-                    ? '학습 가능'
-                    : video.status === 'failed'
-                      ? '분석 실패'
-                      : '자료 준비 중'}
-                </Badge>
-                <time className={styles.meta}>
-                  {formatDate(video.updatedAt)}
-                </time>
-              </span>
-              <Link
-                href={`/learn/${encodeURIComponent(video.videoId)}`}
-                className={styles.link}
-                aria-label={`${video.title} 열기`}>
-                <Icon
-                  name='arrow-up-right'
-                  size={18}
-                />
-              </Link>
-            </li>
+              className={libraryStyles.row}
+              label={
+                <>
+                  <span
+                    className={libraryStyles.cover}
+                    data-kind='video'>
+                    <Icon
+                      name='play'
+                      size={18}
+                    />
+                  </span>
+                  <div className={libraryStyles.info}>
+                    <Link
+                      className={styles.link}
+                      href={`/learn/${encodeURIComponent(video.videoId)}`}>
+                      {video.title}
+                    </Link>
+                    <Text
+                      as='p'
+                      display='block'
+                      className={styles.meta}>
+                      {video.language === 'th' ? '태국어' : '영어'} · 영상 ·
+                      정답 구절 {video.completedCount ?? 0} / {video.count}
+                    </Text>
+                    <span className={styles.meta}>
+                      {video.isComplete
+                        ? '모든 학습 구절 정답 통과'
+                        : '저장한 위치에서 이어 학습'}
+                    </span>
+                  </div>
+                  <span className={libraryStyles.status}>
+                    <Badge
+                      tone={
+                        video.status === 'ready'
+                          ? 'success'
+                          : video.status === 'failed'
+                            ? 'error'
+                            : 'warning'
+                      }>
+                      {video.status === 'ready'
+                        ? '학습 가능'
+                        : video.status === 'failed'
+                          ? '분석 실패'
+                          : '자료 준비 중'}
+                    </Badge>
+                    <time className={styles.meta}>
+                      {formatDate(video.updatedAt)}
+                    </time>
+                  </span>
+                  <Link
+                    href={`/learn/${encodeURIComponent(video.videoId)}`}
+                    className={styles.link}
+                    aria-label={`${video.title} 열기`}>
+                    <Icon
+                      name='arrow-up-right'
+                      size={18}
+                    />
+                  </Link>
+                </>
+              }
+            />
           ))}
-        </ul>
+        </List>
       )}
 
       {adding && <MaterialRegistration onClose={() => setAdding(false)} />}

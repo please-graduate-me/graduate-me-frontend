@@ -3,7 +3,7 @@ import { vars } from '@/lib/styles/theme.css';
 
 /** 개인 뜻과 메모는 원문 발췌와 구분한 조용한 읽기 영역에 둔다. */
 export const detail = style({
-  background: '#fbfcfe',
+  background: vars.color.canvas,
   borderRadius: vars.radius.panel,
   padding: 26,
   minWidth: 0,

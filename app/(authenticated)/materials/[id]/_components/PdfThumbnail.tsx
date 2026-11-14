@@ -1,3 +1,4 @@
+import { SelectableCard } from '@astryxdesign/core/SelectableCard';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { PdfPage } from './PdfPage';
 import * as styles from './PdfThumbnail.css';
@@ -15,17 +16,18 @@ export function PdfThumbnail({
   onSelect: (page: number) => void;
 }) {
   return (
-    <button
-      type='button'
+    <SelectableCard
+      label={`${number}페이지`}
+      isSelected={selected}
+      onChange={() => onSelect(number)}
       className={styles.root}
-      aria-current={selected ? 'page' : undefined}
-      onClick={() => onSelect(number)}>
+      aria-current={selected ? 'page' : undefined}>
       <PdfPage
         document={document}
         number={number}
         scale={0.105}
       />
       <span>{number}</span>
-    </button>
+    </SelectableCard>
   );
 }

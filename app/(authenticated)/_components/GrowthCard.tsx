@@ -1,6 +1,10 @@
 'use client';
+import { Section } from '@astryxdesign/core/Section';
+import { Heading } from '@astryxdesign/core/Heading';
+import { ProgressBar } from '@astryxdesign/core/ProgressBar';
+import { Text } from '@astryxdesign/core/Text';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import { getGrowth } from '@/domains/growth/api/growth';
 import { rewardEventName } from '@/domains/growth/lib/rewardEvents';
 import type { GrowthSummary } from '@/domains/growth/model/contracts';
@@ -42,40 +46,52 @@ export function GrowthCard() {
   }, [reload]);
 
   return (
-    <section
+    <Section
       className={styles.card}
       aria-label='나의 학습 성장'>
       <div>
         <span className={styles.eyebrow}>나의 학습 성장</span>
-        <h2>
+        <Heading level={2}>
           {value
             ? `레벨 ${value.level} · ${value.totalXp} XP`
             : '성장 기록을 불러오고 있어요'}
-        </h2>
+        </Heading>
         {value && (
           <>
-            <progress
+            <ProgressBar
+              label='진행 상황'
+              isLabelHidden
               className={styles.progress}
               aria-label='다음 레벨 진행률'
               value={value.levelXp}
               max={value.levelTarget}
             />
-            <p>다음 레벨까지 {value.levelTarget - value.levelXp} XP</p>
+            <Text
+              as='p'
+              display='block'>
+              다음 레벨까지 {value.levelTarget - value.levelXp} XP
+            </Text>
           </>
         )}
       </div>
       {value && (
         <div>
-          <h3>
+          <Heading level={3}>
             {value.dailyGoalReached
               ? '오늘 목표 달성!'
               : `오늘의 목표 ${Math.min(value.dailyCompleted, value.dailyGoal)} / ${value.dailyGoal}`}
-          </h3>
-          <p>목표를 달성한 날 {value.streak}일 연속</p>
-          <p>
+          </Heading>
+          <Text
+            as='p'
+            display='block'>
+            목표를 달성한 날 {value.streak}일 연속
+          </Text>
+          <Text
+            as='p'
+            display='block'>
             이번 주 {value.weeklyXp} XP · 오늘 {value.todayXp} /{' '}
             {value.dailyLimit} XP
-          </p>
+          </Text>
         </div>
       )}
       <div>
@@ -84,11 +100,19 @@ export function GrowthCard() {
           className={styles.link}>
           주간 랭킹과 보상 규칙 보기 ↗
         </Link>
-        <p>XP는 학습 참여 기록이에요.</p>
+        <Text
+          as='p'
+          display='block'>
+          XP는 학습 참여 기록이에요.
+        </Text>
       </div>
       {error && (
         <div role='alert'>
-          <p>{error}</p>
+          <Text
+            as='p'
+            display='block'>
+            {error}
+          </Text>
           <Button
             variant='secondary'
             size='small'
@@ -97,6 +121,6 @@ export function GrowthCard() {
           </Button>
         </div>
       )}
-    </section>
+    </Section>
   );
 }

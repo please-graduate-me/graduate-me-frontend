@@ -1,4 +1,8 @@
 'use client';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Banner } from '@astryxdesign/core/Banner';
+import { FileInput } from '@astryxdesign/core/FileInput';
+import { Text } from '@astryxdesign/core/Text';
 import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -17,7 +21,6 @@ import { getLearningPolicy } from '@/domains/learning/api/policy';
 import type { LearningPolicy } from '@/domains/learning/model/policy';
 import { registerVideo } from '@/domains/videos/api/videos';
 import * as styles from '@/lib/styles/workspace.css';
-import * as registrationStyles from './MaterialRegistration.css';
 
 /** PDF 원본 등록과 기존 영상 준비를 실제 요청에 연결한다. */
 export function MaterialRegistration({
@@ -138,7 +141,8 @@ export function MaterialRegistration({
         className={styles.stack}>
         {!replacement && (
           <div className={styles.tabs}>
-            <button
+            <Button
+              variant='secondary'
               type='button'
               className={styles.tab}
               disabled={busy}
@@ -149,8 +153,9 @@ export function MaterialRegistration({
                 size={18}
               />{' '}
               PDF 자료
-            </button>
-            <button
+            </Button>
+            <Button
+              variant='secondary'
               type='button'
               className={styles.tab}
               disabled={busy}
@@ -161,66 +166,56 @@ export function MaterialRegistration({
                 size={18}
               />{' '}
               YouTube 영상
-            </button>
+            </Button>
           </div>
         )}
         {replacement && (
-          <p className={styles.notice}>
+          <Banner
+            status='info'
+            title='안내'>
             현재 v{replacement.version ?? 1}에서 새 원본 버전을 추가합니다. 기존
             기록의 원문은 바뀌지 않으며 새 버전의 기본 설명은 별도로 준비합니다.
-          </p>
+          </Banner>
         )}
         {kind === 'pdf' ? (
           <>
-            <label
-              className={registrationStyles.dropzone}
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={(event) => {
-                event.preventDefault();
-                if (busy) return;
-                const next = event.dataTransfer.files[0];
+            <FileInput
+              label='학습할 PDF 파일'
+              mode='dropzone'
+              accept='.pdf,application/pdf'
+              maxSize={policy?.pdf.maxBytes}
+              value={file}
+              isDisabled={busy}
+              isRequired
+              onChange={(value) => {
+                const next = Array.isArray(value) ? (value[0] ?? null) : value;
 
-                if (!next) return;
                 setFile(next);
-                if (!title) setTitle(next.name.replace(/\.pdf$/i, ''));
-              }}>
-              <Icon
-                name='upload'
-                size={26}
-              />
-              {file ? file.name : 'PDF 파일을 여기에 놓아 주세요.'}
-              <Input
-                type='file'
-                accept='.pdf,application/pdf'
-                disabled={busy}
-                onChange={(event) => {
-                  const next = event.target.files?.[0] ?? null;
-
-                  setFile(next);
-                  if (next && !title)
-                    setTitle(next.name.replace(/\.pdf$/i, ''));
-                }}
-              />
-            </label>
-            <p className={styles.meta}>
+                if (next && !title) setTitle(next.name.replace(/\.pdf$/i, ''));
+              }}
+            />
+            <Text
+              as='p'
+              display='block'
+              className={styles.meta}>
               {policy
                 ? `${policy.pdf.maxBytes / 1024 / 1024}MiB 이하 · 최대 ${policy.pdf.maxPages}페이지 · 새 PDF 하루 ${policy.pdf.dailyNewLimit}개`
                 : '등록 한도 확인 중…'}{' '}
               · 개인 자료로 저장됩니다.
-            </p>
-            <label className={styles.field}>
-              자료 이름
+            </Text>
+            <div className={styles.field}>
               <Input
+                label={contentLabel(<>자료 이름</>)}
                 required
                 maxLength={200}
                 value={title}
                 disabled={busy}
                 onChange={(event) => setTitle(event.target.value)}
               />
-            </label>
-            <label className={styles.field}>
-              학습 언어
+            </div>
+            <div className={styles.field}>
               <Select
+                label={contentLabel(<>학습 언어</>)}
                 disabled={busy}
                 value={language}
                 onChange={(event) =>
@@ -229,20 +224,22 @@ export function MaterialRegistration({
                 <option value='en'>영어</option>
                 <option value='th'>태국어</option>
               </Select>
-            </label>
-            <p className={styles.notice}>
+            </div>
+            <Banner
+              status='info'
+              title='안내'>
               원본 PDF와 선택 가능한 텍스트를 저장합니다. 등록 후 필요한 페이지
               범위를 명시해 기본 번역·설명을 준비할 수 있습니다. 스캔본은 등록
               후 필요한 페이지의 글자 인식을 요청하세요. 지원 언어와 연결 상태는
               페이지 글자 인식에서 확인할 수 있습니다. 원본에 포함된 영어·태국어
               텍스트 선택은 그대로 이용할 수 있습니다.
-            </p>
+            </Banner>
           </>
         ) : (
           <>
-            <label className={styles.field}>
-              YouTube 주소
+            <div className={styles.field}>
               <Input
+                label={contentLabel(<>YouTube 주소</>)}
                 type='url'
                 required
                 disabled={busy}
@@ -251,10 +248,10 @@ export function MaterialRegistration({
                 onChange={(event) => setUrl(event.target.value)}
                 placeholder='https://www.youtube.com/watch?v=...'
               />
-            </label>
-            <label className={styles.field}>
-              학습 언어
+            </div>
+            <div className={styles.field}>
               <Select
+                label={contentLabel(<>학습 언어</>)}
                 value={language}
                 disabled={busy}
                 onChange={(event) =>
@@ -263,30 +260,38 @@ export function MaterialRegistration({
                 <option value='en'>영어</option>
                 <option value='th'>태국어</option>
               </Select>
-            </label>
-            <p className={styles.notice}>
+            </div>
+            <Banner
+              status='info'
+              title='안내'>
               {policy
                 ? `영어·태국어 영상 · 최대 ${Math.ceil(policy.video.maxSeconds / 60)}분 · 새 영상 하루 ${policy.video.dailyNewLimit}개. `
                 : '등록 한도 확인 중…'}
               {policy?.video.transcriptionEnabled === false
                 ? '현재 새 영상 전사는 사용할 수 없습니다. 이미 준비된 영상은 다시 등록해 학습할 수 있습니다.'
                 : '명시적으로 등록한 새 영상만 준비하며 분석 실패는 자동 재시도하지 않습니다.'}
-            </p>
+            </Banner>
           </>
         )}
-        <label className={styles.row}>
+        <div className={styles.row}>
           <Checkbox
+            label={contentLabel(
+              <>
+                이 자료를 영어·태국어 학습에 사용하며 이용 권한이 있고 제한
+                자료가 아님을 확인합니다.
+              </>
+            )}
             checked={confirmed}
             disabled={busy}
             onChange={(event) => setConfirmed(event.target.checked)}
             required
           />
-          이 자료를 영어·태국어 학습에 사용하며 이용 권한이 있고 제한 자료가
-          아님을 확인합니다.
-        </label>
+        </div>
         {policyError && (
-          <p
-            className={styles.error}
+          <Banner
+            status='error'
+            title='확인이 필요해요'
+
             role='alert'>
             {policyError}
             <Button
@@ -295,21 +300,24 @@ export function MaterialRegistration({
               onClick={() => setPolicyReload((value) => value + 1)}>
               등록 정책 다시 확인
             </Button>
-          </p>
+          </Banner>
         )}
         {progress && (
-          <p
-            className={styles.notice}
+          <Banner
+            status='info'
+            title='안내'
+
             role='status'>
             {progress}
-          </p>
+          </Banner>
         )}
         {error && (
-          <p
-            role='alert'
-            className={styles.error}>
+          <Banner
+            status='error'
+            title='확인이 필요해요'
+            role='alert'>
             {error}
-          </p>
+          </Banner>
         )}
         <div className={styles.row}>
           <Button

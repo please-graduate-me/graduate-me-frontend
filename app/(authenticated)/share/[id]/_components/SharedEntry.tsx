@@ -1,4 +1,6 @@
 'use client';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Text } from '@astryxdesign/core/Text';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/primitives/Button';
@@ -74,18 +76,23 @@ export function SharedEntry({ id, segment }: { id: string; segment: boolean }) {
             : '내 학습에 추가하고 시작'}
       </Button>
       {segment && (
-        <p className={styles.note}>
+        <Text
+          as='p'
+          display='block'
+          className={styles.note}>
           해당 구절로 이동합니다.
           <br />
           기존 답안은 유지됩니다.
-        </p>
+        </Text>
       )}
       {error && (
-        <p
-          className={styles.error}
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+
           role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
     </div>
   );

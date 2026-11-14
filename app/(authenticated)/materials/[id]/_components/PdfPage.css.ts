@@ -100,5 +100,4 @@ export const meaningTooltip = style({
   lineHeight: '18px',
 });
 
-globalStyle(`${meaningTooltip} p`, { margin: '6px 0 0' });
 globalStyle(`${meaningTooltip} small`, { color: vars.color.muted });

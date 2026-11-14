@@ -1,4 +1,6 @@
 'use client';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Text } from '@astryxdesign/core/Text';
 import { useEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy, RenderTask, TextLayer } from 'pdfjs-dist';
 import type { Expression } from '@/domains/expressions/model/contracts';
@@ -229,20 +231,25 @@ export function PdfPage({
           style={{ left: hovered.x, top: hovered.y }}>
           <small>이 위치에 저장한 나의 뜻</small>
           {hovered.meanings.map((item, index) => (
-            <p key={index}>
+            <Text
+              as='p'
+              display='block'
+              key={index}>
               <strong>{item.text}</strong>
               <br />
               {item.meaning}
-            </p>
+            </Text>
           ))}
         </div>
       )}
       {error && (
-        <p
-          className={styles.error}
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+
           role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
     </div>
   );

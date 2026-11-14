@@ -1,7 +1,11 @@
 'use client';
+import { Text } from '@astryxdesign/core/Text';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Section } from '@astryxdesign/core/Section';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import { Panel } from '@/components/ui/layouts/Panel';
+import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
 import { Button } from '@/components/ui/primitives/Button';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { Icon } from '@/components/ui/primitives/Icon';
@@ -50,7 +54,11 @@ export function Dashboard() {
           <div
             className={styles.error}
             role='alert'>
-            <p>{error}</p>
+            <Text
+              as='p'
+              display='block'>
+              {error}
+            </Text>
             <Button
               variant='secondary'
               size='small'
@@ -76,11 +84,13 @@ export function Dashboard() {
             />
             오늘의 복습
           </span>
-          <h2>
+          <Heading level={2}>
             배운 표현,
             <br />한 번 더 기억하기
-          </h2>
-          <p>
+          </Heading>
+          <Text
+            as='p'
+            display='block'>
             {summary
               ? summary.expressions > 0
                 ? '저장한 표현 ' +
@@ -90,36 +100,37 @@ export function Dashboard() {
               : error
                 ? '표현집에서 저장한 표현을 확인해 보세요.'
                 : '나의 표현을 불러오고 있어요.'}
-          </p>
-          <Link
-            href={summary?.expressions ? '/practice' : '/expressions'}
-            className={styles.primaryLink}>
+          </Text>
+          <ButtonLink
+            href={summary?.expressions ? '/practice' : '/expressions'}>
             {summary?.expressions ? '표현 복습하기' : '개인 표현집 열기'}
             <Icon
               name='arrow-right'
               size={16}
             />
-          </Link>
+          </ButtonLink>
         </Panel>
-        <section className={styles.sideSection}>
+        <Section className={styles.sideSection}>
           <div className={styles.sectionHeading}>
-            <h2>도우미 답변</h2>
+            <Heading level={2}>도우미 답변</Heading>
             <Link href='/questions'>전체 보기</Link>
           </div>
           {question ? (
             <div className={styles.answer}>
               <Badge tone='success'>답변 도착</Badge>
-              <h3>
+              <Heading level={3}>
                 <Link href={'/questions/' + encodeURIComponent(question.id)}>
                   {question.title}
                 </Link>
-              </h3>
-              <p>
+              </Heading>
+              <Text
+                as='p'
+                display='block'>
                 {question.assignee?.name
                   ? '담당 ' + question.assignee.name
                   : '도우미 답변'}{' '}
                 · {formatDate(question.updatedAt)}
-              </p>
+              </Text>
               <Link
                 className={styles.source}
                 href={materialPaths.source(question.source)}>
@@ -142,23 +153,27 @@ export function Dashboard() {
           ) : (
             <div className={styles.sideEmpty}>
               <Icon name='message-circle' />
-              <p>
+              <Text
+                as='p'
+                display='block'>
                 {summary?.unanswered
                   ? summary.unanswered + '개 질문의 답변을 기다리고 있어요.'
                   : '궁금한 구절을 선택해 커뮤니티에 질문해 보세요.'}
-              </p>
+              </Text>
               <Link href='/questions'>나의 질문 보기</Link>
             </div>
           )}
-        </section>
-        <section className={styles.sideSection}>
-          <h2>최근 저장한 표현</h2>
+        </Section>
+        <Section className={styles.sideSection}>
+          <Heading level={2}>최근 저장한 표현</Heading>
           {expression ? (
             <div className={styles.savedExpression}>
-              <h3>{expression.text}</h3>
-              <p>
+              <Heading level={3}>{expression.text}</Heading>
+              <Text
+                as='p'
+                display='block'>
                 {expression.meaning || '표현집에서 나만의 뜻을 기록해 보세요.'}
-              </p>
+              </Text>
               <Link
                 className={styles.source}
                 href={materialPaths.source(expression.source)}>
@@ -181,11 +196,15 @@ export function Dashboard() {
           ) : (
             <div className={styles.sideEmpty}>
               <Icon name='bookmark' />
-              <p>저장한 표현이 이곳에 표시돼요.</p>
+              <Text
+                as='p'
+                display='block'>
+                저장한 표현이 이곳에 표시돼요.
+              </Text>
               <Link href='/materials'>자료에서 표현 찾기</Link>
             </div>
           )}
-        </section>
+        </Section>
       </aside>
     </div>
   );

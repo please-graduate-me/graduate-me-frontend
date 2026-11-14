@@ -1,9 +1,19 @@
 'use client';
+import { AlertDialog } from '@astryxdesign/core/AlertDialog';
+import { useRouter } from 'next/navigation';
+import { useConfirmation } from '@/lib/hooks/useConfirmation';
+import { DropdownMenu } from '@astryxdesign/core/DropdownMenu';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+import { TabList, Tab } from '@astryxdesign/core/TabList';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Collapsible } from '@astryxdesign/core/Collapsible';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../../_components/SessionRecovery';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from 'pdfjs-dist';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import { listExpressions } from '@/domains/expressions/api/expressions';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import type { SourceInput } from '@/domains/materials/model/source';
@@ -47,6 +57,8 @@ export function PdfStudy({
   const historical =
     (initial.version ?? 1) < (initial.latestVersion ?? initial.version ?? 1);
 
+  const confirmation = useConfirmation();
+  const router = useRouter();
   const [document, setDocument] = useState<PDFDocumentProxy | null>(null);
   const [page, setPage] = useState(initial.currentPage);
   const [zoom, setZoom] = useState<number | 'width' | 'page'>('width');
@@ -334,10 +346,13 @@ export function PdfStudy({
     }
   }
 
-  function confirmNavigation() {
+  async function confirmNavigation() {
     return (
       memo === savedMemo ||
-      window.confirm('저장하지 않은 메모가 있습니다. 저장하지 않고 이동할까요?')
+      (await confirmation.confirm(
+        '저장하지 않은 메모가 있습니다. 저장하지 않고 이동할까요?',
+        '메모를 저장하지 않고 이동할까요?'
+      ))
     );
   }
 
@@ -378,19 +393,32 @@ export function PdfStudy({
     <div
       className={styles.root}
       onClickCapture={(event) => {
-        if (!(event.target instanceof Element)) return;
+        if (!(event.target instanceof Element) || memo === savedMemo) return;
         const link = event.target.closest<HTMLAnchorElement>('a[href]');
 
         if (
-          link &&
-          link.target !== '_blank' &&
-          link.href !== window.location.href &&
-          !confirmNavigation()
-        ) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
+          !link ||
+          link.target === '_blank' ||
+          link.href === window.location.href ||
+          link.hasAttribute('download') ||
+          event.ctrlKey ||
+          event.metaKey ||
+          event.shiftKey ||
+          event.altKey
+        )
+          return;
+        event.preventDefault();
+        event.stopPropagation();
+        const destination = link.href;
+
+        void confirmNavigation().then((accepted) => {
+          if (!accepted) return;
+          if (new URL(destination).origin === window.location.origin)
+            router.push(destination);
+          else window.location.assign(destination);
+        });
       }}>
+      <AlertDialog {...confirmation.dialog} />
       {sessionExpired && <SessionRecovery />}
       <header className={styles.header}>
         <Link
@@ -401,8 +429,10 @@ export function PdfStudy({
         </Link>
         <Icon name='file-text' />
         <div className={styles.title}>
-          <h1>{initial.title}</h1>
-          <p>
+          <Heading level={1}>{initial.title}</Heading>
+          <Text
+            as='p'
+            display='block'>
             {initial.owned ? '내 자료' : '공유 자료'} /{' '}
             {initial.language === 'en' ? '영어' : '태국어'} ·{' '}
             {initial.visibility === 'public'
@@ -411,7 +441,7 @@ export function PdfStudy({
                 ? '지정 계정 공유'
                 : '나만 보기'}{' '}
             · 원본 v{initial.version ?? 1}
-          </p>
+          </Text>
         </div>
         <span
           className={styles.meta}
@@ -434,44 +464,38 @@ export function PdfStudy({
           onClick={() => setDialog('share')}>
           공유
         </Button>
-        <details className={styles.more}>
-          <summary aria-label='자료 더보기'>
-            <Icon name='ellipsis' />
-          </summary>
-          <div className={styles.moreMenu}>
-            <a
-              className={styles.download}
-              href={initial.fileUrl}
-              target='_blank'
-              rel='noreferrer'>
-              원본 열기
-              <Icon
-                name='external-link'
-                size={16}
-              />
-            </a>
-            <Button
-              variant='ghost'
-              disabled={!quote}
-              onClick={() => setDialog('report')}>
-              선택 원문 오류 신고
-            </Button>
-            <Button
-              variant='ghost'
-              onClick={() => setPanelOpen((value) => !value)}>
-              {panelOpen ? '학습 패널 닫기' : '학습 패널 열기'}
-            </Button>
-          </div>
-        </details>
+        <DropdownMenu
+          button={{ label: '자료 더보기', variant: 'ghost' }}
+          items={[
+            {
+              label: '원본 열기',
+              href: initial.fileUrl,
+              target: '_blank',
+              rel: 'noreferrer',
+            },
+            {
+              label: '선택 원문 오류 신고',
+              isDisabled: !quote,
+              onClick: () => setDialog('report'),
+            },
+            {
+              label: panelOpen ? '학습 패널 닫기' : '학습 패널 열기',
+              onClick: () => setPanelOpen((value) => !value),
+            },
+          ]}
+        />
       </header>
       {historical && (
-        <p className={styles.meta}>
+        <Text
+          as='p'
+          display='block'
+          className={styles.meta}>
           보관된 원본 v{initial.version}입니다. 현재 버전의 진도와 기본 준비는
           바꾸지 않습니다.{' '}
           <Link href={`/materials/${encodeURIComponent(initial.id)}`}>
             현재 원본 v{initial.latestVersion} 열기
           </Link>
-        </p>
+        </Text>
       )}
       <PdfToolbar
         page={page}
@@ -492,11 +516,13 @@ export function PdfStudy({
         hasSelection={Boolean(quote)}
       />
       {error && (
-        <p
-          className={styles.error}
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+
           role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
       <div
         className={styles.workspace}
@@ -516,9 +542,12 @@ export function PdfStudy({
                   onSelect={changePage}
                 />
               ))}
-            <p className={styles.meta}>
+            <Text
+              as='p'
+              display='block'
+              className={styles.meta}>
               페이지 입력으로 전체 자료를 이동할 수 있어요.
-            </p>
+            </Text>
           </nav>
         )}
         <div
@@ -596,13 +625,15 @@ export function PdfStudy({
               }}
             />
           ) : (
-            <p
+            <Text
+              as='p'
+              display='block'
               className={styles.meta}
               role='status'>
               {error
                 ? '원본을 표시할 수 없습니다.'
                 : '원본 PDF를 불러오고 있어요.'}
-            </p>
+            </Text>
           )}
         </div>
         <aside
@@ -614,7 +645,7 @@ export function PdfStudy({
               name='sparkles'
               size={18}
             />
-            <h2>
+            <Heading level={2}>
               {tab === 'overview'
                 ? '자료 전체 정리'
                 : savingExpression
@@ -622,17 +653,29 @@ export function PdfStudy({
                   : tab === 'records'
                     ? '내 학습 기록'
                     : '구절 살펴보기'}
-            </h2>
+            </Heading>
             <IconButton
               name='x'
               label='PDF 학습 패널 닫기'
               onClick={() => setPanelOpen(false)}
             />
           </div>
-          <div
-            className={styles.tabs}
+          <TabList
+            value={tab}
             role='tablist'
-            aria-label='구절 학습 보기'>
+            aria-label='구절 학습 보기'
+            hasDivider
+            onChange={(value) => {
+              if (
+                value !== 'overview' &&
+                value !== 'explanation' &&
+                value !== 'records' &&
+                value !== 'questions'
+              )
+                return;
+              setTab(value);
+              setSavingExpression(false);
+            }}>
             {(
               [
                 ['overview', '전체 정리'],
@@ -640,59 +683,28 @@ export function PdfStudy({
                 ['records', '내 기록'],
                 ['questions', '질문'],
               ] as const
-            ).map(([value, label], index) => (
-              <button
+            ).map(([value, label]) => (
+              <Tab
                 key={value}
-                type='button'
-                role='tab'
+                value={value}
+                label={label}
                 id={`pdf-tab-${value}`}
-                aria-controls={`pdf-panel-${value}`}
-                aria-selected={tab === value}
-                tabIndex={tab === value ? 0 : -1}
-                onClick={() => {
-                  setTab(value);
-                  setSavingExpression(false);
-                }}
-                onKeyDown={(event) => {
-                  const keys = [
-                    'overview',
-                    'explanation',
-                    'records',
-                    'questions',
-                  ] as const;
-
-                  const next =
-                    event.key === 'ArrowRight'
-                      ? (index + 1) % 4
-                      : event.key === 'ArrowLeft'
-                        ? (index + 3) % 4
-                        : event.key === 'Home'
-                          ? 0
-                          : event.key === 'End'
-                            ? 3
-                            : -1;
-
-                  if (next < 0) return;
-                  event.preventDefault();
-                  setTab(keys[next]);
-                  setSavingExpression(false);
-
-                  event.currentTarget.parentElement
-                    ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
-                    [next]?.focus();
-                }}>
-                {label}
-              </button>
+                panelId={`pdf-panel-${value}`}
+              />
             ))}
-          </div>
+          </TabList>
           {quote && tab !== 'overview' && (
-            <blockquote className={styles.quote}>
+            <Blockquote className={styles.quote}>
               <small>
                 PDF · {page}페이지 · 원본 v{source.version}
                 {ocrSelectionId ? ' · OCR' : ''}
               </small>
-              <p>{quote}</p>
-            </blockquote>
+              <Text
+                as='p'
+                display='block'>
+                {quote}
+              </Text>
+            </Blockquote>
           )}
           <div
             role='tabpanel'
@@ -761,31 +773,39 @@ export function PdfStudy({
                 }
               />
             )}
-            <details
+            <Collapsible
               className={styles.preparation}
-              open={!initial.pages[page - 1]?.trim()}>
-              <summary>페이지 글자 인식과 기본 준비</summary>
+              defaultIsOpen={!initial.pages[page - 1]?.trim()}
+              trigger={<> 페이지 글자 인식과 기본 준비 </>}>
               {eligibility &&
                 !eligibility.aiAllowed &&
                 !eligibilityPendingAfterOcr && (
-                  <p className={styles.notice}>
+                  <Banner
+                    status='info'
+                    title='안내'>
                     새 AI 요청 안내: {eligibility.reason}
                     {eligibility.status === 'needs_ocr'
                       ? ' 페이지 글자 인식에서 저장 결과를 확인하거나 인식을 요청해 주세요.'
                       : ''}{' '}
                     원본 읽기와 개인 기록 조회는 계속 이용할 수 있습니다.
-                  </p>
+                  </Banner>
                 )}
               {eligibilityPendingAfterOcr && (
-                <p className={styles.meta}>
+                <Text
+                  as='p'
+                  display='block'
+                  className={styles.meta}>
                   글자 인식을 저장했습니다. 새 AI 요청 시 인식 결과의 문자
                   단서를 다시 확인합니다.
-                </p>
+                </Text>
               )}
-              <p className={styles.meta}>
+              <Text
+                as='p'
+                display='block'
+                className={styles.meta}>
                 자료 적합성은 문자의 언어 단서와 등록 시 확인한 학습 목적을
                 기준으로 안내합니다.
-              </p>
+              </Text>
               <PdfOcrPanel
                 key={`${initial.id}:${initial.version ?? 1}:${page}`}
                 id={initial.id}
@@ -831,7 +851,7 @@ export function PdfStudy({
                 version={initial.version ?? 1}
                 historical={historical}
               />
-            </details>
+            </Collapsible>
           </div>
           <div
             role='tabpanel'
@@ -852,11 +872,15 @@ export function PdfStudy({
                 이 구절 하이라이트·메모
               </Button>
             )}
-            <details className={styles.preparation}>
-              <summary>문서 공통 개인 메모 · 나만 보기</summary>
-              <p className={styles.description}>
+            <Collapsible
+              className={styles.preparation}
+              trigger={<> 문서 공통 개인 메모 · 나만 보기 </>}>
+              <Text
+                as='p'
+                display='block'
+                className={styles.description}>
                 이 자료를 읽으며 떠오른 생각을 기록해 보세요.
-              </p>
+              </Text>
               <TextArea
                 aria-label='자료 개인 메모'
                 className={styles.memo}
@@ -875,7 +899,7 @@ export function PdfStudy({
                 onClick={() => void saveMemo()}>
                 메모 저장
               </Button>
-            </details>
+            </Collapsible>
             <AnnotationList
               items={annotations.filter(
                 (item) =>

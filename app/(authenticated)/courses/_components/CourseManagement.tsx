@@ -1,4 +1,11 @@
 'use client';
+import { AlertDialog } from '@astryxdesign/core/AlertDialog';
+import { useConfirmation } from '@/lib/hooks/useConfirmation';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Section } from '@astryxdesign/core/Section';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { CourseDetail } from '@/domains/courses/model/contracts';
@@ -11,6 +18,7 @@ import * as styles from '@/lib/styles/workspace.css';
 
 /** 수업 역할 관리는 서비스 웹에서 수행하고 프로필 조교 자격은 부여하지 않는다. */
 export function CourseManagement({ value }: { value: CourseDetail }) {
+  const confirmation = useConfirmation();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [userId, setUserId] = useState('');
@@ -40,9 +48,14 @@ export function CourseManagement({ value }: { value: CourseDetail }) {
   }
 
   return (
-    <section className={styles.stack}>
-      <h2>수업 관리</h2>
-      <p>초대 코드: {value.course.inviteCode}</p>
+    <Section className={styles.stack}>
+      <AlertDialog {...confirmation.dialog} />
+      <Heading level={2}>수업 관리</Heading>
+      <Text
+        as='p'
+        display='block'>
+        초대 코드: {value.course.inviteCode}
+      </Text>
       <Button onClick={() => setEditing(true)}>과제 만들기</Button>
       {value.course.role === 'teacher' && (
         <>
@@ -52,18 +65,18 @@ export function CourseManagement({ value }: { value: CourseDetail }) {
               event.preventDefault();
               void member({ userId, role });
             }}>
-            <label className={styles.field}>
-              추가할 계정 식별자
+            <div className={styles.field}>
               <Input
+                label={contentLabel(<>추가할 계정 식별자</>)}
                 required
                 maxLength={128}
                 value={userId}
                 onChange={(event) => setUserId(event.target.value)}
               />
-            </label>
-            <label className={styles.field}>
-              수업 역할
+            </div>
+            <div className={styles.field}>
               <Select
+                label={contentLabel(<>수업 역할</>)}
                 value={role}
                 onChange={(event) =>
                   setRole(event.target.value as typeof role)
@@ -71,16 +84,18 @@ export function CourseManagement({ value }: { value: CourseDetail }) {
                 <option value='student'>수강생</option>
                 <option value='assistant'>수업 조교</option>
               </Select>
-            </label>
+            </div>
             <Button loading={busy}>구성원 저장</Button>
           </form>
-          <p className={styles.notice}>
+          <Banner
+            status='info'
+            title='안내'>
             수업 조교는 이 수업의 과제를 관리합니다. 프로필의 커뮤니티 조교
             타이틀과 별도입니다.
-          </p>
+          </Banner>
         </>
       )}
-      {value.members.map((memberValue) => (
+      {value.members.map(async (memberValue) => (
         <div
           className={styles.row}
           key={memberValue.userId}>
@@ -111,8 +126,12 @@ export function CourseManagement({ value }: { value: CourseDetail }) {
                 <Button
                   variant='danger'
                   disabled={busy}
-                  onClick={() => {
-                    if (window.confirm('이 구성원을 수업에서 제외할까요?'))
+                  onClick={async () => {
+                    if (
+                      await confirmation.confirm(
+                        '이 구성원을 수업에서 제외할까요?'
+                      )
+                    )
                       void member({ remove: memberValue.userId });
                   }}>
                   제외
@@ -122,11 +141,12 @@ export function CourseManagement({ value }: { value: CourseDetail }) {
         </div>
       ))}
       {error && (
-        <p
-          role='alert'
-          className={styles.error}>
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+          role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
       {editing && (
         <CourseAssignmentEditor
@@ -135,6 +155,6 @@ export function CourseManagement({ value }: { value: CourseDetail }) {
           onClose={() => setEditing(false)}
         />
       )}
-    </section>
+    </Section>
   );
 }

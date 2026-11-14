@@ -1,4 +1,12 @@
 'use client';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Section } from '@astryxdesign/core/Section';
+import { Card } from '@astryxdesign/core/Card';
+import { Collapsible } from '@astryxdesign/core/Collapsible';
 import { CourseAssignmentEditor } from '../../../../_components/CourseAssignmentEditor';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../../../../_components/SessionRecovery';
@@ -180,11 +188,13 @@ export function AssignmentStudy({
       </ButtonLink>
       <div className={styles.heading}>
         <div>
-          <h1>{value.title}</h1>
-          <p>
+          <Heading level={1}>{value.title}</Heading>
+          <Text
+            as='p'
+            display='block'>
             과제 v{value.version} · 원본 v{value.source.version} ·{' '}
             {value.source.title}
-          </p>
+          </Text>
         </div>
         <Button
           variant='secondary'
@@ -193,47 +203,55 @@ export function AssignmentStudy({
           현재 상태 확인
         </Button>
       </div>
-      <p className={styles.notice}>
+      <Banner
+        status='info'
+        title='안내'>
         기한 {formatDate(value.dueAt)} · 기한 후 제출{' '}
         {value.allowLate ? '허용' : '불가'} · 재제출{' '}
         {value.allowResubmit ? '허용' : '불가'} · 제출 후 정답{' '}
         {value.revealAfterSubmit ? '공개' : '비공개'} · 힌트{' '}
         {value.allowHints ? '허용' : '불가'}
-      </p>
+      </Banner>
       {sessionExpired && <SessionRecovery />}
       {value.sourceAvailable === false && (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           원본이 삭제되었거나 현재 열람 권한이 없습니다. 새 학습·제출·힌트는
           중지하며 본인의 과거 제출과 변경 이력은 계속 확인할 수 있습니다.
-        </p>
+        </Banner>
       )}
       {error && (
-        <p
-          className={styles.error}
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+
           role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
       {message && (
-        <p
-          className={styles.notice}
+        <Banner
+          status='info'
+          title='안내'
+
           role='status'>
           {message}
-        </p>
+        </Banner>
       )}
       <form
         className={styles.stack}
         onSubmit={(event) => void submit(event)}>
         {value.source.tasks.map((task, index) => (
-          <section
+          <Section
             className={styles.panel}
             key={task.id}>
-            <h2>
+            <Heading level={2}>
               {index + 1}.{' '}
               {value.mode === 'reading'
                 ? `${task.page}페이지 읽기`
                 : `${task.start?.toFixed(1)}초 ~ ${task.end?.toFixed(1)}초`}
-            </h2>
+            </Heading>
             {value.source.kind === 'video' &&
               value.source.youtubeId &&
               listeningTaskId === task.id && (
@@ -265,11 +283,15 @@ export function AssignmentStudy({
                 </Button>
               )}
             {hints[task.id] && (
-              <p className={styles.notice}>{hints[task.id]}</p>
+              <Banner
+                status='info'
+                title='안내'>
+                {hints[task.id]}
+              </Banner>
             )}
             {value.mode === 'reading' && (
               <>
-                <blockquote className={styles.quote}>{task.text}</blockquote>
+                <Blockquote className={styles.quote}>{task.text}</Blockquote>
                 <ButtonLink
                   href={`/materials/${encodeURIComponent(value.source.id)}?page=${task.page}&version=${task.version}`}
                   variant='ghost'>
@@ -312,11 +334,15 @@ export function AssignmentStudy({
                 )}
               </div>
             ) : (
-              <label className={styles.field}>
-                {value.mode === 'reading'
-                  ? '읽고 이해한 내용'
-                  : '들은 전체 문장'}
+              <div className={styles.field}>
                 <TextArea
+                  label={contentLabel(
+                    <>
+                      {value.mode === 'reading'
+                        ? '읽고 이해한 내용'
+                        : '들은 전체 문장'}
+                    </>
+                  )}
                   disabled={blocked || busy}
                   required
                   maxLength={10000}
@@ -330,21 +356,25 @@ export function AssignmentStudy({
                     }))
                   }
                 />
-              </label>
+              </div>
             )}
-          </section>
+          </Section>
         ))}
         {canSubmit && (
           <>
-            <label className={styles.row}>
+            <div className={styles.row}>
               <Checkbox
+                label={contentLabel(
+                  <>
+                    과제 v{value.version}의 답안을 수업 담당자에게 제출하는 데
+                    동의합니다.
+                  </>
+                )}
                 checked={confirmed}
                 disabled={busy || blocked}
                 onChange={(event) => setConfirmed(event.target.checked)}
               />
-              과제 v{value.version}의 답안을 수업 담당자에게 제출하는 데
-              동의합니다.
-            </label>
+            </div>
             <Button
               disabled={blocked || busy || !confirmed}
               loading={busy}>
@@ -354,20 +384,22 @@ export function AssignmentStudy({
         )}
       </form>
       {previousDrafts.map((draft, index) => (
-        <section
+        <Section
           className={styles.panel}
           key={`${draft.version}:${index}`}>
-          <h2>이전 과제 v{draft.version} · 미제출 초안</h2>
-          <p className={styles.notice}>
+          <Heading level={2}>이전 과제 v{draft.version} · 미제출 초안</Heading>
+          <Banner
+            status='info'
+            title='안내'>
             과제 변경 전에 작성한 내용입니다. 새 버전의 제출 답안으로 자동
             사용하지 않습니다.
-          </p>
+          </Banner>
           {draft.answers.map((answer, position) => (
-            <label
+            <div
               className={styles.field}
               key={position}>
-              {answer.label}
               <TextArea
+                label={contentLabel(<>{answer.label}</>)}
                 readOnly
                 value={
                   Array.isArray(answer.answer)
@@ -375,33 +407,46 @@ export function AssignmentStudy({
                     : answer.answer
                 }
               />
-            </label>
+            </div>
           ))}
-        </section>
+        </Section>
       ))}
-      <section>
-        <h2>제출 이력</h2>
-        {!value.submissions.length && <p>아직 제출한 기록이 없습니다.</p>}
+      <Section>
+        <Heading level={2}>제출 이력</Heading>
+        {!value.submissions.length && (
+          <Text
+            as='p'
+            display='block'>
+            아직 제출한 기록이 없습니다.
+          </Text>
+        )}
         {value.submissions.map((item) => (
-          <article
+          <Card
             className={styles.message}
             key={item.id}>
             <Badge tone={item.late ? 'warning' : 'success'}>
               {item.late ? '기한 후 제출' : '제출 완료'} · 과제 v{item.version}
             </Badge>
-            <p>
+            <Text
+              as='p'
+              display='block'>
               {item.studentName ?? '내 제출'} · {formatDate(item.createdAt)} ·
               힌트 {item.hintCount ?? 0}회
-            </p>
+            </Text>
             {item.answers.map((answer, index) => (
               <div key={answer.id}>
-                <h3>{index + 1}번 답안</h3>
-                <p className={styles.prose}>
+                <Heading level={3}>{index + 1}번 답안</Heading>
+                <Text
+                  as='p'
+                  display='block'
+                  className={styles.prose}>
                   {Array.isArray(answer.answer)
                     ? answer.answer.join(' / ')
                     : answer.answer}
-                </p>
-                <p>
+                </Text>
+                <Text
+                  as='p'
+                  display='block'>
                   {item.result.find((result) => result.id === answer.id)
                     ?.correct === true
                     ? '정답'
@@ -409,30 +454,34 @@ export function AssignmentStudy({
                           ?.correct === false
                       ? '다시 확인'
                       : '읽기 제출 · 자동 성적 없음'}
-                </p>
+                </Text>
                 {item.result.find((result) => result.id === answer.id)
                   ?.expected !== undefined && (
-                  <p>
+                  <Text
+                    as='p'
+                    display='block'>
                     당시 정답:{' '}
                     {JSON.stringify(
                       item.result.find((result) => result.id === answer.id)
                         ?.expected
                     )}
-                  </p>
+                  </Text>
                 )}
               </div>
             ))}
-          </article>
+          </Card>
         ))}
-      </section>
-      <details>
-        <summary>과제 변경 이력</summary>
+      </Section>
+      <Collapsible trigger={<> 과제 변경 이력 </>}>
         {value.revisions.map((item) => (
-          <p key={item.version}>
+          <Text
+            as='p'
+            display='block'
+            key={item.version}>
             v{item.version} · {item.reason} · {formatDate(item.createdAt)}
-          </p>
+          </Text>
         ))}
-      </details>
+      </Collapsible>
     </div>
   );
 }

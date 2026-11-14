@@ -1,4 +1,7 @@
 'use client';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Text } from '@astryxdesign/core/Text';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useState } from 'react';
@@ -56,16 +59,19 @@ export function ProfileEditor({ initial }: { initial: LearningProfile }) {
       onSubmit={(event) => void submit(event)}
       className={styles.stack}>
       {profile.isHelper && (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           조교 · 커뮤니티에서 학습자들과 함께 활동합니다.
-        </p>
+        </Banner>
       )}
       <fieldset
         className={styles.stack}
         disabled={busy}>
-        <label className={styles.field}>
-          목표 언어
+        <div className={styles.field}>
           <Select
+            disabled={busy}
+            label={contentLabel(<>목표 언어</>)}
             value={profile.targetLanguage}
             onChange={(event) =>
               setProfile((value) => ({
@@ -77,10 +83,11 @@ export function ProfileEditor({ initial }: { initial: LearningProfile }) {
             <option value='en'>영어</option>
             <option value='th'>태국어</option>
           </Select>
-        </label>
-        <label className={styles.field}>
-          설명 언어
+        </div>
+        <div className={styles.field}>
           <Select
+            disabled={busy}
+            label={contentLabel(<>설명 언어</>)}
             value={profile.explanationLanguage}
             onChange={(event) =>
               setProfile((value) => ({
@@ -93,10 +100,11 @@ export function ProfileEditor({ initial }: { initial: LearningProfile }) {
             <option value='en'>영어</option>
             <option value='th'>태국어</option>
           </Select>
-        </label>
-        <label className={styles.field}>
-          현재 수준 · 자기평가
+        </div>
+        <div className={styles.field}>
           <Select
+            disabled={busy}
+            label={contentLabel(<>현재 수준 · 자기평가</>)}
             value={profile.level}
             onChange={(event) =>
               setProfile((value) => ({
@@ -108,20 +116,24 @@ export function ProfileEditor({ initial }: { initial: LearningProfile }) {
             <option value='intermediate'>중급</option>
             <option value='advanced'>고급</option>
           </Select>
-        </label>
-        <label className={styles.field}>
-          관심 주제
+        </div>
+        <div className={styles.field}>
           <Input
+            disabled={busy}
+            label={contentLabel(<>관심 주제</>)}
             value={interests}
             maxLength={2039}
             onChange={(event) => setInterests(event.target.value)}
             placeholder='회화, 언어학, 경제 · 쉼표로 구분해 최대 20개'
           />
-        </label>
-        <p className={styles.meta}>
+        </div>
+        <Text
+          as='p'
+          display='block'
+          className={styles.meta}>
           언어를 바꾸어도 이전 언어의 자료와 답안·표현·질문 기록은 유지됩니다.
           자기평가 수준은 연습 난이도의 참고값으로 사용합니다.
-        </p>
+        </Text>
         <div>
           <Button
             loading={busy}
@@ -132,18 +144,22 @@ export function ProfileEditor({ initial }: { initial: LearningProfile }) {
       </fieldset>
       {sessionExpired && <SessionRecovery />}
       {error && (
-        <p
-          className={styles.error}
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+
           role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
       {saved && (
-        <p
-          className={styles.notice}
+        <Banner
+          status='info'
+          title='안내'
+
           role='status'>
           학습 프로필을 저장했습니다.
-        </p>
+        </Banner>
       )}
     </form>
   );

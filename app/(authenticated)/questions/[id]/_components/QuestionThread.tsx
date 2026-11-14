@@ -1,9 +1,18 @@
 'use client';
+import { AlertDialog } from '@astryxdesign/core/AlertDialog';
+import { useConfirmation } from '@/lib/hooks/useConfirmation';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Section } from '@astryxdesign/core/Section';
+import { Card } from '@astryxdesign/core/Card';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../../_components/SessionRecovery';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import type { Question } from '@/domains/questions/model/contracts';
 import {
   addQuestionMessage,
@@ -20,6 +29,7 @@ import * as styles from '@/lib/styles/workspace.css';
 
 /** 공개 답변을 원문과 나란히 읽고 같은 질문에 추가 질문을 남긴다. */
 export function QuestionThread({ initial }: { initial: Question }) {
+  const confirmation = useConfirmation();
   const router = useRouter();
   const [question, setQuestion] = useState(initial);
   const [body, setBody] = useState('');
@@ -75,6 +85,7 @@ export function QuestionThread({ initial }: { initial: Question }) {
 
   return (
     <div className={styles.page}>
+      <AlertDialog {...confirmation.dialog} />
       <div className={styles.heading}>
         <div>
           <Link
@@ -82,17 +93,20 @@ export function QuestionThread({ initial }: { initial: Question }) {
             className={styles.link}>
             ← 나의 질문
           </Link>
-          <h1>{question.title}</h1>
-          <p className={styles.description}>
+          <Heading level={1}>{question.title}</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             {question.source.title} · {sourceLabel(question.source)}
-          </p>
+          </Text>
         </div>
         <Badge tone={question.status === 'answered' ? 'success' : 'brand'}>
           {question.status === 'answered' ? '답변 완료' : '답변 대기'}
         </Badge>
       </div>
       <div className={styles.questionColumns}>
-        <section aria-label='질문과 공개 답변'>
+        <Section aria-label='질문과 공개 답변'>
           <div className={styles.row}>
             <Badge tone={question.resolvedAt ? 'success' : 'neutral'}>
               {question.resolvedAt ? '내가 해결한 질문' : '추가 확인 중'}
@@ -113,40 +127,50 @@ export function QuestionThread({ initial }: { initial: Question }) {
               size='small'
               variant='ghost'
               disabled={busy}
-              onClick={() => {
+              onClick={async () => {
                 if (
                   question.revokedAt ||
-                  window.confirm(
+                  (await confirmation.confirm(
                     '공유를 철회하면 답변 도우미가 이 질문과 발췌를 열 수 없습니다. 내 기록은 유지됩니다.'
-                  )
+                  ))
                 )
                   void changeState({ shared: Boolean(question.revokedAt) });
               }}>
               {question.revokedAt ? '담당자와 다시 공유' : '질문 공유 철회'}
             </Button>
           </div>
-          <article className={styles.message}>
+          <Card className={styles.message}>
             <div className={styles.author}>
               <strong>{question.author.name ?? '질문자'}</strong>
               <time className={styles.meta}>
                 {formatDate(question.createdAt)}
               </time>
             </div>
-            <p className={styles.prose}>{question.body}</p>
-          </article>
+            <Text
+              as='p'
+              display='block'
+              className={styles.prose}>
+              {question.body}
+            </Text>
+          </Card>
           {question.attachment && (
-            <article className={styles.message}>
-              <h3>
+            <Card className={styles.message}>
+              <Heading level={3}>
                 내가 공유한 선택 AI 결과 ·{' '}
                 {question.attachment.version
                   ? `v${question.attachment.version}`
                   : '선택 답변'}
-              </h3>
-              <p className={styles.prose}>{question.attachment.text}</p>
-            </article>
+              </Heading>
+              <Text
+                as='p'
+                display='block'
+                className={styles.prose}>
+                {question.attachment.text}
+              </Text>
+            </Card>
           )}
           {question.messages.map((message) => (
-            <article
+            <Card
               className={styles.message}
               key={message.id}>
               <div className={styles.author}>
@@ -167,17 +191,24 @@ export function QuestionThread({ initial }: { initial: Question }) {
                   {formatDate(message.createdAt)}
                 </time>
               </div>
-              <p className={styles.prose}>{message.body}</p>
-            </article>
+              <Text
+                as='p'
+                display='block'
+                className={styles.prose}>
+                {message.body}
+              </Text>
+            </Card>
           ))}
           {question.status === 'waiting' && (
-            <p
-              className={styles.notice}
+            <Banner
+              status='info'
+              title='안내'
+
               role='status'>
               {question.assignee
                 ? `${question.assignee.name ?? '담당 도우미'}님의 답변을 기다리고 있어요.`
                 : '질문이 접수되었어요. 운영자가 담당 도우미를 배정합니다.'}
-            </p>
+            </Banner>
           )}
           <div className={styles.row}>
             <Button
@@ -195,23 +226,25 @@ export function QuestionThread({ initial }: { initial: Question }) {
             <form
               className={styles.stack}
               onSubmit={(event) => void send(event)}>
-              <label className={styles.field}>
-                추가 질문
+              <div className={styles.field}>
                 <TextArea
+                  label={contentLabel(<>추가 질문</>)}
                   required
                   value={body}
                   maxLength={10000}
                   onChange={(event) => setBody(event.target.value)}
                   placeholder='더 궁금한 점을 적어 주세요.'
                 />
-              </label>
+              </div>
               {sessionExpired && <SessionRecovery />}
               {error && (
-                <p
-                  className={styles.error}
+                <Banner
+                  status='error'
+                  title='확인이 필요해요'
+
                   role='alert'>
                   {error}
-                </p>
+                </Banner>
               )}
               <div>
                 <Button
@@ -222,33 +255,47 @@ export function QuestionThread({ initial }: { initial: Question }) {
               </div>
             </form>
           ) : (
-            <p className={styles.notice}>
+            <Banner
+              status='info'
+              title='안내'>
               기존 개인 질문은 이력으로 보존됩니다. 새 질문은 학습 커뮤니티에서
               조교를 태그해 주세요.
-            </p>
+            </Banner>
           )}
-        </section>
+        </Section>
         <aside className={styles.sourcePanel}>
-          <p className={styles.meta}>질문의 근거</p>
+          <Text
+            as='p'
+            display='block'
+            className={styles.meta}>
+            질문의 근거
+          </Text>
           <span className={styles.cover}>
             <Icon
               name={question.source.kind === 'pdf' ? 'file-text' : 'play'}
             />
           </span>
-          <h2>{question.source.title}</h2>
-          <blockquote className={styles.quote}>
+          <Heading level={2}>{question.source.title}</Heading>
+          <Blockquote className={styles.quote}>
             {question.source.quote}
-          </blockquote>
-          <p className={styles.meta}>{sourceLabel(question.source)}</p>
+          </Blockquote>
+          <Text
+            as='p'
+            display='block'
+            className={styles.meta}>
+            {sourceLabel(question.source)}
+          </Text>
           <Link
             href={materialPaths.source(question.source)}
             className={styles.link}>
             원문에서 보기 ↗
           </Link>
-          <p className={styles.notice}>
+          <Banner
+            status='info'
+            title='안내'>
             이 질문은 선택한 발췌와 질문 내용만 공유합니다. 답변자의 내부 검토
             메모와 운영 이력은 표시하지 않습니다.
-          </p>
+          </Banner>
         </aside>
       </div>
     </div>

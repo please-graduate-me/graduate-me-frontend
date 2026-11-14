@@ -1,4 +1,19 @@
 'use client';
+import { List, ListItem } from '@astryxdesign/core/List';
+
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Section } from '@astryxdesign/core/Section';
+import { ProgressBar } from '@astryxdesign/core/ProgressBar';
+import { Table } from '@astryxdesign/core/Table';
+import { TableHeader } from '@astryxdesign/core/Table';
+import { TableRow } from '@astryxdesign/core/Table';
+import { TableHeaderCell } from '@astryxdesign/core/Table';
+import { TableBody } from '@astryxdesign/core/Table';
+import { TableCell } from '@astryxdesign/core/Table';
+import { Link } from '@astryxdesign/core/Link';
 import { useState } from 'react';
 import { BooMascot } from '@/domains/growth/ui/BooMascot';
 import {
@@ -88,10 +103,13 @@ export function RankingPanel({
     <div className={styles.page}>
       <div className={styles.heading}>
         <div>
-          <h1>부와 함께, 한 걸음 더</h1>
-          <p className={styles.description}>
+          <Heading level={1}>부와 함께, 한 걸음 더</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             어제의 나보다 조금 더. 꾸준히 쌓은 학습을 함께 응원해요.
-          </p>
+          </Text>
         </div>
         <Button
           variant='secondary'
@@ -100,44 +118,58 @@ export function RankingPanel({
           현재 순위 새로 조회
         </Button>
       </div>
-      <section
+      <Section
         className={rankingStyles.hero}
         aria-label='개인 성장'>
         <BooMascot size={128} />
         <div>
-          <h2>레벨 {summary.level}</h2>
-          <p>
+          <Heading level={2}>레벨 {summary.level}</Heading>
+          <Text
+            as='p'
+            display='block'>
             누적 {summary.totalXp} XP · 이번 주 {summary.weeklyXp} XP
-          </p>
-          <progress
+          </Text>
+          <ProgressBar
+            label='진행 상황'
+            isLabelHidden
             className={rankingStyles.progress}
             aria-label='다음 레벨 진행률'
             value={summary.levelXp}
             max={summary.levelTarget}
           />
-          <p>다음 레벨까지 {summary.levelTarget - summary.levelXp} XP</p>
+          <Text
+            as='p'
+            display='block'>
+            다음 레벨까지 {summary.levelTarget - summary.levelXp} XP
+          </Text>
         </div>
         <div>
-          <h3>
+          <Heading level={3}>
             {summary.dailyGoalReached
               ? '오늘의 목표를 달성했어요!'
               : `오늘 목표 ${Math.min(summary.dailyCompleted, summary.dailyGoal)} / ${summary.dailyGoal}`}
-          </h3>
-          <p>목표 달성 {summary.streak}일 연속</p>
+          </Heading>
+          <Text
+            as='p'
+            display='block'>
+            목표 달성 {summary.streak}일 연속
+          </Text>
         </div>
-      </section>
-      <section className={styles.panel}>
-        <h2>랭킹 참여 설정</h2>
-        <p>
+      </Section>
+      <Section className={styles.panel}>
+        <Heading level={2}>랭킹 참여 설정</Heading>
+        <Text
+          as='p'
+          display='block'>
           기본은 비공개예요. 참여하면 이번 주 XP와 공개 닉네임이 보여요.
           실명이나 이메일을 닉네임으로 쓰지 마세요.
-        </p>
+        </Text>
         <form
           className={styles.stack}
           onSubmit={(event) => void save(event)}>
-          <label className={styles.field}>
-            공개 닉네임
+          <div className={styles.field}>
             <Input
+              label={contentLabel(<>공개 닉네임</>)}
               value={nickname}
               required
               minLength={2}
@@ -146,42 +178,61 @@ export function RankingPanel({
               placeholder='공개할 별명 2~20자'
               onChange={(event) => setNickname(event.target.value)}
             />
-          </label>
-          <p className={styles.meta}>
+          </div>
+          <Text
+            as='p'
+            display='block'
+            className={styles.meta}>
             한글·영문 등 문자, 숫자, 공백과 _ . -를 사용할 수 있어요.
-          </p>
-          <label className={styles.row}>
+          </Text>
+          <div className={styles.row}>
             <Checkbox
+              label={contentLabel(<>주간 랭킹에 내 닉네임과 XP 공개</>)}
               checked={participating}
               disabled={busy}
               onChange={(event) => setParticipating(event.target.checked)}
             />
-            주간 랭킹에 내 닉네임과 XP 공개
-          </label>
+          </div>
           <Button disabled={busy}>참여 설정 저장</Button>
         </form>
-        {message && <p role='status'>{message}</p>}
+        {message && (
+          <Text
+            as='p'
+            display='block'
+            role='status'>
+            {message}
+          </Text>
+        )}
         {error && (
-          <p
-            className={styles.error}
+          <Banner
+            status='error'
+            title='확인이 필요해요'
+
             role='alert'>
             {error}
-          </p>
+          </Banner>
         )}
-      </section>
-      <section className={styles.panel}>
-        <h2>이번 주 학습 랭킹</h2>
-        <p>
+      </Section>
+      <Section className={styles.panel}>
+        <Heading level={2}>이번 주 학습 랭킹</Heading>
+        <Text
+          as='p'
+          display='block'>
           {leaderboard.weekStart} 시작 · 매주 월요일 00:00 초기화 (한국 시간)
-        </p>
-        <p className={styles.meta}>
+        </Text>
+        <Text
+          as='p'
+          display='block'
+          className={styles.meta}>
           상위 20명과 내 주변 순위예요. 같은 XP는 공동 순위이며, XP는 실력
           평가가 아닌 학습 참여 기록이에요.
-        </p>
+        </Text>
         {!summary.participating && (
-          <p className={styles.notice}>
+          <Banner
+            status='info'
+            title='안내'>
             지금은 랭킹 비참여 상태예요. 개인 XP와 레벨은 계속 쌓여요.
-          </p>
+          </Banner>
         )}
         {!leaderboard.items.length ? (
           <EmptyState
@@ -191,55 +242,72 @@ export function RankingPanel({
           />
         ) : (
           <div className={rankingStyles.tableScroll}>
-            <table className={rankingStyles.table}>
+            <Table className={rankingStyles.table}>
               <caption>주간 XP 순위</caption>
-              <thead>
-                <tr>
-                  <th scope='col'>순위</th>
-                  <th scope='col'>닉네임</th>
-                  <th scope='col'>주간 XP</th>
-                </tr>
-              </thead>
-              <tbody>
+              <TableHeader>
+                <TableRow>
+                  <TableHeaderCell scope='col'>순위</TableHeaderCell>
+                  <TableHeaderCell scope='col'>닉네임</TableHeaderCell>
+                  <TableHeaderCell scope='col'>주간 XP</TableHeaderCell>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {leaderboard.items.map((item) => (
-                  <tr
+                  <TableRow
                     key={item.position}
                     className={item.isMe ? rankingStyles.me : undefined}>
-                    <td>{item.rank}위</td>
-                    <th scope='row'>
+                    <TableCell>{item.rank}위</TableCell>
+                    <TableHeaderCell scope='row'>
                       {item.nickname}
                       {item.isMe ? ' (나)' : ''}
-                    </th>
-                    <td>{item.xp} XP</td>
-                  </tr>
+                    </TableHeaderCell>
+                    <TableCell>{item.xp} XP</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
-      </section>
-      <section className={styles.panel}>
-        <h2>어떻게 XP를 모으나요?</h2>
-        <ul>
-          <li>구절 받아쓰기·적용 문제 최초 정답: 10 XP, 도움 사용 시 5 XP</li>
-          <li>전날까지 저장한 표현 자가점검: 같은 표현·원문 하루 1회, 5 XP</li>
-          <li>하루 학습 3개 달성: 보너스 20 XP</li>
-          <li>하루 기본 학습 XP 한도: 100 XP, 목표 보너스 별도</li>
-          <li>
-            누적 100 XP마다 레벨 상승. 정답 재제출·AI 생성·자료 열기는 추가
-            보상이 없어요.
-          </li>
-        </ul>
-        <p className={styles.meta}>
+      </Section>
+      <Section className={styles.panel}>
+        <Heading level={2}>어떻게 XP를 모으나요?</Heading>
+        <List>
+          <ListItem
+            label={
+              <>구절 받아쓰기·적용 문제 최초 정답: 10 XP, 도움 사용 시 5 XP</>
+            }
+          />
+          <ListItem
+            label={
+              <>전날까지 저장한 표현 자가점검: 같은 표현·원문 하루 1회, 5 XP</>
+            }
+          />
+          <ListItem label={<>하루 학습 3개 달성: 보너스 20 XP</>} />
+          <ListItem
+            label={<>하루 기본 학습 XP 한도: 100 XP, 목표 보너스 별도</>}
+          />
+          <ListItem
+            label={
+              <>
+                누적 100 XP마다 레벨 상승. 정답 재제출·AI 생성·자료 열기는 추가
+                보상이 없어요.
+              </>
+            }
+          />
+        </List>
+        <Text
+          as='p'
+          display='block'
+          className={styles.meta}>
           캐릭터: 한국외국어대학교 부(Boo).{' '}
-          <a
+          <Link
             href='https://www.hufs.ac.kr/hufs/11137/subview.do'
             target='_blank'
             rel='noreferrer'>
             공식 캐릭터 안내
-          </a>
-        </p>
-      </section>
+          </Link>
+        </Text>
+      </Section>
     </div>
   );
 }

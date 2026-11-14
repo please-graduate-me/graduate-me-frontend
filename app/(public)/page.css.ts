@@ -20,20 +20,6 @@ export const intro = style({
   gap: 24,
 });
 
-globalStyle('.' + intro + ' h1', {
-  fontSize: 32,
-  lineHeight: '42px',
-  margin: 0,
-  letterSpacing: '-0.5px',
-});
-
-globalStyle('.' + intro + ' p', {
-  color: vars.color.muted,
-  fontSize: vars.fontSize.body,
-  lineHeight: vars.lineHeight.body,
-  margin: 0,
-});
-
 globalStyle('.' + intro + ' small', {
   color: vars.color.muted,
   fontSize: vars.fontSize.caption,
@@ -54,7 +40,7 @@ export const reading = style({
   padding: 28,
   border: '1px solid ' + vars.color.line,
   borderRadius: vars.radius.panel,
-  background: '#fffefb',
+  background: vars.color.surface,
 });
 
 globalStyle('.' + reading + ' small', {
@@ -73,7 +59,7 @@ export const readingTitle = style({
 
 /** 원문의 선택 구절을 배경색으로 구별한다. */
 export const highlight = style({
-  background: '#fff0b0',
+  background: vars.color.notice,
   color: vars.color.documentInk,
   fontFamily: vars.font.document,
   fontSize: 20,
@@ -93,27 +79,12 @@ export const expression = style({
   background: vars.color.surface,
 });
 
-globalStyle('.' + expression + ' p', {
-  margin: 0,
-  fontSize: vars.fontSize.small,
-  color: vars.color.muted,
-});
-
 /** 표현의 영문 제목과 저장 아이콘을 한 행에 놓는다. */
 export const expressionTitle = style({
   display: 'flex',
   gap: 12,
   alignItems: 'center',
   color: vars.color.muted,
-});
-
-globalStyle('.' + expressionTitle + ' h2', {
-  margin: 0,
-  color: vars.color.ink,
-  fontFamily: vars.font.body,
-  fontSize: 28,
-  lineHeight: '40px',
-  fontWeight: 500,
 });
 
 /** 원문 출처의 아이콘과 페이지 문구를 작은 크기로 정렬한다. */
@@ -182,17 +153,6 @@ globalStyle('.' + steps + ' span', {
   fontSize: vars.fontSize.caption,
 });
 
-globalStyle('.' + steps + ' h2', {
-  margin: '12px 0 8px',
-  fontSize: vars.fontSize.heading3,
-});
-
-globalStyle('.' + steps + ' p', {
-  color: vars.color.muted,
-  fontSize: vars.fontSize.small,
-  margin: 0,
-});
-
 /** 기존의 실제 영상 체험을 소개 아래에 연결한다. */
 export const demo = style({ scrollMarginTop: 32, marginBottom: 64 });
 
@@ -202,17 +162,6 @@ export const demoHeading = style({
   justifyContent: 'space-between',
   alignItems: 'flex-end',
   marginBottom: 24,
-});
-
-globalStyle('.' + demoHeading + ' h2', {
-  margin: '16px 0 8px',
-  fontSize: vars.fontSize.heading2,
-});
-
-globalStyle('.' + demoHeading + ' p', {
-  color: vars.color.muted,
-  margin: 0,
-  fontSize: vars.fontSize.small,
 });
 
 /** 공개 체험의 범위를 보조 문구로 표시한다. */
@@ -230,14 +179,6 @@ export const account = style({
   padding: '32px 0',
   borderTop: '1px solid ' + vars.color.line,
   margin: 0,
-});
-
-globalStyle('.' + account + ' h2', { margin: '0 0 8px' });
-
-globalStyle('.' + account + ' p', {
-  margin: 0,
-  color: vars.color.muted,
-  fontSize: vars.fontSize.small,
 });
 
 /** 로그인 실패를 주변 소개 문구와 분리한다. */

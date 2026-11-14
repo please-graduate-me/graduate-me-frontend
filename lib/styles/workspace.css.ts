@@ -1,4 +1,4 @@
-import { globalStyle, style } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
 /** 학습 자료와 표현집 화면의 본문 너비를 일정하게 유지한다. */
@@ -29,6 +29,7 @@ export const description = style({
 export const columns = style({
   display: 'grid',
   gridTemplateColumns: 'minmax(0, 1.12fr) minmax(340px, 1fr)',
+  '@media': { '(max-width: 960px)': { gridTemplateColumns: '1fr' } },
   gap: vars.space.lg,
   alignItems: 'start',
 });
@@ -37,6 +38,7 @@ export const columns = style({
 export const questionColumns = style({
   display: 'grid',
   gridTemplateColumns: 'minmax(0, 1.55fr) minmax(320px, 1fr)',
+  '@media': { '(max-width: 960px)': { gridTemplateColumns: '1fr' } },
   gap: vars.space.xl,
   alignItems: 'start',
 });
@@ -225,41 +227,5 @@ export const tabs = style({
   marginBottom: vars.space.lg,
 });
 
-/** 분류 버튼은 선택한 상태를 색과 밑줄로 함께 드러낸다. */
-export const tab = style({
-  padding: '12px 6px',
-  border: 0,
-  borderBottom: '2px solid transparent',
-  background: 'transparent',
-  color: vars.color.muted,
-  cursor: 'pointer',
-  fontSize: 14,
-  selectors: {
-    '&[aria-pressed="true"]': {
-      color: vars.color.accent,
-      borderBottomColor: vars.color.accent,
-    },
-  },
-});
-
-globalStyle(`${table} th, ${table} td`, {
-  padding: '18px 14px',
-  borderBottom: `1px solid ${vars.color.line}`,
-  textAlign: 'left',
-  verticalAlign: 'middle',
-});
-
-globalStyle(`${table} th`, {
-  color: vars.color.muted,
-  fontSize: 12,
-  fontWeight: 500,
-});
-
-globalStyle(`${heading} h1`, { margin: 0, fontSize: 26, lineHeight: 1.4 });
-
-globalStyle(`${panel} h2, ${sourcePanel} h2`, {
-  fontSize: 18,
-  margin: '0 0 16px',
-});
-
-globalStyle(`${field} textarea`, { minHeight: 112 });
+/** 분류 버튼의 외형은 Astryx가 담당한다. */
+export const tab = style({ flexShrink: 0 });

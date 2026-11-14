@@ -1,4 +1,13 @@
 'use client';
+import { List, ListItem } from '@astryxdesign/core/List';
+
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Text } from '@astryxdesign/core/Text';
+import { Section } from '@astryxdesign/core/Section';
+import { Heading } from '@astryxdesign/core/Heading';
+import { ProgressBar } from '@astryxdesign/core/ProgressBar';
+import { Collapsible } from '@astryxdesign/core/Collapsible';
 import { useEffect, useRef, useState } from 'react';
 import {
   getMaterialAnalysis,
@@ -112,10 +121,21 @@ export function MaterialAnalysisPanel({
   return (
     <div className={styles.stack}>
       {sessionExpired && <SessionRecovery />}
-      {loading && <p role='status'>저장된 문서 정리를 확인하고 있어요.</p>}
+      {loading && (
+        <Text
+          as='p'
+          display='block'
+          role='status'>
+          저장된 문서 정리를 확인하고 있어요.
+        </Text>
+      )}
       {error && (
         <div role='alert'>
-          <p className={styles.error}>{error}</p>
+          <Banner
+            status='error'
+            title='확인이 필요해요'>
+            {error}
+          </Banner>
           <Button
             variant='ghost'
             onClick={() => setRefresh((count) => count + 1)}>
@@ -124,11 +144,13 @@ export function MaterialAnalysisPanel({
         </div>
       )}
       {value && (
-        <section
+        <Section
           className={styles.sourcePanel}
           aria-live='polite'>
-          <h3>{statusLabel[value.status]}</h3>
-          <p>
+          <Heading level={3}>{statusLabel[value.status]}</Heading>
+          <Text
+            as='p'
+            display='block'>
             원본 v{value.version} ·{' '}
             {
               { ko: '한국어', en: '영어', th: '태국어' }[
@@ -136,44 +158,65 @@ export function MaterialAnalysisPanel({
               ]
             }{' '}
             정리
-          </p>
+          </Text>
           {value.totalPages > 0 && (
             <>
-              <progress
+              <ProgressBar
+                label='진행 상황'
+                isLabelHidden
                 className={analysisStyles.progress}
                 max={value.totalPages}
                 value={value.completedPages}
                 aria-label='문서 정리 진행률'
               />
-              <p>
+              <Text
+                as='p'
+                display='block'>
                 {value.completedPages} / {value.totalPages}페이지 완료
-              </p>
+              </Text>
             </>
           )}
           {working && (
-            <p className={styles.description}>
+            <Text
+              as='p'
+              display='block'
+              className={styles.description}>
               이 화면을 닫아도 정리는 계속됩니다. 완료된 페이지부터 아래에서
               읽을 수 있어요.
-            </p>
+            </Text>
           )}
-          {value.error && <p role='status'>{value.error}</p>}
+          {value.error && (
+            <Text
+              as='p'
+              display='block'
+              role='status'>
+              {value.error}
+            </Text>
+          )}
           {value.status === 'partial' && (
-            <p>
+            <Text
+              as='p'
+              display='block'>
               아래 소개와 요약은 완료된 페이지를 기준으로 한 중간 결과입니다.
-            </p>
+            </Text>
           )}
-          <p className={styles.meta}>
+          <Text
+            as='p'
+            display='block'
+            className={styles.meta}>
             AI가 생성한 정리입니다. 원본과 함께 확인해 주세요.
-          </p>
-        </section>
+          </Text>
+        </Section>
       )}
       {!loading && !value && !error && (
-        <p>
+        <Text
+          as='p'
+          display='block'>
           이 원본 버전에는 저장된 전체 정리가 없습니다.{' '}
           {pageCount > 30
             ? '전체 정리는 최대 30페이지까지 지원합니다.'
             : '자료 소개·전체 번역·핵심 단어·요약을 준비할 수 있어요.'}
-        </p>
+        </Text>
       )}
       {owned && pageCount <= 30 && !loading && (!value || value.canRetry) && (
         <div>
@@ -183,28 +226,48 @@ export function MaterialAnalysisPanel({
             onClick={() => void retry()}>
             {value ? '남은 페이지 정리 다시 요청' : '전체 정리 시작'}
           </Button>
-          <p className={styles.meta}>
+          <Text
+            as='p'
+            display='block'
+            className={styles.meta}>
             완료된 페이지는 보존하며, 새 분석은 AI 사용 한도를 소모합니다.
-          </p>
+          </Text>
         </div>
       )}
       {value?.overview && (
         <>
-          <section>
-            <h3>어떤 자료인가요?</h3>
-            <p className={styles.meta}>{value.overview.documentType}</p>
-            <p className={analysisStyles.text}>{value.overview.introduction}</p>
-          </section>
-          <section>
-            <h3>핵심 요약</h3>
-            <ul className={analysisStyles.list}>
+          <Section>
+            <Heading level={3}>어떤 자료인가요?</Heading>
+            <Text
+              as='p'
+              display='block'
+              className={styles.meta}>
+              {value.overview.documentType}
+            </Text>
+            <Text
+              as='p'
+              display='block'
+              className={analysisStyles.text}>
+              {value.overview.introduction}
+            </Text>
+          </Section>
+          <Section>
+            <Heading level={3}>핵심 요약</Heading>
+            <List className={analysisStyles.list}>
               {value.overview.summary.map((text, index) => (
-                <li key={index}>{text}</li>
+                <ListItem
+                  key={index}
+                  label={<>{text}</>}
+                />
               ))}
-            </ul>
+            </List>
             {value.overview.keyPoints.map((point, index) => (
               <div key={index}>
-                <p>{point.text}</p>
+                <Text
+                  as='p'
+                  display='block'>
+                  {point.text}
+                </Text>
                 <div className={styles.row}>
                   {point.pages.map((page) => (
                     <Button
@@ -218,11 +281,10 @@ export function MaterialAnalysisPanel({
                 </div>
               </div>
             ))}
-          </section>
-          <details open>
-            <summary>
-              핵심 단어·표현 {value.overview.vocabulary.length}개
-            </summary>
+          </Section>
+          <Collapsible
+            defaultIsOpen
+            trigger={<>핵심 단어·표현 {value.overview.vocabulary.length}개</>}>
             <dl className={analysisStyles.words}>
               {value.overview.vocabulary.map((word) => (
                 <div key={word.id}>
@@ -233,8 +295,12 @@ export function MaterialAnalysisPanel({
                     </span>
                   </dt>
                   <dd>
-                    <p>{word.meaning}</p>
-                    <blockquote>{word.example}</blockquote>
+                    <Text
+                      as='p'
+                      display='block'>
+                      {word.meaning}
+                    </Text>
+                    <Blockquote>{word.example}</Blockquote>
                     <Button
                       size='small'
                       variant='ghost'
@@ -245,50 +311,65 @@ export function MaterialAnalysisPanel({
                 </div>
               ))}
             </dl>
-          </details>
+          </Collapsible>
         </>
       )}
       {value && value.pages.length > 0 && (
-        <section>
-          <h3>페이지별 전체 번역</h3>
-          <p className={styles.description}>
+        <Section>
+          <Heading level={3}>페이지별 전체 번역</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             문제집의 정답·해설이 포함될 수 있습니다. 확인할 페이지를 펼쳐
             주세요.
-          </p>
+          </Text>
           {value.pages.map((page) => (
-            <details
+            <Collapsible
               key={page.page}
-              className={analysisStyles.translation}>
-              <summary>
-                {page.page}페이지 ·{' '}
-                {page.status === 'ready'
-                  ? '번역 완료'
-                  : page.status === 'failed'
-                    ? '정리 실패'
-                    : '대기 중'}
-              </summary>
+              className={analysisStyles.translation}
+              trigger={
+                <>
+                  {page.page}페이지 ·{' '}
+                  {page.status === 'ready'
+                    ? '번역 완료'
+                    : page.status === 'failed'
+                      ? '정리 실패'
+                      : '대기 중'}
+                </>
+              }>
               <Button
                 size='small'
                 variant='ghost'
                 onClick={() => onPage(page.page)}>
                 원본 페이지 보기
               </Button>
-              {page.error && <p className={styles.error}>{page.error}</p>}
+              {page.error && (
+                <Banner
+                  status='error'
+                  title='확인이 필요해요'>
+                  {page.error}
+                </Banner>
+              )}
               {page.translation !== null && (
-                <p className={analysisStyles.text}>
+                <Text
+                  as='p'
+                  display='block'
+                  className={analysisStyles.text}>
                   {page.translation || '번역할 텍스트가 없는 페이지입니다.'}
-                </p>
+                </Text>
               )}
               {page.warnings.map((warning, index) => (
-                <p
-                  key={index}
-                  className={styles.notice}>
+                <Banner
+                  status='info'
+                  title='안내'
+                  key={index}>
                   {warning}
-                </p>
+                </Banner>
               ))}
-            </details>
+            </Collapsible>
           ))}
-        </section>
+        </Section>
       )}
     </div>
   );

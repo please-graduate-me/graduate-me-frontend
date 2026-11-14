@@ -1,4 +1,7 @@
 'use client';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Text } from '@astryxdesign/core/Text';
+import { StatusDot } from '@astryxdesign/core/StatusDot';
 import type { LearningSettings } from '@/domains/users/model/settings';
 import { useLearningSettings } from '../../../_components/useLearningSettings';
 import * as styles from './SettingsEditor.css';
@@ -14,20 +17,29 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
       className={styles.options}
       aria-label='내 학습 옵션'
       disabled={saving}>
-      <label className={styles.row}>
-        <span className={styles.name}>자동 미리듣기</span>
+      <div className={styles.row}>
         <Switch
+          disabled={saving}
+          label={contentLabel(
+            <>
+              <span className={styles.name}>자동 미리듣기</span>
+            </>
+          )}
           aria-label='자동 미리듣기'
           checked={settings.autoReplay}
           onChange={(event) =>
             void change({ ...settings, autoReplay: event.target.checked })
           }
         />
-      </label>
-      <label className={styles.row}>
-        <span className={styles.name}>반복 간격</span>
+      </div>
+      <div className={styles.row}>
         <Select
-          disabled={!settings.autoReplay}
+          label={contentLabel(
+            <>
+              <span className={styles.name}>반복 간격</span>
+            </>
+          )}
+          disabled={saving || !settings.autoReplay}
           value={settings.replayDelay}
           onChange={(event) =>
             void change({
@@ -45,11 +57,15 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
             )
           )}
         </Select>
-      </label>
-      <label className={styles.row}>
-        <span className={styles.name}>추가 반복</span>
+      </div>
+      <div className={styles.row}>
         <Select
-          disabled={!settings.autoReplay}
+          label={contentLabel(
+            <>
+              <span className={styles.name}>추가 반복</span>
+            </>
+          )}
+          disabled={saving || !settings.autoReplay}
           value={settings.replayCount ?? 'unlimited'}
           onChange={(event) =>
             void change({
@@ -69,10 +85,15 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
             </option>
           ))}
         </Select>
-      </label>
-      <label className={styles.row}>
-        <span className={styles.name}>재생 속도</span>
+      </div>
+      <div className={styles.row}>
         <Select
+          disabled={saving}
+          label={contentLabel(
+            <>
+              <span className={styles.name}>재생 속도</span>
+            </>
+          )}
           value={settings.playbackRate}
           onChange={(event) =>
             void change({
@@ -90,18 +111,31 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
             </option>
           ))}
         </Select>
-      </label>
-      <p className={styles.note}>
+      </div>
+      <Text
+        as='p'
+        display='block'
+        className={styles.note}>
         처음 한 번 들은 뒤 선택한 횟수만큼 더 반복합니다.
         <br />
         일시정지를 누르면 반복도 멈춥니다.
-      </p>
-      <p
+      </Text>
+      <div
         className={styles.status}
         role='status'
-        data-state={saving ? 'saving' : error ? 'error' : 'saved'}>
-        {saving ? '옵션 저장 중…' : error || '계정에 저장됨'}
-      </p>
+        aria-atomic='true'>
+        <StatusDot
+          variant={saving ? 'neutral' : error ? 'error' : 'success'}
+          label={saving ? '저장 중' : error ? '저장 오류' : '저장 완료'}
+          isPulsing={saving}
+          aria-hidden='true'
+        />
+        <Text
+          type='supporting'
+          color='secondary'>
+          {saving ? '옵션 저장 중…' : error || '계정에 저장됨'}
+        </Text>
+      </div>
     </fieldset>
   );
 }

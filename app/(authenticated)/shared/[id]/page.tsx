@@ -1,5 +1,10 @@
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Section } from '@astryxdesign/core/Section';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import { requireSession } from '../../requireSession';
 import { getExcerptShare } from '@/domains/materials/api/records';
 import { materialPaths } from '@/domains/materials/config/paths';
@@ -31,35 +36,45 @@ export default async function SharedExcerptPage({
       <div className={styles.heading}>
         <div>
           <Badge tone='brand'>공유된 원문 발췌</Badge>
-          <h1>{item.source.title}</h1>
-          <p className={styles.description}>
+          <Heading level={1}>{item.source.title}</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             {sourceLabel(item.source)} · 원문 v{item.source.version ?? 1}
-          </p>
+          </Text>
         </div>
       </div>
-      <section className={styles.panel}>
-        <blockquote className={styles.quote}>{item.source.quote}</blockquote>
-        <p className={styles.notice}>
+      <Section className={styles.panel}>
+        <Blockquote className={styles.quote}>{item.source.quote}</Blockquote>
+        <Banner
+          status='info'
+          title='안내'>
           이 링크는 선택한 발췌만 공유합니다. 원본 PDF와 공유자의 개인
           메모·답안·진도는 포함하지 않습니다. 원본 열람 권한은 별도로
           관리됩니다.
-        </p>
-        <p className={styles.meta}>
+        </Banner>
+        <Text
+          as='p'
+          display='block'
+          className={styles.meta}>
           원본 접근 권한이 있으면 같은 위치에서 내 기록으로 학습할 수 있습니다.
-        </p>
-        <p>
+        </Text>
+        <Text
+          as='p'
+          display='block'>
           <Link
             href={materialPaths.source(item.source)}
             className={styles.link}>
             원문 위치에서 학습하기
           </Link>
-        </p>
+        </Text>
         <Link
           href='/materials'
           className={styles.link}>
           내 자료로 돌아가기
         </Link>
-      </section>
+      </Section>
     </div>
   );
 }

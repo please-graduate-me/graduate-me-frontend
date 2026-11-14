@@ -1,6 +1,11 @@
 'use client';
+import { List, ListItem } from '@astryxdesign/core/List';
+
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Section } from '@astryxdesign/core/Section';
 import { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import { sourceLabel, formatDate } from '@/domains/learning/lib/format';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
@@ -55,10 +60,13 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
     <div className={styles.page}>
       <div className={styles.heading}>
         <div>
-          <h1>개인 표현집</h1>
-          <p className={styles.description}>
+          <Heading level={1}>개인 표현집</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             내가 발견한 표현과 문맥을 모아 두는 곳
-          </p>
+          </Text>
         </div>
         <ButtonLink
           href='/materials'
@@ -75,7 +83,8 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
             ['concept', '개념'],
           ] as const
         ).map(([value, label]) => (
-          <button
+          <Button
+            variant='secondary'
             key={value}
             type='button'
             className={styles.tab}
@@ -89,7 +98,7 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
                     ? item.kind === 'word' || item.kind === 'phrase'
                     : item.kind === value
                 ).length}
-          </button>
+          </Button>
         ))}
       </div>
       {!items.length ? (
@@ -105,7 +114,7 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
         </EmptyState>
       ) : (
         <div className={expressionStyles.columns}>
-          <section>
+          <Section>
             <div className={styles.filters}>
               <Input
                 aria-label='표현이나 뜻 검색'
@@ -153,32 +162,45 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
                 <option value='oldest'>오래된 저장순</option>
               </Select>
             </div>
-            <p className={styles.meta}>
+            <Text
+              as='p'
+              display='block'
+              className={styles.meta}>
               {sort === 'oldest' ? '오래된 저장순' : '최근 저장순'} ·{' '}
               {filtered.length}개
-            </p>
-            <ul className={styles.list}>
+            </Text>
+            <List className={styles.list}>
               {filtered.map((item) => (
-                <li key={item.id}>
-                  <button
-                    type='button'
-                    className={styles.listItem}
-                    aria-pressed={selected?.id === item.id}
-                    onClick={() => setSelectedId(item.id)}>
-                    <div className={styles.row}>
-                      <strong className={styles.link}>{item.text}</strong>
-                      <span className={styles.meta}>
-                        {formatDate(item.createdAt)}
-                      </span>
-                    </div>
-                    <p>{item.meaning || '뜻을 정리해 보세요.'}</p>
-                    <span className={styles.meta}>
-                      {sourceLabel(item.source)} · {item.source.title}
-                    </span>
-                  </button>
-                </li>
+                <ListItem
+                  key={item.id}
+                  label={
+                    <>
+                      <Button
+                        variant='secondary'
+                        type='button'
+                        className={styles.listItem}
+                        aria-pressed={selected?.id === item.id}
+                        onClick={() => setSelectedId(item.id)}>
+                        <div className={styles.row}>
+                          <strong className={styles.link}>{item.text}</strong>
+                          <span className={styles.meta}>
+                            {formatDate(item.createdAt)}
+                          </span>
+                        </div>
+                        <Text
+                          as='p'
+                          display='block'>
+                          {item.meaning || '뜻을 정리해 보세요.'}
+                        </Text>
+                        <span className={styles.meta}>
+                          {sourceLabel(item.source)} · {item.source.title}
+                        </span>
+                      </Button>
+                    </>
+                  }
+                />
               ))}
-            </ul>
+            </List>
             {!filtered.length && (
               <EmptyState
                 title='검색한 표현이 없어요'
@@ -197,7 +219,7 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
                 </Button>
               </EmptyState>
             )}
-          </section>
+          </Section>
           {selected && (
             <ExpressionDetail
               key={selected.id}

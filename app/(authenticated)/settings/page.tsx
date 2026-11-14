@@ -1,5 +1,8 @@
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Section } from '@astryxdesign/core/Section';
 import { requireSession } from '../requireSession';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import { getLearningSettings } from '@/domains/users/api/settings';
 import * as styles from './page.css';
 import { SettingsEditor } from './_components/SettingsEditor';
@@ -24,43 +27,69 @@ export default async function SettingsPage() {
   return (
     <div className={styles.page}>
       <div className={styles.intro}>
-        <h1>학습 설정</h1>
-        <p>나의 속도에 맞게 듣기와 반복을 조정해 보세요.</p>
+        <Heading level={1}>학습 설정</Heading>
+        <Text
+          as='p'
+          display='block'>
+          나의 속도에 맞게 듣기와 반복을 조정해 보세요.
+        </Text>
       </div>
-      <section
+      <Section
         className={styles.account}
         aria-labelledby='account-title'>
         <div>
-          <h2 id='account-title'>내 계정</h2>
+          <Heading
+            level={2}
+            id='account-title'>
+            내 계정
+          </Heading>
           <strong>{session.user.name ?? '학습자'}</strong>
-          <p>{session.user.email}</p>
+          <Text
+            as='p'
+            display='block'>
+            {session.user.email}
+          </Text>
         </div>
         <div className={styles.accountActions}>
           <Badge tone='brand'>학생 학습 공간</Badge>
           <AuthButton action='signout' />
         </div>
-      </section>
-      <section
+      </Section>
+      <Section
         className={styles.learning}
         aria-labelledby='learning-profile-title'>
-        <h2 id='learning-profile-title'>언어와 학습 목표</h2>
+        <Heading
+          level={2}
+          id='learning-profile-title'>
+          언어와 학습 목표
+        </Heading>
         <ProfileEditor initial={profile} />
-      </section>
-      <section
+      </Section>
+      <Section
         className={styles.learning}
         aria-labelledby='learning-options-title'>
-        <h2 id='learning-options-title'>
+        <Heading
+          level={2}
+          id='learning-options-title'>
           <Icon name='headphones' />
           영상 학습 옵션
-        </h2>
-        <p>변경한 설정은 계정에 자동 저장되며 모든 영상에 적용됩니다.</p>
+        </Heading>
+        <Text
+          as='p'
+          display='block'>
+          변경한 설정은 계정에 자동 저장되며 모든 영상에 적용됩니다.
+        </Text>
         <SettingsEditor initial={initial} />
-      </section>
+      </Section>
       {access.role && (
-        <section className={styles.workplace}>
+        <Section className={styles.workplace}>
           <div>
-            <h2>답변 도우미·운영 관리</h2>
-            <p>질문 답변과 자료 관리는 별도의 작업 공간에서 진행합니다.</p>
+            <Heading level={2}>답변 도우미·운영 관리</Heading>
+            <Text
+              as='p'
+              display='block'>
+              질문 답변과 자료 관리는 별도의 작업 공간에서 진행합니다.
+            </Text>
           </div>
           <Link href={adminPaths.home}>
             작업 공간으로 이동
@@ -69,18 +98,20 @@ export default async function SettingsPage() {
               size={16}
             />
           </Link>
-        </section>
+        </Section>
       )}
-      <section className={styles.workplace}>
+      <Section className={styles.workplace}>
         <div>
-          <h2>계정과 개인정보</h2>
-          <p>
+          <Heading level={2}>계정과 개인정보</Heading>
+          <Text
+            as='p'
+            display='block'>
             탈퇴 시 개인 기록의 삭제와 공개 기록의 보존 범위를 확인할 수
             있습니다.
-          </p>
+          </Text>
         </div>
         <Link href='/settings/account'>계정 탈퇴 안내</Link>
-      </section>
+      </Section>
     </div>
   );
 }

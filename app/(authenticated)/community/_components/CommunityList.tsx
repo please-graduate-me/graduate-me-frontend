@@ -1,8 +1,13 @@
 'use client';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@astryxdesign/core/Card';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import type { CommunityPosts } from '@/domains/community/model/contracts';
 import type { SourceInput } from '@/domains/materials/model/source';
 import { listCommunityPosts } from '@/domains/community/api/community';
@@ -57,10 +62,15 @@ export function CommunityList({
     <div className={styles.page}>
       <div className={styles.heading}>
         <div>
-          <h1>{tagged ? '나를 태그한 글' : '학습 커뮤니티'}</h1>
-          <p className={styles.description}>
+          <Heading level={1}>
+            {tagged ? '나를 태그한 글' : '학습 커뮤니티'}
+          </Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             학습 경험과 질문을 나누고, 조교를 태그해 함께 이야기해 보세요.
-          </p>
+          </Text>
         </div>
         <Button onClick={() => setCompose(true)}>글 쓰기</Button>
       </div>
@@ -86,22 +96,24 @@ export function CommunityList({
           <option value='en'>영어</option>
           <option value='th'>태국어</option>
         </Select>
-        <label className={styles.row}>
+        <div className={styles.row}>
           <Checkbox
+            label={contentLabel(<>팔로우한 작성자</>)}
             checked={following}
             onChange={(event) => setFollowing(event.target.checked)}
           />
-          팔로우한 작성자
-        </label>
+        </div>
         <Button loading={busy}>검색</Button>
       </form>
       {sessionExpired && <SessionRecovery />}
       {error && (
-        <p
-          className={styles.error}
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+
           role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
       {!value.items.length ? (
         <EmptyState
@@ -111,20 +123,27 @@ export function CommunityList({
         />
       ) : (
         value.items.map((item) => (
-          <article
+          <Card
             className={styles.message}
             key={item.id}>
-            <h2>
+            <Heading level={2}>
               <Link href={`/community/${encodeURIComponent(item.id)}`}>
                 {item.title}
               </Link>
-            </h2>
-            <p>
+            </Heading>
+            <Text
+              as='p'
+              display='block'>
               {item.author.name ?? '학습자'}{' '}
               {item.author.isHelper && <Badge tone='neutral'>조교</Badge>} ·{' '}
               {formatDate(item.createdAt)}
-            </p>
-            <p className={styles.prose}>{item.body.slice(0, 200)}</p>
+            </Text>
+            <Text
+              as='p'
+              display='block'
+              className={styles.prose}>
+              {item.body.slice(0, 200)}
+            </Text>
             <div className={styles.row}>
               <Badge tone='neutral'>
                 {item.visibility === 'public' ? '공개 글' : '지정 계정'}
@@ -133,7 +152,7 @@ export function CommunityList({
                 추천 {item.likes} · 댓글 {item.comments}
               </span>
             </div>
-          </article>
+          </Card>
         ))
       )}
       <div className={styles.row}>

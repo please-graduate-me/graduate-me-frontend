@@ -75,7 +75,7 @@ export const canvas = style({
   padding: 50,
   overflow: 'auto',
   minWidth: 0,
-  background: '#edeff2',
+  background: vars.color.canvas,
 });
 
 /** 구절 학습 도구는 원본 오른쪽에서 독립적으로 스크롤한다. */
@@ -149,23 +149,6 @@ export const error = style({
   fontSize: 14,
 });
 
-globalStyle(`${title} h1`, {
-  margin: 0,
-  fontSize: 14,
-  lineHeight: '20px',
-  fontWeight: 500,
-});
-
-globalStyle(`${title} p`, {
-  margin: '4px 0 0',
-  color: vars.color.muted,
-  fontSize: 12,
-});
-
-globalStyle(`${panelHeading} h2`, { margin: 0, fontSize: 17 });
-globalStyle(`${section} h3`, { margin: 0, fontSize: 18 });
-globalStyle(`${capability} p`, { margin: 0 });
-
 /** 새 AI 요청 제한은 원본 읽기와 구분해 안내한다. */
 export const notice = style({
   color: vars.color.warning,
@@ -184,38 +167,8 @@ export const tabs = style({
   marginBottom: 20,
 });
 
-globalStyle(`${tabs} button`, {
-  height: 44,
-  border: 0,
-  borderBottom: '2px solid transparent',
-  color: vars.color.muted,
-  background: 'transparent',
-  font: 'inherit',
-  fontSize: 14,
-  cursor: 'pointer',
-});
-
-globalStyle(`${tabs} button[aria-selected="true"]`, {
-  borderBottomColor: vars.color.accent,
-  color: vars.color.ink,
-});
-
-globalStyle(`${tabs} button:focus-visible`, {
-  outline: `2px solid ${vars.color.focus}`,
-  outlineOffset: 2,
-});
-
 /** 원본의 추가 동작은 주 학습 도구를 밀지 않는 메뉴에 둔다. */
 export const more = style({ position: 'relative' });
-
-globalStyle(`${more} > summary`, {
-  listStyle: 'none',
-  display: 'grid',
-  placeItems: 'center',
-  width: 32,
-  height: 32,
-  cursor: 'pointer',
-});
 
 /** 메뉴는 헤더 아래에 열려 원본 위치를 바꾸지 않는다. */
 export const moreMenu = style({
@@ -242,6 +195,3 @@ export const preparation = style({
 });
 
 globalStyle(`${quote} small`, { fontSize: 12, color: vars.color.muted });
-globalStyle(`${quote} p`, { margin: '6px 0 0' });
-
-globalStyle(`${panelHeading} h2`, { flex: 1, fontSize: 16, fontWeight: 400 });

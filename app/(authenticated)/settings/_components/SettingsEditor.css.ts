@@ -1,4 +1,4 @@
-import { globalStyle, style } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
 /** 저장 중의 옵션 잠금을 한 그룹으로 관리한다. */
@@ -23,8 +23,6 @@ export const row = style({
 /** 항목 이름을 선택값과 구별한다. */
 export const name = style({ fontSize: vars.fontSize.small, fontWeight: 500 });
 
-globalStyle('.' + row + ' select', { width: 176, flex: 'none' });
-
 /** 자동 반복과 일시정지의 의미를 실제 조작부 아래에 설명한다. */
 export const note = style({
   fontSize: vars.fontSize.caption,
@@ -32,23 +30,10 @@ export const note = style({
   margin: '18px 0 0',
 });
 
-/** 저장 여부를 훅의 실제 상태로 전달한다. */
+/** 상태점과 저장 안내의 배치만 정하고 외형은 Astryx에 맡긴다. */
 export const status = style({
-  fontSize: vars.fontSize.caption,
-  color: vars.color.muted,
+  display: 'flex',
+  alignItems: 'center',
+  gap: vars.space.xs,
   margin: '20px 0 0',
-  selectors: {
-    '&::before': {
-      content: '""',
-      display: 'inline-block',
-      width: 6,
-      height: 6,
-      background: vars.color.match,
-      borderRadius: '50%',
-      marginRight: 8,
-    },
-    '&[data-state="saving"]::before': { background: vars.color.muted },
-    '&[data-state="error"]': { color: vars.color.error },
-    '&[data-state="error"]::before': { background: vars.color.error },
-  },
 });

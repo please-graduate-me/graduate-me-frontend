@@ -1,3 +1,7 @@
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@astryxdesign/core/Card';
 import { CourseManagement } from '../_components/CourseManagement';
 import { requireSession } from '../../requireSession';
 import { getCourse } from '@/domains/courses/api/courses';
@@ -23,25 +27,37 @@ export default async function CoursePage({
         variant='ghost'>
         ← 내 수업
       </ButtonLink>
-      <h1>{value.course.title}</h1>
-      <p className={styles.notice}>
+      <Heading level={1}>{value.course.title}</Heading>
+      <Banner
+        status='info'
+        title='안내'>
         과제 제출은 개인 받아쓰기 진도·답안과 별도로 기록됩니다. 수업 참여만으로
         비공개 원본 전체를 열 수 있는 권한이 생기지 않습니다.
-      </p>
+      </Banner>
       {value.course.ownerUnavailable && (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           수업 개설자의 계정이 탈퇴한 상태입니다. 기존 과제와 허용된 제출 기록은
           보존됩니다.
-        </p>
+        </Banner>
       )}
       <CourseManagement value={value} />
-      {value.assignments.length === 0 && <p>아직 배정된 과제가 없습니다.</p>}
+      {value.assignments.length === 0 && (
+        <Text
+          as='p'
+          display='block'>
+          아직 배정된 과제가 없습니다.
+        </Text>
+      )}
       {value.assignments.map((item) => (
-        <article
+        <Card
           className={styles.message}
           key={item.id}>
-          <h2>{item.title}</h2>
-          <p>
+          <Heading level={2}>{item.title}</Heading>
+          <Text
+            as='p'
+            display='block'>
             {item.source.title} ·{' '}
             {item.mode === 'reading'
               ? '읽기'
@@ -49,12 +65,14 @@ export default async function CoursePage({
                 ? '전체 받아쓰기'
                 : '빈칸 받아쓰기'}{' '}
             · {item.taskCount}개 · 과제 v{item.version}
-          </p>
-          <p>
+          </Text>
+          <Text
+            as='p'
+            display='block'>
             기한: {formatDate(item.dueAt)} · 기한 후 제출{' '}
             {item.allowLate ? '허용' : '불가'} · 재제출{' '}
             {item.allowResubmit ? '허용' : '불가'}
-          </p>
+          </Text>
           <div className={styles.row}>
             <Badge tone={item.submission ? 'success' : 'warning'}>
               {item.submission
@@ -67,7 +85,7 @@ export default async function CoursePage({
               과제와 제출 이력 보기
             </ButtonLink>
           </div>
-        </article>
+        </Card>
       ))}
     </div>
   );

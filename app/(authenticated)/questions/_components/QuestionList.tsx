@@ -1,7 +1,17 @@
 'use client';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Button } from '@/components/ui/primitives/Button';
+import { Table } from '@astryxdesign/core/Table';
+import { TableHeader } from '@astryxdesign/core/Table';
+import { TableRow } from '@astryxdesign/core/Table';
+import { TableHeaderCell } from '@astryxdesign/core/Table';
+import { TableBody } from '@astryxdesign/core/Table';
+import { TableCell } from '@astryxdesign/core/Table';
 import { Select } from '@/components/ui/primitives/Select';
 import { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import type { QuestionSummary } from '@/domains/questions/model/contracts';
 import { formatDate, sourceLabel } from '@/domains/learning/lib/format';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
@@ -27,10 +37,13 @@ export function QuestionList({ initial }: { initial: QuestionSummary[] }) {
     <div className={styles.page}>
       <div className={styles.heading}>
         <div>
-          <h1>나의 질문</h1>
-          <p className={styles.description}>
+          <Heading level={1}>나의 질문</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             원문에서 궁금했던 점과 학과 도우미의 답변을 확인하세요.
-          </p>
+          </Text>
         </div>
         <ButtonLink
           className={styles.link}
@@ -46,7 +59,8 @@ export function QuestionList({ initial }: { initial: QuestionSummary[] }) {
             ['answered', '답변 완료'],
           ] as const
         ).map(([value, label]) => (
-          <button
+          <Button
+            variant='secondary'
             type='button'
             className={styles.tab}
             key={value}
@@ -57,13 +71,13 @@ export function QuestionList({ initial }: { initial: QuestionSummary[] }) {
               initial.filter((item) => value === 'all' || item.status === value)
                 .length
             }
-          </button>
+          </Button>
         ))}
       </div>
       <div className={styles.filters}>
-        <label>
-          학습 언어{' '}
+        <div>
           <Select
+            label={contentLabel(<>학습 언어 </>)}
             aria-label='학습 언어 필터'
             value={language}
             onChange={(event) =>
@@ -73,7 +87,7 @@ export function QuestionList({ initial }: { initial: QuestionSummary[] }) {
             <option value='en'>영어</option>
             <option value='th'>태국어</option>
           </Select>
-        </label>
+        </div>
         <Input
           aria-label='내 질문 제목 검색'
           placeholder='질문 제목으로 찾기'
@@ -88,44 +102,50 @@ export function QuestionList({ initial }: { initial: QuestionSummary[] }) {
           description='PDF나 영상에서 구절을 선택하고 담당 커뮤니티에 질문해 보세요.'
         />
       ) : (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>질문</th>
-              <th>원문 근거</th>
-              <th>답변 도우미</th>
-              <th>상태</th>
-              <th>최근 활동</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className={styles.table}>
+          <TableHeader>
+            <TableRow>
+              <TableHeaderCell>질문</TableHeaderCell>
+              <TableHeaderCell>원문 근거</TableHeaderCell>
+              <TableHeaderCell>답변 도우미</TableHeaderCell>
+              <TableHeaderCell>상태</TableHeaderCell>
+              <TableHeaderCell>최근 활동</TableHeaderCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {items.map((item) => (
-              <tr key={item.id}>
-                <td>
+              <TableRow key={item.id}>
+                <TableCell>
                   <Link
                     className={styles.link}
                     href={`/questions/${encodeURIComponent(item.id)}`}>
                     {item.title}
                   </Link>
-                </td>
-                <td>
-                  <p>{item.source.title}</p>
+                </TableCell>
+                <TableCell>
+                  <Text
+                    as='p'
+                    display='block'>
+                    {item.source.title}
+                  </Text>
                   <span className={styles.meta}>
                     {sourceLabel(item.source)}
                   </span>
-                </td>
-                <td>{item.assignee?.name ?? '배정 대기'}</td>
-                <td>
+                </TableCell>
+                <TableCell>{item.assignee?.name ?? '배정 대기'}</TableCell>
+                <TableCell>
                   <Badge
                     tone={item.status === 'answered' ? 'success' : 'brand'}>
                     {item.status === 'answered' ? '답변 완료' : '답변 대기'}
                   </Badge>
-                </td>
-                <td className={styles.meta}>{formatDate(item.updatedAt)}</td>
-              </tr>
+                </TableCell>
+                <TableCell className={styles.meta}>
+                  {formatDate(item.updatedAt)}
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       )}
     </div>
   );

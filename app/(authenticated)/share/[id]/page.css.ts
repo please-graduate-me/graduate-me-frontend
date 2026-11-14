@@ -1,4 +1,4 @@
-import { globalStyle, style } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
 /** 공유를 확인한 뒤 서비스 홈으로 돌아갈 수 있게 한다. */
@@ -15,16 +15,6 @@ export const page = style({
 
 /** 긴 영상 제목이 공유 미리보기의 폭을 늘리지 않게 한다. */
 export const info = style({ minWidth: 0 });
-
-globalStyle(`.${info} h1`, {
-  fontSize: 28,
-  lineHeight: 1.35,
-  letterSpacing: '-0.7px',
-  margin: 0,
-  textWrap: 'balance',
-  overflowWrap: 'anywhere',
-  '@media': { '(max-width: 800px)': { fontSize: 23, letterSpacing: '-0.5px' } },
-});
 
 /** 공유 범위와 분류를 제목 아래에서 간결하게 표시한다. */
 export const meta = style({

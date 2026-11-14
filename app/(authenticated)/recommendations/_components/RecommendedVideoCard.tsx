@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@astryxdesign/core/Card';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
 import { useEffect, useRef } from 'react';
 import { recordRecommendationEvent } from '@/domains/recommendations/api/recommendations';
 import type { Recommendations } from '@/domains/recommendations/model/contracts';
@@ -17,7 +20,7 @@ export function RecommendedVideoCard({
   busy: boolean;
   onDismiss: () => void;
 }) {
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const shown = useRef<string | null>(null);
   const selected = useRef<string | null>(null);
 
@@ -45,10 +48,10 @@ export function RecommendedVideoCard({
   }, [item.id]);
 
   return (
-    <article
+    <Card
       ref={ref}
       className={styles.message}>
-      <h2>{item.title}</h2>
+      <Heading level={2}>{item.title}</Heading>
       <div className={styles.row}>
         <Badge tone='brand'>{item.language === 'en' ? '영어' : '태국어'}</Badge>
         <span className={styles.meta}>
@@ -58,11 +61,18 @@ export function RecommendedVideoCard({
           · {item.category || '주제 미분석'} · {item.difficulty}
         </span>
       </div>
-      <p>추천 이유: {item.reason}</p>
-      <p className={styles.meta}>
+      <Text
+        as='p'
+        display='block'>
+        추천 이유: {item.reason}
+      </Text>
+      <Text
+        as='p'
+        display='block'
+        className={styles.meta}>
         난이도는 확보된 문장 길이 등의 단서를 참고한 추정이며 공인 수준 판정이
         아닙니다.
-      </p>
+      </Text>
       <div className={styles.row}>
         <ButtonLink
           href={`/learn/${encodeURIComponent(item.id)}`}
@@ -84,6 +94,6 @@ export function RecommendedVideoCard({
           관심 없음
         </Button>
       </div>
-    </article>
+    </Card>
   );
 }

@@ -1,8 +1,19 @@
 'use client';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icon, type IconName } from '@/components/ui/primitives/Icon';
+import { AppShell } from '@astryxdesign/core/AppShell';
+import {
+  SideNav,
+  SideNavHeading,
+  SideNavItem,
+  SideNavSection,
+} from '@astryxdesign/core/SideNav';
+import { TopNav, TopNavHeading } from '@astryxdesign/core/TopNav';
+import { Avatar } from '@astryxdesign/core/Avatar';
+import { Badge } from '@astryxdesign/core/Badge';
+import { HStack } from '@astryxdesign/core/HStack';
+import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
 import * as styles from './StudentShell.css';
 
 const destinations: { href: string; label: string; icon: IconName }[] = [
@@ -56,111 +67,99 @@ export function StudentShell({
         ? '관리자 앱 안내'
         : '내 학습 공간');
 
-  const initial = name.trim().slice(0, 1) || '나';
-
-  if (immersive) return <main className={styles.immersive}>{children}</main>;
+  if (immersive) return <div className={styles.immersive}>{children}</div>;
 
   return (
-    <div className={styles.shell}>
-      <aside
-        className={styles.sidebar}
-        aria-label='학생 서비스 탐색'>
-        <Link
-          href='/library'
-          className={styles.brand}>
-          graduate me
-        </Link>
-        <Link
-          href='/library'
-          className={styles.workspace}>
-          <span className={styles.avatar}>{initial}</span>
-          <strong>내 학습 공간</strong>
-        </Link>
-        <nav
-          className={styles.navigation}
-          aria-label='주 메뉴'>
-          {navigation.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={styles.navItem}
-              aria-current={current?.href === item.href ? 'page' : undefined}>
-              <Icon
-                name={item.icon}
-                size={18}
+    <AppShell
+      height='auto'
+      contentPadding={0}
+      sideNav={
+        <SideNav
+          aria-label='학생 서비스 탐색'
+          header={
+            <SideNavHeading
+              heading='graduate me'
+              headingHref='/library'
+              subheading='나의 언어 학습 공간'
+            />
+          }
+          footer={
+            <SideNavItem
+              label={name}
+              href='/settings'
+              isSelected={pathname.startsWith('/settings')}
+              icon={
+                <Avatar
+                  name={name}
+                  size='sm'
+                  tooltip={false}
+                />
+              }
+              endContent={<Badge label={isHelper ? '조교' : '학습자'} />}
+            />
+          }>
+          <SideNavSection title='학습 공간'>
+            {navigation.map((item) => (
+              <SideNavItem
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                isSelected={current?.href === item.href}
+                icon={
+                  <Icon
+                    name={item.icon}
+                    size={18}
+                  />
+                }
               />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className={styles.languages}>
-          <h2>내 학습 언어</h2>
-          <p>
-            <span
-              className={styles.languageDot}
-              data-language='en'
+            ))}
+          </SideNavSection>
+          <SideNavSection title='도움과 설정'>
+            <SideNavItem
+              label='학습 설정'
+              href='/settings'
+              icon={
+                <Icon
+                  name='settings'
+                  size={18}
+                />
+              }
+              isSelected={pathname.startsWith('/settings')}
             />
-            영어
-          </p>
-          <p>
-            <span
-              className={styles.languageDot}
-              data-language='th'
+            <SideNavItem
+              label='커뮤니티에 질문하기'
+              href='/questions'
+              icon={
+                <Icon
+                  name='message-circle'
+                  size={18}
+                />
+              }
             />
-            태국어
-          </p>
-        </div>
-        <div className={styles.bottom}>
-          <Link
-            href='/community'
-            className={styles.help}>
-            <strong>궁금한 점이 있나요?</strong>
-            <span>커뮤니티에서 조교를 태그해 보세요.</span>
-          </Link>
-          <Link
-            href='/settings'
-            className={styles.account}>
-            <span className={styles.avatar}>{initial}</span>
-            <span className={styles.accountInfo}>
-              <strong>{name}</strong>
-              <small>{isHelper ? '조교' : '학습자'}</small>
-            </span>
-            <Icon
-              name='settings'
-              size={16}
-            />
-          </Link>
-        </div>
-      </aside>
-      <div className={styles.main}>
-        <header className={styles.topbar}>
-          <span className={styles.breadcrumb}>{title}</span>
-          <Link
-            href='/materials'
-            className={styles.search}>
-            <Icon
-              name='search'
-              size={18}
-            />
-            자료 검색
-          </Link>
-          <Link
-            href='/community'
-            aria-label='커뮤니티 확인'>
-            <Icon
-              name='bell'
-              size={18}
-            />
-          </Link>
-          <Link
-            href='/settings'
-            className={styles.avatar}
-            aria-label='계정 설정'>
-            {initial}
-          </Link>
-        </header>
-        <main className={styles.content}>{children}</main>
-      </div>
-    </div>
+          </SideNavSection>
+        </SideNav>
+      }
+      topNav={
+        <TopNav
+          label='학습 공간 상단 탐색'
+          heading={<TopNavHeading heading={title} />}
+          endContent={
+            <HStack gap={3}>
+              <ButtonLink
+                href='/materials'
+                variant='secondary'>
+                자료 검색
+              </ButtonLink>
+              <Avatar
+                name={name}
+                href='/settings'
+                size='sm'
+              />
+            </HStack>
+          }
+        />
+      }>
+      <div className={styles.content}>{children}</div>
+    </AppShell>
   );
 }

@@ -1,7 +1,11 @@
 'use client';
+import { ProgressBar } from '@astryxdesign/core/ProgressBar';
+import { Card } from '@astryxdesign/core/Card';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
 import { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import type { MaterialSummary } from '@/domains/materials/model/contracts';
 import type { VideoHistory } from '@/domains/videos/model/contracts';
 import { videoPaths } from '@/domains/videos/config/paths';
@@ -38,7 +42,7 @@ export function ResumeCard({
       : Math.floor(progress);
 
   return (
-    <article className={styles.root}>
+    <Card className={styles.root}>
       <div className={styles.row}>
         <Link
           href={href}
@@ -81,14 +85,16 @@ export function ResumeCard({
               ? '영상 · ' + (item.language === 'th' ? '태국어' : '영어')
               : 'PDF · ' + (item.language === 'th' ? '태국어' : '영어')}
           </Badge>
-          <h3>
+          <Heading level={3}>
             <Link href={href}>{item.title}</Link>
-          </h3>
-          <p>
+          </Heading>
+          <Text
+            as='p'
+            display='block'>
             {video
               ? '정답 구절 ' + current + ' / ' + total
               : current + '페이지에서 이어 읽기'}
-          </p>
+          </Text>
           <ButtonLink
             href={href}
             variant='secondary'>
@@ -96,15 +102,13 @@ export function ResumeCard({
           </ButtonLink>
         </div>
       </div>
-      <div
+      <ProgressBar
+        label={item.title + (video ? ' 정답 진도' : ' 읽기 위치')}
+        isLabelHidden
+        value={shownProgress}
+        max={100}
         className={styles.progress}
-        role='progressbar'
-        aria-label={item.title + (video ? ' 정답 진도' : ' 읽기 위치')}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={shownProgress}>
-        <span style={{ width: shownProgress + '%' }} />
-      </div>
-    </article>
+      />
+    </Card>
   );
 }

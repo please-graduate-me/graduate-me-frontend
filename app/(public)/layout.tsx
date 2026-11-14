@@ -1,4 +1,7 @@
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
+import { TopNav, TopNavHeading } from '@astryxdesign/core/TopNav';
+import { HStack } from '@astryxdesign/core/HStack';
+import { Text } from '@astryxdesign/core/Text';
 import type { ReactNode } from 'react';
 import { Icon } from '@/components/ui/primitives/Icon';
 import * as styles from './layout.css';
@@ -16,20 +19,22 @@ export default async function PublicLayout({
 
   return (
     <div className={styles.root}>
-      <header className={styles.header}>
-        <Link
-          href='/'
-          className={styles.brand}>
-          <span className={styles.mark}>
-            <Icon
-              name='book-open'
-              size={18}
-            />
-          </span>
-          graduate me
-        </Link>
-        <nav aria-label='서비스 소개'>
-          {session?.user ? (
+      <TopNav
+        label='서비스 소개'
+        heading={
+          <TopNavHeading
+            heading='graduate me'
+            headingHref='/'
+            logo={
+              <Icon
+                name='book-open'
+                size={24}
+              />
+            }
+          />
+        }
+        endContent={
+          session?.user ? (
             <ButtonLink
               href='/library'
               variant='secondary'>
@@ -42,20 +47,16 @@ export default async function PublicLayout({
               label='로그인'
               disabled={!configured}
             />
-          )}
-        </nav>
-      </header>
+          )
+        }
+      />
       <main className={styles.main}>{children}</main>
       <footer className={styles.footer}>
-        <strong>graduate me</strong>
-        <span>읽고, 듣고, 질문하며 나의 언어로.</span>
-        <Link href='/library'>
-          학습 시작하기
-          <Icon
-            name='arrow-right'
-            size={16}
-          />
-        </Link>
+        <HStack gap={4}>
+          <Text weight='bold'>graduate me</Text>
+          <Text color='secondary'>읽고, 듣고, 질문하며 나의 언어로.</Text>
+          <Link href='/library'>학습 시작하기</Link>
+        </HStack>
       </footer>
     </div>
   );

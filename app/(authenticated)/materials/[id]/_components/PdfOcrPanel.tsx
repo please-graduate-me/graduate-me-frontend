@@ -1,4 +1,8 @@
 'use client';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Section } from '@astryxdesign/core/Section';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
 import { useEffect, useRef, useState } from 'react';
 import {
   getMaterialOcr,
@@ -148,11 +152,11 @@ export function PdfOcrPanel({
     .join(' · ');
 
   return (
-    <section
+    <Section
       className={styles.stack}
       aria-label='페이지 글자 인식'>
       <div className={styles.row}>
-        <h2>페이지 글자 인식</h2>
+        <Heading level={2}>페이지 글자 인식</Heading>
         <Badge
           tone={
             item?.status === 'ready'
@@ -172,69 +176,93 @@ export function PdfOcrPanel({
                   : '저장 결과 없음'}
         </Badge>
       </div>
-      <p className={styles.meta}>
+      <Text
+        as='p'
+        display='block'
+        className={styles.meta}>
         원본 v{version} · {page}페이지
         {result
           ? ` · ${aiProviderLabel(result.provider)} · ${result.model} · 지원 언어: ${supportedLanguages || '없음'}`
           : ''}
         . 원본과 인식 결과를 따로 보존하며 저장 결과 조회에는 새 인식을 요청하지
         않습니다.
-      </p>
+      </Text>
       {result && !result.languageSupported && (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           현재 선택된 공급자는 이 자료의 언어를 지원하지 않습니다. PDF에 포함된
           원본 텍스트는 기존처럼 선택할 수 있습니다.
-        </p>
+        </Banner>
       )}
       {result && !result.configured && (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           글자 인식 기능이 아직 설정되지 않았습니다. 저장된 인식 결과는 계속 열
           수 있습니다. 새 인식은 운영자에게 설정을 요청해 주세요.
-        </p>
+        </Banner>
       )}
       {!owned && (
-        <p className={styles.meta}>
+        <Text
+          as='p'
+          display='block'
+          className={styles.meta}>
           공유 자료는 소유자가 저장한 인식 결과를 이용할 수 있습니다.
-        </p>
+        </Text>
       )}
       {historical && (
-        <p className={styles.meta}>
+        <Text
+          as='p'
+          display='block'
+          className={styles.meta}>
           보관된 원본에서는 당시 인식 결과를 조회합니다. 새 인식은 현재 원본에서
           요청하세요.
-        </p>
+        </Text>
       )}
       {item?.status === 'failed' && (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           {item.error || '이 페이지의 글자를 인식하지 못했습니다.'} 자동으로
           재시도하지 않습니다.
-        </p>
+        </Banner>
       )}
       {item?.status === 'ready' && (
-        <p className={styles.meta}>
+        <Text
+          as='p'
+          display='block'
+          className={styles.meta}>
           저장 결과: {aiProviderLabel(item.provider)} · {item.model}
-        </p>
+        </Text>
       )}
       {unknownConfidenceCount > 0 && (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           신뢰도 미제공 영역 {unknownConfidenceCount}개가 있습니다. 공급자가
           수치를 제공하지 않아 정확도를 추정하지 않습니다. 황색 점선 영역의
           원본을 확인해 주세요.
-        </p>
+        </Banner>
       )}
       {item?.status === 'ready' && (
-        <p className={item.lowConfidenceCount ? styles.notice : styles.meta}>
+        <Banner
+          status='info'
+          title='안내'>
           {item.lowConfidenceCount
             ? `인식 신뢰도가 낮은 영역 ${item.lowConfidenceCount}개가 있습니다. 인식한 글자 선택 후 황색 점선 영역을 확인한 뒤 저장하거나 AI에 질문해 주세요.`
             : '인식한 글자도 원본과 대조해 확인해 주세요.'}
-        </p>
+        </Banner>
       )}
       {sessionExpired && <SessionRecovery />}
       {error && (
-        <p
-          className={styles.error}
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+
           role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
       <div className={styles.row}>
         {owned && !historical && (
@@ -284,6 +312,6 @@ export function PdfOcrPanel({
           </Button>
         </div>
       )}
-    </section>
+    </Section>
   );
 }

@@ -1,3 +1,5 @@
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
 import { Panel } from '@/components/ui/layouts/Panel';
 import { Icon } from '@/components/ui/primitives/Icon';
 
@@ -9,8 +11,12 @@ export default function Loading() {
         role='status'
         aria-live='polite'>
         <Icon name='loader-circle' />
-        <h2>학습 기록을 불러오고 있어요.</h2>
-        <p>저장된 자료와 내 기록을 확인하고 있습니다.</p>
+        <Heading level={2}>학습 기록을 불러오고 있어요.</Heading>
+        <Text
+          as='p'
+          display='block'>
+          저장된 자료와 내 기록을 확인하고 있습니다.
+        </Text>
       </div>
     </Panel>
   );

@@ -1,8 +1,16 @@
 'use client';
+import { AlertDialog } from '@astryxdesign/core/AlertDialog';
+import { useConfirmation } from '@/lib/hooks/useConfirmation';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Section } from '@astryxdesign/core/Section';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import {
   deleteExpression,
@@ -30,6 +38,7 @@ export function ExpressionDetail({
   onChange: (expression: Expression) => void;
   onDelete: () => void;
 }) {
+  const confirmation = useConfirmation();
   const [editing, setEditing] = useState(false);
   const [meaning, setMeaning] = useState(expression.meaning);
   const [note, setNote] = useState(expression.note);
@@ -56,9 +65,9 @@ export function ExpressionDetail({
 
   async function remove() {
     if (
-      !window.confirm(
+      !(await confirmation.confirm(
         '이 표현을 개인 표현집에서 삭제할까요? 원본 자료와 기존 연습 기록은 유지됩니다.'
-      )
+      ))
     )
       return;
     setBusy(true);
@@ -76,9 +85,10 @@ export function ExpressionDetail({
   }
 
   return (
-    <section
+    <Section
       className={expressionStyles.detail}
       aria-label='선택한 표현 상세'>
+      <AlertDialog {...confirmation.dialog} />
       <div className={styles.row}>
         <Badge tone='brand'>
           <Icon
@@ -99,8 +109,15 @@ export function ExpressionDetail({
           {editing ? '편집 닫기' : '뜻 · 메모 편집'}
         </Button>
       </div>
-      <h2 className={expressionStyles.title}>{expression.text}</h2>
-      <p className={styles.meta}>
+      <Heading
+        level={2}
+        className={expressionStyles.title}>
+        {expression.text}
+      </Heading>
+      <Text
+        as='p'
+        display='block'
+        className={styles.meta}>
         {
           {
             word: '단어',
@@ -114,14 +131,22 @@ export function ExpressionDetail({
         {expression.explanationVersion !== null
           ? ` · 저장 당시 AI 설명 v${expression.explanationVersion}`
           : ''}
-      </p>
-      <p className={styles.prose}>
+      </Text>
+      <Text
+        as='p'
+        display='block'
+        className={styles.prose}>
         {expression.meaning || '아직 정리한 뜻이 없어요.'}
-      </p>
-      <p className={styles.meta}>처음 만난 문맥</p>
-      <blockquote className={styles.quote}>
+      </Text>
+      <Text
+        as='p'
+        display='block'
+        className={styles.meta}>
+        처음 만난 문맥
+      </Text>
+      <Blockquote className={styles.quote}>
         {expression.source.quote}
-      </blockquote>
+      </Blockquote>
       <Link
         className={styles.link}
         href={materialPaths.source(expression.source)}>
@@ -135,9 +160,9 @@ export function ExpressionDetail({
         <form
           className={styles.stack}
           onSubmit={(event) => void save(event)}>
-          <label className={styles.field}>
-            저장 종류
+          <div className={styles.field}>
             <Select
+              label={contentLabel(<>저장 종류</>)}
               value={kind}
               onChange={(event) => setKind(event.target.value as typeof kind)}>
               <option value='word'>단어</option>
@@ -145,23 +170,23 @@ export function ExpressionDetail({
               <option value='sentence'>문장</option>
               <option value='concept'>개념</option>
             </Select>
-          </label>
-          <label className={styles.field}>
-            내가 정리한 뜻
+          </div>
+          <div className={styles.field}>
             <Input
+              label={contentLabel(<>내가 정리한 뜻</>)}
               maxLength={5000}
               value={meaning}
               onChange={(event) => setMeaning(event.target.value)}
             />
-          </label>
-          <label className={styles.field}>
-            내 메모
+          </div>
+          <div className={styles.field}>
             <TextArea
+              label={contentLabel(<>내 메모</>)}
               maxLength={5000}
               value={note}
               onChange={(event) => setNote(event.target.value)}
             />
-          </label>
+          </div>
           <Button
             disabled={busy}
             loading={busy}>
@@ -170,19 +195,28 @@ export function ExpressionDetail({
         </form>
       ) : (
         <>
-          <p className={styles.meta}>내 메모 · 나만 보기</p>
-          <p className={styles.prose}>
+          <Text
+            as='p'
+            display='block'
+            className={styles.meta}>
+            내 메모 · 나만 보기
+          </Text>
+          <Text
+            as='p'
+            display='block'
+            className={styles.prose}>
             {expression.note || '다시 떠올리고 싶은 문맥을 메모해 보세요.'}
-          </p>
+          </Text>
         </>
       )}
       {sessionExpired && <SessionRecovery />}
       {error && (
-        <p
-          role='alert'
-          className={styles.error}>
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+          role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
       <div className={styles.row}>
         <Button
@@ -222,6 +256,6 @@ export function ExpressionDetail({
           표현 삭제
         </Button>
       </div>
-    </section>
+    </Section>
   );
 }

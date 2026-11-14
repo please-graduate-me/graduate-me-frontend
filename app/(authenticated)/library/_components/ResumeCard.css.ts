@@ -69,45 +69,8 @@ export const information = style({
   gap: 10,
 });
 
-globalStyle('.' + information + ' h3', {
-  display: '-webkit-box',
-  WebkitBoxOrient: 'vertical',
-  WebkitLineClamp: 2,
-  overflow: 'hidden',
-  margin: 0,
-  minHeight: 44,
-  fontSize: vars.fontSize.small,
-  lineHeight: vars.lineHeight.small,
-  fontWeight: 500,
-  overflowWrap: 'anywhere',
-});
-
-globalStyle('.' + information + ' h3 a', {
-  color: vars.color.ink,
-  textDecoration: 'none',
-});
-
-globalStyle('.' + information + ' p', {
-  color: vars.color.muted,
-  fontSize: vars.fontSize.caption,
-  margin: 0,
-});
-
-/** 진행률은 정확한 수치와 같은 비율로 표시한다. */
-export const progress = style({
-  height: 4,
-  marginTop: 18,
-  borderRadius: 4,
-  background: vars.color.neutral,
-  overflow: 'hidden',
-});
-
-globalStyle('.' + progress + ' span', {
-  display: 'block',
-  height: '100%',
-  background: vars.color.accent,
-  borderRadius: 4,
-});
+/** 실제 진행 표시의 외형은 Astryx에 맡기고 간격만 유지한다. */
+export const progress = style({ marginTop: 18 });
 
 /** 자료에서 확인한 실제 영상 썸네일을 표지 비율 안에 표시한다. */
 export const thumbnail = style({

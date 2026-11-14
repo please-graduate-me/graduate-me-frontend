@@ -1,8 +1,15 @@
 'use client';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Section } from '@astryxdesign/core/Section';
+import { Card } from '@astryxdesign/core/Card';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import { getLearningInsights } from '@/domains/learning/api/insights';
 import type { LearningInsights } from '@/domains/learning/model/insights';
 import { formatDate } from '@/domains/learning/lib/format';
@@ -44,19 +51,22 @@ export function LearningInsightsPanel({
     <div className={styles.page}>
       <div className={styles.heading}>
         <div>
-          <h1>내 학습 분석</h1>
-          <p className={styles.description}>
+          <Heading level={1}>내 학습 분석</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             실제 받아쓰기 답안에서 반복되는 어려움과 복습할 구절을 확인하세요.
-          </p>
+          </Text>
         </div>
         <Badge tone='neutral'>개인 기록 · 규칙 기반 관찰</Badge>
       </div>
       <form
         className={styles.filters}
         onSubmit={(event) => void refresh(event)}>
-        <label className={styles.field}>
-          학습 언어
+        <div className={styles.field}>
           <Select
+            label={contentLabel(<>학습 언어</>)}
             value={language}
             disabled={busy}
             onChange={(event) =>
@@ -65,10 +75,10 @@ export function LearningInsightsPanel({
             <option value='en'>영어</option>
             <option value='th'>태국어</option>
           </Select>
-        </label>
-        <label className={styles.field}>
-          집계 기간
+        </div>
+        <div className={styles.field}>
           <Select
+            label={contentLabel(<>집계 기간</>)}
             value={days}
             disabled={busy}
             onChange={(event) => setDays(Number(event.target.value))}>
@@ -80,41 +90,52 @@ export function LearningInsightsPanel({
               </option>
             ))}
           </Select>
-        </label>
+        </div>
         <Button loading={busy}>조건 적용</Button>
       </form>
       {sessionExpired && <SessionRecovery />}
       {error && (
-        <p
-          className={styles.error}
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+
           role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
-      <section className={styles.panel}>
-        <h2>
+      <Section className={styles.panel}>
+        <Heading level={2}>
           {value.language === 'en' ? '영어' : '태국어'} · 최근 {value.days}일
-        </h2>
-        <p>
+        </Heading>
+        <Text
+          as='p'
+          display='block'>
           {formatDate(value.since)}부터 · 학습 {value.daysStudied}일 · 전체{' '}
           {value.sampleSize}회 제출
-        </p>
-        <p>
+        </Text>
+        <Text
+          as='p'
+          display='block'>
           도움 없는 시도 {value.unassistedSamples}회 · 정답 {value.correct}회 ·
           정답률{' '}
           {value.accuracy === null
             ? '계산할 기록 없음'
             : `${Math.round(value.accuracy)}%`}
-        </p>
-        <p className={styles.meta}>
+        </Text>
+        <Text
+          as='p'
+          display='block'
+          className={styles.meta}>
           {value.basis} · 도움 사용 제외 {value.excludedAssisted}회 · 분류 기준{' '}
           {value.classificationVersion}
-        </p>
+        </Text>
         {value.insufficientData && (
-          <p className={styles.notice}>
+          <Banner
+            status='info'
+            title='안내'>
             아직 근거가 적어 참고 수준으로 표시합니다. 능력이나 학습 원인을
             확정하는 진단이 아닙니다.
-          </p>
+          </Banner>
         )}
         <div className={styles.row}>
           {value.categories.map((item) => (
@@ -125,9 +146,9 @@ export function LearningInsightsPanel({
             </Badge>
           ))}
         </div>
-      </section>
-      <section>
-        <h2>실제 오답에서 다시 듣기</h2>
+      </Section>
+      <Section>
+        <Heading level={2}>실제 오답에서 다시 듣기</Heading>
         {!value.review.length ? (
           <EmptyState
             title='복습할 오답 근거가 없어요'
@@ -136,49 +157,62 @@ export function LearningInsightsPanel({
           />
         ) : (
           value.review.map((item) => (
-            <article
+            <Card
               className={styles.message}
               key={item.evidence.id}>
               <div className={styles.row}>
-                <h3>{item.evidence.title}</h3>
+                <Heading level={3}>{item.evidence.title}</Heading>
                 <Badge tone='warning'>{item.category}</Badge>
               </div>
-              <p className={styles.meta}>
+              <Text
+                as='p'
+                display='block'
+                className={styles.meta}>
                 시도 {item.attempts}회 중 오답 {item.mistakes}회 · 원문 v
                 {item.evidence.sourceVersion} ·{' '}
                 {formatDate(item.evidence.createdAt)}
-              </p>
-              <p>
+              </Text>
+              <Text
+                as='p'
+                display='block'>
                 당시 답안:{' '}
                 {Array.isArray(item.evidence.answer)
                   ? item.evidence.answer.join(' / ')
                   : item.evidence.answer || '(미입력)'}
-              </p>
-              <blockquote className={styles.quote}>
+              </Text>
+              <Blockquote className={styles.quote}>
                 {item.evidence.sourceText}
-              </blockquote>
+              </Blockquote>
               <Link
                 className={styles.link}
                 href={item.href}>
                 해당 원문에서 다시 듣고 복습하기 ↗
               </Link>
-            </article>
+            </Card>
           ))
         )}
-      </section>
-      <section className={styles.panel}>
-        <h2>학년별 권장 로드맵</h2>
-        <p className={styles.notice}>{value.roadmapBasis}</p>
+      </Section>
+      <Section className={styles.panel}>
+        <Heading level={2}>학년별 권장 로드맵</Heading>
+        <Banner
+          status='info'
+          title='안내'>
+          {value.roadmapBasis}
+        </Banner>
         {value.roadmap.map((item) => (
-          <article key={item.year}>
-            <h3>
+          <Card key={item.year}>
+            <Heading level={3}>
               {item.year}학년 · {item.title}
-            </h3>
-            <p>{item.goal}</p>
-          </article>
+            </Heading>
+            <Text
+              as='p'
+              display='block'>
+              {item.goal}
+            </Text>
+          </Card>
         ))}
         <Link href='/settings'>학습 언어와 목표 설정</Link>
-      </section>
+      </Section>
     </div>
   );
 }

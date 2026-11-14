@@ -1,4 +1,11 @@
 'use client';
+import { List, ListItem } from '@astryxdesign/core/List';
+
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Section } from '@astryxdesign/core/Section';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useRef, useState } from 'react';
@@ -95,19 +102,22 @@ export function RecommendedVideos({ initial }: { initial: Recommendations }) {
     <div className={styles.page}>
       <div className={styles.heading}>
         <div>
-          <h1>추천 영상</h1>
-          <p className={styles.description}>
+          <Heading level={1}>추천 영상</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             관심과 학습 기록을 참고해 이용 가능한 준비 자료를 골랐어요.
-          </p>
+          </Text>
         </div>
         <ButtonLink href='/materials?add=1'>관심 영상 직접 등록</ButtonLink>
       </div>
       <form
         className={styles.filters}
         onSubmit={(event) => void refresh(event)}>
-        <label className={styles.field}>
-          학습 언어
+        <div className={styles.field}>
           <Select
+            label={contentLabel(<>학습 언어</>)}
             value={language}
             disabled={busy}
             onChange={(event) =>
@@ -116,7 +126,7 @@ export function RecommendedVideos({ initial }: { initial: Recommendations }) {
             <option value='en'>영어</option>
             <option value='th'>태국어</option>
           </Select>
-        </label>
+        </div>
         <Button loading={busy}>추천 조회</Button>
         <Button
           type='button'
@@ -133,42 +143,61 @@ export function RecommendedVideos({ initial }: { initial: Recommendations }) {
       </form>
       {sessionExpired && <SessionRecovery />}
       {error && (
-        <p
-          className={styles.error}
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+
           role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
-      <p className={styles.notice}>
+      <Banner
+        status='info'
+        title='안내'>
         {value.basis} · 저장 표현 {value.savedExpressionCount}개
-      </p>
-      <p className={styles.meta}>
+      </Banner>
+      <Text
+        as='p'
+        display='block'
+        className={styles.meta}>
         AI 추천은 최근 30일의 오답·저장 표현·메모·질문을 분석하며 AI 사용 한도를
         소모합니다.
-      </p>
+      </Text>
       {value.personalization && (
-        <section className={styles.panel}>
-          <h2>내 학습 기록 분석</h2>
-          <p>{value.personalization.summary}</p>
-          <ul>
+        <Section className={styles.panel}>
+          <Heading level={2}>내 학습 기록 분석</Heading>
+          <Text
+            as='p'
+            display='block'>
+            {value.personalization.summary}
+          </Text>
+          <List>
             {value.personalization.focusAreas.map((focus) => (
-              <li key={focus}>{focus}</li>
+              <ListItem
+                key={focus}
+                label={<>{focus}</>}
+              />
             ))}
-          </ul>
-          <p className={styles.meta}>
+          </List>
+          <Text
+            as='p'
+            display='block'
+            className={styles.meta}>
             학습 근거 {value.personalization.evidenceCount}건 ·{' '}
             {new Date(value.personalization.generatedAt).toLocaleString(
               'ko-KR'
             )}{' '}
             분석
-          </p>
-        </section>
+          </Text>
+        </Section>
       )}
       {value.insufficientCandidates && (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           현재 선택 언어의 추천 후보가 부족합니다. 자료 보관함에서 고르거나 공개
           URL을 직접 등록할 수 있습니다.
-        </p>
+        </Banner>
       )}
       {!value.items.length ? (
         <EmptyState
