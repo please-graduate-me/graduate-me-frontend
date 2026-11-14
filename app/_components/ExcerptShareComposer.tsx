@@ -1,4 +1,10 @@
 'use client';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+
+import { Banner } from '@astryxdesign/core/Banner';
+
+import { Heading } from '@astryxdesign/core/Heading';
+
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
 import { useEffect, useState } from 'react';
@@ -128,10 +134,11 @@ export function ExcerptShareComposer({
       <form
         className={styles.stack}
         onSubmit={(event) => void create(event)}>
-        <blockquote className={styles.quote}>{source.quote}</blockquote>
-        <label className={styles.field}>
-          공개 대상
+        <Blockquote className={styles.quote}>{source.quote}</Blockquote>
+        <div className={styles.field}>
           <Select
+            label='공개 대상'
+
             value={visibility}
             disabled={busy}
             onChange={(event) =>
@@ -140,31 +147,35 @@ export function ExcerptShareComposer({
             <option value='accounts'>지정한 계정만</option>
             <option value='link'>링크를 가진 로그인 사용자</option>
           </Select>
-        </label>
+        </div>
         {visibility === 'accounts' && (
-          <label className={styles.field}>
-            받는 사람의 계정 ID
+          <div className={styles.field}>
             <Input
+              label='받는 사람의 계정 ID'
+
               value={recipients}
               maxLength={10000}
               required
               onChange={(event) => setRecipients(event.target.value)}
               placeholder='계정 ID를 쉼표로 구분해 입력'
             />
-          </label>
+          </div>
         )}
-        <p className={styles.notice}>
-          공개 내용: 선택한 발췌·자료 제목·페이지 또는 영상 위치
-          <br />
-          공개하지 않는 내용: 원본 파일·개인 메모·질문·답안·전체 대화
-        </p>
-        <label className={styles.row}>
-          <Checkbox
-            checked={confirmed}
-            onChange={(event) => setConfirmed(event.target.checked)}
-          />
-          발췌와 공개 대상을 확인했습니다.
-        </label>
+        <Banner
+          status='warning'
+          title={
+            <>
+              공개 내용: 선택한 발췌·자료 제목·페이지 또는 영상 위치
+              <br />
+              공개하지 않는 내용: 원본 파일·개인 메모·질문·답안·전체 대화
+            </>
+          }
+        />
+        <Checkbox
+          label={'발췌와 공개 대상을 확인했습니다.'}
+          checked={confirmed}
+          onChange={(event) => setConfirmed(event.target.checked)}
+        />
         <div>
           <Button
             loading={busy}
@@ -193,15 +204,15 @@ export function ExcerptShareComposer({
         )}
         {sessionExpired && <SessionRecovery />}
         {error && (
-          <p
-            className={styles.error}
-            role='alert'>
-            {error}
-          </p>
+          <Banner
+            status='error'
+            role='alert'
+            title={<>{error}</>}
+          />
         )}
       </form>
       <div className={styles.stack}>
-        <h3>이 발췌의 공유 링크</h3>
+        <Heading level={3}>이 발췌의 공유 링크</Heading>
         {items.map((item) => (
           <div
             className={styles.row}

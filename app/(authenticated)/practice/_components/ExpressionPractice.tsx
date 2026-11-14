@@ -1,7 +1,13 @@
 'use client';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Section } from '@astryxdesign/core/Section';
 import { notifyLearningReward } from '@/domains/growth/lib/rewardEvents';
 import { useRef, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import { savePracticeAttempt } from '@/domains/learning/api/history';
 import { materialPaths } from '@/domains/materials/config/paths';
@@ -67,18 +73,23 @@ export function ExpressionPractice({
     <div className={styles.page}>
       <div className={styles.heading}>
         <div>
-          <h1>연습 · 복습</h1>
-          <p className={styles.description}>
+          <Heading level={1}>연습 · 복습</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             내가 저장한 표현을 다시 떠올려 보세요.
-          </p>
+          </Text>
         </div>
         <Badge tone='brand'>표현 카드 · 자가점검</Badge>
       </div>
-      <p className={styles.notice}>
+      <Banner
+        status='info'
+        title='안내'>
         이 표현 카드는 자동 채점과 별도의 자가점검입니다. 원문과 저장한 뜻을
         비교해 직접 확인한 결과가 기록됩니다. AI 적용 연습은 위의 저장 문제를
         이용해 주세요.
-      </p>
+      </Banner>
       {!expressions.length ? (
         <EmptyState
           icon='repeat-2'
@@ -91,7 +102,7 @@ export function ExpressionPractice({
           </Link>
         </EmptyState>
       ) : !expression ? (
-        <section className={styles.panel}>
+        <Section className={styles.panel}>
           <Badge tone='success'>
             <Icon
               name='check-check'
@@ -99,11 +110,14 @@ export function ExpressionPractice({
             />
             자가점검 완료
           </Badge>
-          <h2>{expressions.length}개 표현을 복습했어요.</h2>
-          <p className={styles.prose}>
+          <Heading level={2}>{expressions.length}개 표현을 복습했어요.</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.prose}>
             기억났어요 {correct}개 · 다시 볼래요 {expressions.length - correct}
             개
-          </p>
+          </Text>
           <div className={styles.row}>
             <ButtonLink
               href='/history'
@@ -117,44 +131,56 @@ export function ExpressionPractice({
               표현집으로
             </ButtonLink>
           </div>
-        </section>
+        </Section>
       ) : (
-        <section className={styles.panel}>
+        <Section className={styles.panel}>
           <div className={styles.row}>
             <Badge tone='neutral'>
               {index + 1} / {expressions.length}
             </Badge>
             <span className={styles.meta}>이 표현의 뜻을 떠올려 보세요.</span>
           </div>
-          <h2 className={styles.expressionTitle}>{expression.text}</h2>
-          <label className={styles.field}>
-            떠오르는 뜻과 문맥
+          <Heading
+            level={2}
+            className={styles.expressionTitle}>
+            {expression.text}
+          </Heading>
+          <div className={styles.field}>
             <TextArea
+              label={contentLabel(<>떠오르는 뜻과 문맥</>)}
               value={answer}
               disabled={revealed || busy}
               maxLength={5000}
               onChange={(event) => setAnswer(event.target.value)}
               placeholder='어떤 상황에서 쓸 수 있었나요?'
             />
-          </label>
+          </div>
           {!revealed ? (
             <Button onClick={() => setRevealed(true)}>뜻과 원문 확인</Button>
           ) : (
             <>
-              <h3>내가 저장한 뜻</h3>
-              <p className={styles.prose}>
+              <Heading level={3}>내가 저장한 뜻</Heading>
+              <Text
+                as='p'
+                display='block'
+                className={styles.prose}>
                 {expression.meaning ||
                   '저장된 뜻이 없어요. 아래 원문을 읽고 직접 확인해 주세요.'}
-              </p>
-              <blockquote className={styles.quote}>
+              </Text>
+              <Blockquote className={styles.quote}>
                 {expression.source.quote}
-              </blockquote>
+              </Blockquote>
               <Link
                 href={materialPaths.source(expression.source)}
                 className={styles.link}>
                 원문에서 다시 보기 ↗
               </Link>
-              <p className={styles.meta}>스스로 확인한 결과를 선택해 주세요.</p>
+              <Text
+                as='p'
+                display='block'
+                className={styles.meta}>
+                스스로 확인한 결과를 선택해 주세요.
+              </Text>
               <div className={styles.row}>
                 <Button
                   disabled={busy}
@@ -172,13 +198,15 @@ export function ExpressionPractice({
             </>
           )}
           {error && (
-            <p
-              className={styles.error}
+            <Banner
+              status='error'
+              title='확인이 필요해요'
+
               role='alert'>
               {error}
-            </p>
+            </Banner>
           )}
-        </section>
+        </Section>
       )}
     </div>
   );

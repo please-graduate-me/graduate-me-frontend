@@ -1,4 +1,8 @@
 'use client';
+import { Banner } from '@astryxdesign/core/Banner';
+
+import { Text } from '@astryxdesign/core/Text';
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/primitives/Button';
 import { setVideoLike, setVideoFavorite } from '@/domains/videos/api/videos';
@@ -52,9 +56,11 @@ export function VideoInfo({
 
   return (
     <div className={styles.container}>
-      <p className={styles.description}>
+      <Text
+        as='p'
+        className={styles.description}>
         YouTube 카테고리: {video.category ?? '미분류'}
-      </p>
+      </Text>
       <Button
         variant='secondary'
         aria-pressed={reaction.liked}
@@ -62,9 +68,11 @@ export function VideoInfo({
         onClick={() => void toggleLike()}>
         {reaction.liked ? '좋아요 취소' : '좋아요'} · {reaction.likeCount}
       </Button>
-      <p className={styles.description}>
+      <Text
+        as='p'
+        className={styles.description}>
         이 서비스에서 학습에 도움이 된 영상에 좋아요를 남겨 주세요.
-      </p>
+      </Text>
       <Button
         variant='secondary'
         aria-pressed={favorite}
@@ -72,10 +80,18 @@ export function VideoInfo({
         onClick={() => void toggleFavorite()}>
         {favorite ? '관심 영상 해제' : '관심 영상으로 표시'}
       </Button>
-      <p className={styles.description}>
+      <Text
+        as='p'
+        className={styles.description}>
         관심 영상 표시는 내 목록에서만 사용합니다.
-      </p>
-      {error && <p role='alert'>{error}</p>}
+      </Text>
+      {error && (
+        <Banner
+          status='error'
+          role='alert'
+          title={<>{error}</>}
+        />
+      )}
     </div>
   );
 }

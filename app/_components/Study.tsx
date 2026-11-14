@@ -1,4 +1,15 @@
 'use client';
+import { AlertDialog } from '@astryxdesign/core/AlertDialog';
+import { Card } from '@astryxdesign/core/Card';
+
+import { Banner } from '@astryxdesign/core/Banner';
+
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Input } from '@/components/ui/primitives/Input';
+import { Collapsible } from '@astryxdesign/core/Collapsible';
+
+import { useConfirmation } from '@/lib/hooks/useConfirmation';
 import { notifyLearningReward } from '@/domains/growth/lib/rewardEvents';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
@@ -8,7 +19,7 @@ import { Button } from '@/components/ui/primitives/Button';
 import { Panel } from '@/components/ui/layouts/Panel';
 import * as styles from './Study.css';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import type {
   Lesson,
   SegmentState,
@@ -50,6 +61,7 @@ export function Study({
   demo?: boolean;
   selection?: SourceInput;
 }) {
+  const confirmation = useConfirmation();
   const router = useRouter();
   const { video } = initial;
   const [segments, setSegments] = useState(initial.segments);
@@ -440,9 +452,9 @@ export function Study({
     if (busyRef.current) return;
     pause();
     if (
-      !window.confirm(
+      !(await confirmation.confirm(
         '이번 학습의 초안·정답 보기·현재 진도를 초기화하고 첫 구절부터 다시 시작할까요? 과거 제출 답안과 당시 근거 버전은 이력에 보존합니다.'
-      )
+      ))
     )
       return;
 
@@ -648,6 +660,7 @@ export function Study({
 
   return (
     <div className={styles.study}>
+      <AlertDialog {...confirmation.dialog} />
       <header className={styles.header}>
         <Link
           href={videoPaths.library}
@@ -656,8 +669,8 @@ export function Study({
           <Icon name='arrow-left' />
         </Link>
         <div className={styles.headerTitle}>
-          <h1>{video.title}</h1>
-          <p>영상 학습 · {segments.length}개 구절</p>
+          <Heading level={1}>{video.title}</Heading>
+          <Text as='p'>영상 학습 · {segments.length}개 구절</Text>
         </div>
         <Badge tone='brand'>
           <Icon
@@ -674,81 +687,96 @@ export function Study({
       </header>
       {(sessionExpired || watch.sessionExpired) && <SessionRecovery />}
       {watch.error && (
-        <div
-          className={styles.error}
-          role='alert'>
-          재생 위치 저장: {watch.error}
-          <Button
-            size='small'
-            variant='secondary'
-            onClick={() => void watch.resume()}>
-            저장된 위치 확인 후 이 위치 저장
-          </Button>
-        </div>
+        <Banner
+          status='error'
+          role='alert'
+          title={
+            <>
+              재생 위치 저장: {watch.error}
+              <Button
+                size='small'
+                variant='secondary'
+                onClick={() => void watch.resume()}>
+                저장된 위치 확인 후 이 위치 저장
+              </Button>
+            </>
+          }
+        />
       )}
       {demo && (
-        <p className={styles.notice}>
-          체험 모드 · 답안과 진도는 페이지를 떠나면 사라집니다.
-        </p>
+        <Banner
+          status='warning'
+          title={<>체험 모드 · 답안과 진도는 페이지를 떠나면 사라집니다.</>}
+        />
       )}
       {preparation && (
-        <div className={styles.notice}>
-          <strong>자료 준비 상태</strong>
-          <p>
-            원문 전사:{' '}
-            {preparation.transcription === 'ready'
-              ? '완료'
-              : preparation.transcription === 'failed'
-                ? '실패'
-                : '준비 중'}{' '}
-            · 저장 번역:{' '}
-            {preparation.translation === 'ready'
-              ? '완료'
-              : preparation.translation === 'failed'
-                ? '실패'
-                : '준비 중'}{' '}
-            · 빈칸 후보:{' '}
-            {preparation.blanks === 'ready'
-              ? '완료'
-              : preparation.blanks === 'failed'
-                ? '실패'
-                : '준비 중'}
-          </p>
-          {preparation.error && <p>{preparation.error}</p>}
-          {!blankAvailable && (
-            <p>
-              빈칸 후보가 준비되지 않아 전체 받아쓰기와 스크립트를 이용할 수
-              있습니다. 단계 실패는 자동 재시도하지 않습니다.
-            </p>
-          )}
-          <Button
-            size='small'
-            variant='ghost'
-            disabled={busy}
-            onClick={() => void refreshPreparation()}>
-            저장된 준비 상태 조회
-          </Button>
-        </div>
+        <Banner
+          status='warning'
+          title={
+            <>
+              <strong>자료 준비 상태</strong>
+              <Text as='p'>
+                원문 전사:{' '}
+                {preparation.transcription === 'ready'
+                  ? '완료'
+                  : preparation.transcription === 'failed'
+                    ? '실패'
+                    : '준비 중'}{' '}
+                · 저장 번역:{' '}
+                {preparation.translation === 'ready'
+                  ? '완료'
+                  : preparation.translation === 'failed'
+                    ? '실패'
+                    : '준비 중'}{' '}
+                · 빈칸 후보:{' '}
+                {preparation.blanks === 'ready'
+                  ? '완료'
+                  : preparation.blanks === 'failed'
+                    ? '실패'
+                    : '준비 중'}
+              </Text>
+              {preparation.error && <Text as='p'>{preparation.error}</Text>}
+              {!blankAvailable && (
+                <Text as='p'>
+                  빈칸 후보가 준비되지 않아 전체 받아쓰기와 스크립트를 이용할 수
+                  있습니다. 단계 실패는 자동 재시도하지 않습니다.
+                </Text>
+              )}
+              <Button
+                size='small'
+                variant='ghost'
+                disabled={busy}
+                onClick={() => void refreshPreparation()}>
+                저장된 준비 상태 조회
+              </Button>
+            </>
+          }
+        />
       )}
       {error && (
-        <div
-          className={styles.error}
-          role='alert'>
-          {error}
-          {saveStatus === '저장 실패' && (
-            <Button
-              variant='secondary'
-              onClick={() => void perform(async () => {})}>
-              저장 다시 시도
-            </Button>
-          )}
-        </div>
+        <Banner
+          status='error'
+          role='alert'
+          title={
+            <>
+              {error}
+              {saveStatus === '저장 실패' && (
+                <Button
+                  variant='secondary'
+                  onClick={() => void perform(async () => {})}>
+                  저장 다시 시도
+                </Button>
+              )}
+            </>
+          }
+        />
       )}
       <div className={styles.studyGrid}>
         <main className={styles.main}>
           {!complete && (
             <>
-              <section
+              <Card
+                role='region'
                 className={styles.playerPanel}
                 aria-label='영상 플레이어'>
                 <div
@@ -757,16 +785,17 @@ export function Study({
                   ref={mount}
                 />
                 {playerError && (
-                  <p
+                  <Banner
+                    status='error'
                     role='alert'
-                    className={styles.error}>
-                    {playerError}
-                  </p>
+                    title={<>{playerError}</>}
+                  />
                 )}
                 {blocked && (
-                  <p className={styles.notice}>
-                    재생 버튼을 눌러 구절을 들어 주세요.
-                  </p>
+                  <Banner
+                    status='warning'
+                    title={<>재생 버튼을 눌러 구절을 들어 주세요.</>}
+                  />
                 )}
                 <div className={styles.playbackToolbar}>
                   <IconButton
@@ -825,22 +854,21 @@ export function Study({
                       </option>
                     ))}
                   </Select>
-                  <label className={styles.repeatControl}>
-                    <Switch
-                      checked={settings.autoReplay}
-                      disabled={savingSettings}
-                      onChange={(event) =>
-                        void changeSettings({
-                          ...settings,
-                          autoReplay: event.target.checked,
-                        })
-                      }
-                    />
-                    자동 반복
-                  </label>
+                  <Switch
+                    label={'자동 반복'}
+                    checked={settings.autoReplay}
+                    disabled={savingSettings}
+                    onChange={(event) =>
+                      void changeSettings({
+                        ...settings,
+                        autoReplay: event.target.checked,
+                      })
+                    }
+                  />
                 </div>
-              </section>
-              <section
+              </Card>
+              <Card
+                role='region'
                 className={styles.answerPanel}
                 aria-label='받아쓰기'>
                 <div className={styles.answerHeading}>
@@ -881,25 +909,33 @@ export function Study({
                       void navigate(index, next);
                     }}
                   />
-                  <button
+                  <Button
                     type='button'
-                    className={styles.scriptTab}
+                    variant={scriptView ? 'primary' : 'ghost'}
                     aria-pressed={scriptView}
                     disabled={busy}
                     onClick={() => void openScript()}>
                     스크립트
-                  </button>
+                  </Button>
                 </div>
                 {scriptView ? (
-                  <div className={styles.scriptReading}>
-                    <p className={styles.muted}>
+                  <div
+                    className={styles.scriptReading}
+                    lang={video.language ?? 'en'}>
+                    <Text
+                      as='p'
+                      className={styles.muted}>
                       정답을 확인한 구절은 학습 기록에 표시됩니다.
-                    </p>
+                    </Text>
                     {segments.map((item) => (
                       <div key={item.id}>
-                        <p lang={video.language ?? 'en'}>{item.text}</p>
+                        <Text as='p'>{item.text}</Text>
                         {item.translation && (
-                          <p className={styles.muted}>{item.translation}</p>
+                          <Text
+                            as='p'
+                            className={styles.muted}>
+                            {item.translation}
+                          </Text>
                         )}
                       </div>
                     ))}
@@ -939,6 +975,7 @@ export function Study({
                       />
                     ) : (
                       <div
+                        lang={video.language ?? 'en'}
                         className={styles.blankSentence}
                         ref={blanksContainer}
                         data-answer>
@@ -952,7 +989,8 @@ export function Study({
                                 {video.language === 'th' ? '' : ' '}
                               </span>
                             ) : (
-                              <input
+                              <Input
+                                className={styles.blankInput}
                                 key={wordIndex}
                                 aria-label={`빈칸 ${position + 1}`}
                                 maxLength={answerLimits.blank}
@@ -1012,9 +1050,10 @@ export function Study({
                   </form>
                 )}
                 {mode === 'blank' && !scriptView && (
-                  <label className={styles.small}>
-                    빈칸 비율 · 저장 후보 기준
+                  <div>
                     <Select
+                      label='빈칸 비율 · 저장 후보 기준'
+
                       value={blankRatio}
                       disabled={busy || demo}
                       onChange={(event) =>
@@ -1041,56 +1080,72 @@ export function Study({
                     <br />
                     짧은 구절과 후보 수에 따라 실제 비율이 달라질 수 있습니다.
                     비율별 답안은 따로 보존하며 선택한 비율의 답안을 복원합니다.
-                  </label>
+                  </div>
                 )}
                 {hint && (
-                  <p className={styles.notice}>
-                    표현 힌트: {hint} · 도움 사용으로 기록됩니다.
-                  </p>
+                  <Banner
+                    status='warning'
+                    title={<>표현 힌트: {hint} · 도움 사용으로 기록됩니다.</>}
+                  />
                 )}
                 {feedback && (
-                  <div
-                    className={[
-                      styles.notice,
-                      feedback.correct ? styles.success : '',
-                    ].join(' ')}
-                    role='status'>
-                    {feedback.correct ? (
-                      '정답이에요. 다음 구절로 이동했어요.'
-                    ) : (
+                  <Banner
+                    status={feedback.correct ? 'success' : 'warning'}
+                    role='status'
+                    title={
                       <>
-                        <p>다른 부분을 확인하고 다시 들어보세요.</p>
-                        <div className={styles.differences}>
-                          {feedback.differences.map((diff, i) => (
-                            <span
-                              key={i}
-                              className={[styles.diff, styles[diff.kind]].join(
-                                ' '
-                              )}>
-                              {diff.kind === 'match'
-                                ? diff.expected
-                                : diff.kind === 'missing'
-                                  ? `누락: ${diff.expected}`
-                                  : diff.kind === 'extra'
-                                    ? `추가: ${diff.actual}`
-                                    : `${diff.actual} → ${diff.expected}`}
-                            </span>
-                          ))}
-                        </div>
+                        {feedback.correct ? (
+                          '정답이에요. 다음 구절로 이동했어요.'
+                        ) : (
+                          <>
+                            <Text as='p'>
+                              다른 부분을 확인하고 다시 들어보세요.
+                            </Text>
+                            <div className={styles.differences}>
+                              {feedback.differences.map((diff, i) => (
+                                <span
+                                  key={i}
+                                  className={[
+                                    styles.diff,
+                                    styles[diff.kind],
+                                  ].join(' ')}>
+                                  {diff.kind === 'match'
+                                    ? diff.expected
+                                    : diff.kind === 'missing'
+                                      ? `누락: ${diff.expected}`
+                                      : diff.kind === 'extra'
+                                        ? `추가: ${diff.actual}`
+                                        : `${diff.actual} → ${diff.expected}`}
+                                </span>
+                              ))}
+                            </div>
+                          </>
+                        )}
                       </>
-                    )}
-                  </div>
+                    }
+                  />
                 )}
                 {!scriptView && (state?.revealed || scriptViewed) && (
-                  <div className={styles.notice}>
-                    <strong>정답</strong>
-                    <p lang={video.language ?? 'en'}>{segment.text}</p>
-                    {segment.translation && <p>{segment.translation}</p>}
-                    <p className={styles.small}>
-                      음성 인식 결과에 오류가 있으면 이 구절을 건너뛰거나
-                      커뮤니티에 질문할 수 있어요.
-                    </p>
-                  </div>
+                  <Banner
+                    status='warning'
+                    title={
+                      <>
+                        <strong>정답</strong>
+                        <div lang={video.language ?? 'en'}>
+                          <Text as='p'>{segment.text}</Text>
+                        </div>
+                        {segment.translation && (
+                          <Text as='p'>{segment.translation}</Text>
+                        )}
+                        <Text
+                          as='p'
+                          className={styles.small}>
+                          음성 인식 결과에 오류가 있으면 이 구절을 건너뛰거나
+                          커뮤니티에 질문할 수 있어요.
+                        </Text>
+                      </>
+                    }
+                  />
                 )}
                 <div className={styles.secondaryActions}>
                   <Button
@@ -1129,7 +1184,7 @@ export function Study({
                     />
                   </div>
                 </div>
-              </section>
+              </Card>
             </>
           )}
           {complete && (
@@ -1148,11 +1203,11 @@ export function Study({
                   ? '학습 완료'
                   : '끝 위치에 도착 · 미완료 구절 있음'}
               </Badge>
-              <h2>마지막 구절까지 도착했어요.</h2>
-              <p>
+              <Heading level={2}>마지막 구절까지 도착했어요.</Heading>
+              <Text as='p'>
                 {mode === 'full' ? '문장 전체' : '빈칸 채우기'} · 전체{' '}
                 {segments.length}구절
-              </p>
+              </Text>
               <div className={styles.stats}>
                 <span>
                   정답 <strong>{correct}</strong>
@@ -1164,7 +1219,11 @@ export function Study({
                   미완료 <strong>{segments.length - correct}</strong>
                 </span>
               </div>
-              <p className={styles.muted}>정답을 확인한 구절: {revealed}개</p>
+              <Text
+                as='p'
+                className={styles.muted}>
+                정답을 확인한 구절: {revealed}개
+              </Text>
               <Button
                 disabled={busy}
                 onClick={() => void navigate(0)}>
@@ -1180,8 +1239,10 @@ export function Study({
               </Button>
             </Panel>
           )}
-          <details className={styles.learningDetails}>
-            <summary>학습 설정과 단축키</summary>
+          <Collapsible
+            className={styles.learningDetails}
+            defaultIsOpen={false}
+            trigger={<>학습 설정과 단축키</>}>
             <PlaybackStatus
               playing={playing}
               waiting={waiting}
@@ -1199,10 +1260,12 @@ export function Study({
               ready={playerReady}
               onChange={(next) => void changeSettings(next)}
             />
-            <p className={styles.small}>
+            <Text
+              as='p'
+              className={styles.small}>
               Ctrl+R: 다시 듣기 · 입력창 밖 Space: 재생 / 일시정지 · Shift+←:
               2초 전 · Enter: 제출
-            </p>
+            </Text>
             <SegmentSelect
               segments={segments}
               states={currentStates}
@@ -1212,26 +1275,30 @@ export function Study({
               disabled={busy}
               onNavigate={(next) => void navigate(next)}
             />
-          </details>
-          <details className={styles.learningDetails}>
-            <summary>영상 정보와 학습 기록 관리</summary>
+          </Collapsible>
+          <Collapsible
+            className={styles.learningDetails}
+            defaultIsOpen={false}
+            trigger={<>영상 정보와 학습 기록 관리</>}>
             {!demo && (
               <VideoInfo
                 video={video}
                 initialFavorite={initial.progress.favorite}
               />
             )}
-            <p className={styles.muted}>
+            <Text
+              as='p'
+              className={styles.muted}>
               현재 학습 상태와 진도를 초기화하고 새 회차를 시작합니다. 과거 제출
               당시의 답안과 근거 버전은 보존합니다.
-            </p>
+            </Text>
             <Button
               variant='danger'
               disabled={busy}
               onClick={() => void reset()}>
               이 영상 기록 초기화
             </Button>
-          </details>
+          </Collapsible>
         </main>
         <VideoScript
           selection={selection}

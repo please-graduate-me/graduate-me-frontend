@@ -1,8 +1,15 @@
 'use client';
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Section } from '@astryxdesign/core/Section';
+import { Text } from '@astryxdesign/core/Text';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Card } from '@astryxdesign/core/Card';
 import { notifyLearningReward } from '@/domains/growth/lib/rewardEvents';
 import { aiProviderLabel } from '@/domains/ai/lib/providerLabel';
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import type { Exercise, ExerciseResult } from '@/domains/ai/model/contracts';
 import {
   answerExercise,
@@ -12,7 +19,7 @@ import {
 } from '@/domains/ai/api/learning';
 import { materialPaths } from '@/domains/materials/config/paths';
 import { sourceLabel } from '@/domains/learning/lib/format';
-import { Radio } from '@/components/ui/primitives/Radio';
+import { RadioList, RadioListItem } from '@astryxdesign/core/RadioList';
 import { Button } from '@/components/ui/primitives/Button';
 import { TextArea } from '@/components/ui/primitives/TextArea';
 import { Badge } from '@/components/ui/primitives/Badge';
@@ -210,10 +217,12 @@ export function ExerciseSolver({
   }
 
   return (
-    <section className={styles.panel}>
+    <Section className={styles.panel}>
       {sessionExpired && <SessionRecovery />}
       {exercise.payload.practiceStyle === 'flex' && (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           문맥 이해를 위한 FLEX형 연습입니다. 실제 시험 점수나 공인 수준으로
           환산하지 않습니다.
           {exercise.payload.skill === 'listening' && (
@@ -222,7 +231,7 @@ export function ExerciseSolver({
               영상 원문 구절 듣기 ↗
             </Link>
           )}
-        </p>
+        </Banner>
       )}
       <div className={styles.row}>
         <Badge tone='brand'>
@@ -256,66 +265,72 @@ export function ExerciseSolver({
         </Badge>
       </div>
       {exercise.status === 'suspended' && (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           검토 중으로 새 풀이가 중단된 문제입니다. 과거 제출 기록은 유지됩니다.
-        </p>
+        </Banner>
       )}
       {exercise.needsReview && (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           근거가 변경되어 확인이 필요한 문제입니다. 새 풀이는 검토 후 진행하고,
           기존 답안과 당시 원문은 아래 기록에서 확인하세요.
-        </p>
+        </Banner>
       )}
       {exercise.state.excluded && (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           내 복습에서 제외한 문제입니다. 다시 포함할 때 기존 답안과 이력은
           유지됩니다.
-        </p>
+        </Banner>
       )}
-      <h2>{exercise.payload.question}</h2>
+      <Heading level={2}>{exercise.payload.question}</Heading>
       <form
         onSubmit={(event) => void submit(event)}
         className={styles.stack}>
         {exercise.payload.type === 'choice' ? (
-          <fieldset
-            className={styles.stack}
-            disabled={disabled}>
-            <legend>알맞은 답을 선택하세요</legend>
+          <RadioList
+            label='알맞은 답을 선택하세요'
+            htmlName={'exercise-' + exercise.id}
+            value={answer}
+            isDisabled={disabled}
+            onChange={change}>
             {exercise.payload.choices.map((choice, index) => (
-              <label
+              <RadioListItem
                 key={index}
-                className={styles.row}>
-                <Radio
-                  name={'exercise-' + exercise.id}
-                  value={choice}
-                  checked={answer === choice}
-                  onChange={() => change(choice)}
-                />
-                <span>
-                  {String.fromCharCode(65 + index)}. {choice}
-                </span>
-              </label>
+                value={choice}
+                label={`${String.fromCharCode(65 + index)}. ${choice}`}
+              />
             ))}
-          </fieldset>
+          </RadioList>
         ) : (
-          <label className={styles.field}>
-            {exercise.payload.type === 'free_response'
-              ? '원문을 적용해 내 생각을 적어 보세요'
-              : '답안'}
+          <div className={styles.field}>
             <TextArea
+              label={contentLabel(
+                <>
+                  {exercise.payload.type === 'free_response'
+                    ? '원문을 적용해 내 생각을 적어 보세요'
+                    : '답안'}
+                </>
+              )}
               value={answer}
               disabled={disabled}
               maxLength={5000}
               onChange={(event) => change(event.target.value)}
               required
             />
-          </label>
+          </div>
         )}
-        <p
+        <Text
+          as='p'
+          display='block'
           className={styles.meta}
           role='status'>
           {saveStatus}
-        </p>
+        </Text>
         <div className={styles.row}>
           <Button
             loading={busy}
@@ -340,16 +355,32 @@ export function ExerciseSolver({
           </Button>
         </div>
       </form>
-      {hint && <p className={styles.notice}>힌트: {hint}</p>}
+      {hint && (
+        <Banner
+          status='info'
+          title='안내'>
+          힌트: {hint}
+        </Banner>
+      )}
       {revealed && (
         <div className={styles.preview}>
-          <h3>정답 열람 · 도움 사용으로 기록됩니다</h3>
-          <p className={styles.prose}>{revealed.answer}</p>
-          <p className={styles.prose}>{revealed.explanation}</p>
+          <Heading level={3}>정답 열람 · 도움 사용으로 기록됩니다</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.prose}>
+            {revealed.answer}
+          </Text>
+          <Text
+            as='p'
+            display='block'
+            className={styles.prose}>
+            {revealed.explanation}
+          </Text>
         </div>
       )}
       {result && (
-        <article className={styles.preview}>
+        <Card className={styles.preview}>
           <Badge
             tone={
               result.correct === true
@@ -364,18 +395,41 @@ export function ExerciseSolver({
                 ? '정답'
                 : '다시 확인해 보세요'}
           </Badge>
-          <p className={styles.prose}>제출 답안: {result.answer}</p>
-          <p className={styles.prose}>
+          <Text
+            as='p'
+            display='block'
+            className={styles.prose}>
+            제출 답안: {result.answer}
+          </Text>
+          <Text
+            as='p'
+            display='block'
+            className={styles.prose}>
             {result.correct === null ? '참고 답안' : '기준 정답'}:{' '}
             {result.expectedAnswer}
-          </p>
-          <p className={styles.prose}>{result.explanation}</p>
-          {result.feedback && <p className={styles.prose}>{result.feedback}</p>}
-          <p className={styles.meta}>
+          </Text>
+          <Text
+            as='p'
+            display='block'
+            className={styles.prose}>
+            {result.explanation}
+          </Text>
+          {result.feedback && (
+            <Text
+              as='p'
+              display='block'
+              className={styles.prose}>
+              {result.feedback}
+            </Text>
+          )}
+          <Text
+            as='p'
+            display='block'
+            className={styles.meta}>
             {result.hintUsed ? '힌트 사용' : '힌트 사용 안 함'} ·{' '}
             {result.revealed ? '정답 열람 후 제출' : '정답 열람 전 제출'} · 문제
             v{result.version}
-          </p>
+          </Text>
           <Button
             size='small'
             variant='secondary'
@@ -387,7 +441,7 @@ export function ExerciseSolver({
             }}>
             저장된 문제 다시 풀기
           </Button>
-        </article>
+        </Card>
       )}
       {exercise.payload.practiceStyle === 'flex' &&
         exercise.payload.skill === 'listening' &&
@@ -401,21 +455,26 @@ export function ExerciseSolver({
             allowFullScreen
           />
         )}
-      <p className={styles.meta}>
+      <Text
+        as='p'
+        display='block'
+        className={styles.meta}>
         출제에 사용한 원문 · {sourceLabel(exercise.source)}
-      </p>
+      </Text>
       {exercise.payload.practiceStyle === 'flex' &&
       exercise.payload.skill === 'listening' &&
       !result &&
       !revealed ? (
-        <p className={styles.notice}>
+        <Banner
+          status='info'
+          title='안내'>
           먼저 원문 음성을 듣고 답해 보세요. 제출하거나 정답을 확인한 뒤 출제
           근거 문장을 보여 줍니다.
-        </p>
+        </Banner>
       ) : (
-        <blockquote className={styles.quote}>
+        <Blockquote className={styles.quote}>
           {exercise.payload.sourceQuote}
-        </blockquote>
+        </Blockquote>
       )}
       <Link
         className={styles.link}
@@ -439,11 +498,12 @@ export function ExerciseSolver({
         </Button>
       </div>
       {error && (
-        <p
-          role='alert'
-          className={styles.error}>
+        <Banner
+          status='error'
+          title='확인이 필요해요'
+          role='alert'>
           {error}
-        </p>
+        </Banner>
       )}
       <ExerciseAttempts
         id={exercise.id}
@@ -459,6 +519,6 @@ export function ExerciseSolver({
           onClose={() => setReport(false)}
         />
       )}
-    </section>
+    </Section>
   );
 }

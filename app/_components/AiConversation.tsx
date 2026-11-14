@@ -1,8 +1,15 @@
 'use client';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+
+import { Banner } from '@astryxdesign/core/Banner';
+
+import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@astryxdesign/core/Card';
+
 import { aiProviderLabel } from '@/domains/ai/lib/providerLabel';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import { materialPaths } from '@/domains/materials/config/paths';
 import { useEffect, useRef, useState } from 'react';
 import type { Conversation } from '@/domains/ai/model/contracts';
@@ -79,15 +86,18 @@ export function AiConversation({
   return (
     <div className={styles.stack}>
       {sessionExpired && <SessionRecovery />}
-      <p className={styles.meta}>
+      <Text
+        as='p'
+        className={styles.meta}>
         나만 보는 대화 · 현재 발췌와 자료 버전에 연결됩니다. 전사문 기반 답변은
         영상 화면을 본 결과와 다릅니다.
-      </p>
+      </Text>
       <div
         role='log'
         aria-label='원문 AI 대화'>
         {conversation.messages.map((message) => (
-          <article
+          <Card
+            role='article'
             key={message.id}
             className={styles.message}>
             <div className={styles.row}>
@@ -106,20 +116,26 @@ export function AiConversation({
             </div>
             {message.role === 'assistant' &&
               (message.model || message.provider) && (
-                <p className={styles.meta}>
+                <Text
+                  as='p'
+                  className={styles.meta}>
                   {message.provider
                     ? aiProviderLabel(message.provider)
                     : '공급자 기록 없음'}
                   {message.model ? ` · ${message.model}` : ''}
-                </p>
+                </Text>
               )}
-            <p className={styles.prose}>{message.text}</p>
+            <Text
+              as='p'
+              className={styles.prose}>
+              {message.text}
+            </Text>
             {message.citations?.map((cite, index) => (
-              <blockquote
+              <Blockquote
                 key={index}
                 className={styles.quote}>
                 {cite.quote}
-                <p>
+                <Text as='p'>
                   <Link
                     href={materialPaths.source({
                       ...conversation.source,
@@ -129,18 +145,21 @@ export function AiConversation({
                     className={styles.link}>
                     근거 위치로 이동 ↗
                   </Link>
-                </p>
-              </blockquote>
+                </Text>
+              </Blockquote>
             ))}
             {message.contextDescription && (
-              <p className={styles.meta}>
+              <Text
+                as='p'
+                className={styles.meta}>
                 실제로 제공한 문맥: {message.contextDescription}
-              </p>
+              </Text>
             )}
             {message.uncertainty && (
-              <p className={styles.notice}>
-                해석·추정 및 한계: {message.uncertainty}
-              </p>
+              <Banner
+                status='warning'
+                title={<>해석·추정 및 한계: {message.uncertainty}</>}
+              />
             )}
             {message.role === 'assistant' && message.status === 'ready' && (
               <Button
@@ -150,21 +169,27 @@ export function AiConversation({
                 이 답변을 커뮤니티에 질문
               </Button>
             )}
-          </article>
+          </Card>
         ))}
       </div>
       {readOnly && (
-        <p className={styles.notice}>
-          저장된 대화를 읽을 수 있습니다. 현재 원문에서는 새 AI 답변을 요청할 수
-          없습니다.
-        </p>
+        <Banner
+          status='warning'
+          title={
+            <>
+              저장된 대화를 읽을 수 있습니다. 현재 원문에서는 새 AI 답변을
+              요청할 수 없습니다.
+            </>
+          }
+        />
       )}
       <form
         onSubmit={(event) => void send(event)}
         className={styles.stack}>
-        <label className={styles.field}>
-          이 원문에서 궁금한 점
+        <div className={styles.field}>
           <TextArea
+            label='이 원문에서 궁금한 점'
+
             value={text}
             maxLength={3000}
             disabled={busy || readOnly}
@@ -172,17 +197,19 @@ export function AiConversation({
             placeholder='이 표현은 왜 이 의미로 쓰였나요?'
             required
           />
-        </label>
-        <p className={styles.meta}>
+        </div>
+        <Text
+          as='p'
+          className={styles.meta}>
           질문을 보낼 때만 새 답변을 요청합니다. 선택한 원문과 관계없는 질문은
           문맥 질문으로 안내합니다.
-        </p>
+        </Text>
         {error && (
-          <p
+          <Banner
+            status='error'
             role='alert'
-            className={styles.error}>
-            {error}
-          </p>
+            title={<>{error}</>}
+          />
         )}
         <div>
           <Button

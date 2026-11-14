@@ -1,4 +1,11 @@
 'use client';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Button } from '@/components/ui/primitives/Button';
+import { TabList, Tab } from '@astryxdesign/core/TabList';
+import { List, ListItem } from '@astryxdesign/core/List';
+import { Card } from '@astryxdesign/core/Card';
+import { Text } from '@astryxdesign/core/Text';
+
 import type { SourceInput } from '@/domains/materials/model/source';
 import { useState } from 'react';
 import type {
@@ -56,7 +63,7 @@ export function VideoScript({
   const selectedQuote =
     selection?.id === segment?.id ? selection.quote : segment?.text;
 
-  function selectQuote(event: React.SyntheticEvent<HTMLParagraphElement>) {
+  function selectQuote(event: React.SyntheticEvent<HTMLElement>) {
     const selected = window.getSelection();
 
     if (
@@ -79,35 +86,31 @@ export function VideoScript({
     );
 
   return (
-    <aside
+    <Card
+      role='complementary'
       className={styles.sidebar}
       aria-label='영상 스크립트와 구절 탐색'>
       <div className={styles.heading}>
-        <h2>스크립트</h2>
+        <Heading level={2}>스크립트</Heading>
         <Icon
           name='search'
           size={18}
         />
       </div>
-      <div
-        className={styles.tabs}
-        role='group'
-        aria-label='스크립트 보기'>
-        <button
-          type='button'
-          className={styles.tab}
-          aria-pressed={tab === 'all'}
-          onClick={() => setTab('all')}>
-          전체 구절
-        </button>
-        <button
-          type='button'
-          className={styles.tab}
-          aria-pressed={tab === 'saved'}
-          onClick={() => setTab('saved')}>
-          표현·메모
-        </button>
-      </div>
+      <TabList
+        value={tab}
+        onChange={(value) => setTab(value === 'saved' ? 'saved' : 'all')}
+        aria-label='스크립트 보기'
+        hasDivider>
+        <Tab
+          value='all'
+          label='전체 구절'
+        />
+        <Tab
+          value='saved'
+          label='표현·메모'
+        />
+      </TabList>
       {tab === 'all' ? (
         <>
           <Input
@@ -116,10 +119,14 @@ export function VideoScript({
             onChange={(event) => setQuery(event.target.value)}
             placeholder='확인한 구절에서 찾기'
           />
-          <p className={styles.description}>
+          <Text
+            as='p'
+            className={styles.description}>
             정답을 확인하거나 맞힌 문장만 표시됩니다.
-          </p>
-          <ol className={styles.list}>
+          </Text>
+          <List
+            className={styles.list}
+            hasDividers>
             {segments
               .map((item, position) => ({ item, position }))
               .filter(
@@ -129,40 +136,48 @@ export function VideoScript({
                     item.text.toLowerCase().includes(query.toLowerCase()))
               )
               .map(({ item, position }) => (
-                <li key={item.id}>
-                  <button
-                    type='button'
-                    className={styles.item}
-                    aria-current={index === position ? 'step' : undefined}
-                    disabled={busy}
-                    onClick={() => onNavigate(position)}>
-                    <time className={styles.time}>
-                      {Math.floor(item.start / 60)}:
-                      {String(Math.floor(item.start % 60)).padStart(2, '0')}
-                    </time>
-                    <p className={styles.text}>
+                <ListItem
+                  key={item.id}
+                  isSelected={index === position}
+                  aria-current={index === position ? 'step' : undefined}
+                  isDisabled={busy}
+                  onClick={() => onNavigate(position)}
+                  label={
+                    <Text as='p'>
                       {visible(item.id)
                         ? item.text
                         : `구절 ${position + 1} · 아직 확인하지 않은 문장`}
-                    </p>
-                    {visible(item.id) && item.translation && (
-                      <p className={styles.description}>{item.translation}</p>
-                    )}
-                    {states.some(
+                    </Text>
+                  }
+                  description={visible(item.id) ? item.translation : undefined}
+                  startContent={
+                    <Text
+                      type='supporting'
+                      hasTabularNumbers>
+                      {Math.floor(item.start / 60)}:
+                      {String(Math.floor(item.start % 60)).padStart(2, '0')}
+                    </Text>
+                  }
+                  endContent={
+                    states.some(
                       (state) =>
                         state.segmentId === item.id &&
                         state.mode === mode &&
                         state.status === 'correct'
-                    ) && <Badge tone='success'>받아쓰기 완료</Badge>}
-                  </button>
-                </li>
+                    ) ? (
+                      <Badge tone='success'>완료</Badge>
+                    ) : undefined
+                  }
+                />
               ))}
-          </ol>
+          </List>
         </>
       ) : demo ? (
-        <p className={styles.description}>
+        <Text
+          as='p'
+          className={styles.description}>
           개인 표현과 메모는 로그인한 학습 공간에서 저장합니다.
-        </p>
+        </Text>
       ) : (
         <VideoSavedEntries
           key={videoId}
@@ -171,25 +186,32 @@ export function VideoScript({
       )}
       {segment && visible(segment.id) && !demo && (
         <div className={styles.actions}>
-          <p className={styles.description}>
+          <Text
+            as='p'
+            className={styles.description}>
             단어나 여러 단어 표현을 선택해 문맥의 뜻을 살펴보세요.
-          </p>
-          <p
+          </Text>
+          <Text
+            as='p'
             className={styles.selectable}
             tabIndex={0}
             onPointerUp={selectQuote}
             onKeyUp={selectQuote}>
             {segment.text}
-          </p>
+          </Text>
           {selectedQuote !== segment.text && (
-            <p className={styles.description}>
+            <Text
+              as='p'
+              className={styles.description}>
               선택한 표현: {selectedQuote}{' '}
-              <button
+              <Button
+                variant='ghost'
+                size='small'
                 type='button'
                 onClick={() => setSelection(null)}>
                 문장 전체로
-              </button>
-            </p>
+              </Button>
+            </Text>
           )}
           <SourceActions
             key={`${segment.id}:${selectedQuote}`}
@@ -205,15 +227,19 @@ export function VideoScript({
         </div>
       )}
       {segment && !visible(segment.id) && (
-        <p className={styles.description}>
+        <Text
+          as='p'
+          className={styles.description}>
           정답을 확인한 뒤 표현 저장과 구절 질문을 사용할 수 있어요.
-        </p>
+        </Text>
       )}
       {demo && (
-        <p className={styles.description}>
+        <Text
+          as='p'
+          className={styles.description}>
           로그인한 뒤 개인 표현집과 도우미 질문을 사용할 수 있어요.
-        </p>
+        </Text>
       )}
-    </aside>
+    </Card>
   );
 }

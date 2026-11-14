@@ -1,4 +1,7 @@
 'use client';
+import { Input } from '@/components/ui/primitives/Input';
+import { Text } from '@astryxdesign/core/Text';
+
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/primitives/Button';
 import { createShare } from '@/domains/shares/api/shares';
@@ -67,7 +70,7 @@ export function ShareButton({
             : '영상 공유'}
       </Button>
       {url && (
-        <input
+        <Input
           className={styles.link}
           readOnly
           aria-label={segmentId ? '구절 공유 링크' : '영상 공유 링크'}
@@ -76,11 +79,12 @@ export function ShareButton({
         />
       )}
       {message && (
-        <p
+        <Text
+          as='p'
           className={styles.message}
           role='status'>
           {message}
-        </p>
+        </Text>
       )}
     </div>
   );

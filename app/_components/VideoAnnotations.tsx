@@ -1,10 +1,11 @@
 'use client';
+import { Banner } from '@astryxdesign/core/Banner';
+
 import { useEffect, useState } from 'react';
 import { listAnnotations } from '@/domains/materials/api/records';
 import type { Annotation } from '@/domains/materials/model/records';
 import type { SourceInput } from '@/domains/materials/model/source';
 import { AnnotationList } from './AnnotationList';
-import * as styles from '@/lib/styles/workspace.css';
 
 /** 영상 구절을 다시 열 때 저장한 위치 메모를 복원한다. */
 export function VideoAnnotations({
@@ -54,11 +55,11 @@ export function VideoAnnotations({
         }
       />
       {error && (
-        <p
+        <Banner
+          status='error'
           role='alert'
-          className={styles.error}>
-          {error}
-        </p>
+          title={<>{error}</>}
+        />
       )}
     </>
   );

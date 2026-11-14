@@ -1,4 +1,10 @@
 'use client';
+import { Card } from '@astryxdesign/core/Card';
+
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { List, ListItem } from '@astryxdesign/core/List';
+
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import * as styles from './VideoTranscript.css';
 
@@ -24,7 +30,7 @@ export function VideoTranscript({
   const [previousResetVersion, setPreviousResetVersion] =
     useState(resetVersion);
 
-  const list = useRef<HTMLOListElement>(null);
+  const list = useRef<HTMLUListElement | HTMLOListElement>(null);
 
   // 현재 구절은 채점 결과와 무관하게 방문 시점부터 대본에 남긴다.
   if (previousResetVersion !== resetVersion) {
@@ -46,34 +52,51 @@ export function VideoTranscript({
   return (
     <div className={styles.layout}>
       <div className={styles.video}>{children}</div>
-      <aside
+      <Card
+        role='complementary'
         className={styles.transcript}
         aria-label='진행한 문장 대본'>
         <div className={styles.heading}>
-          <h3 className={styles.title}>대본</h3>
+          <Heading
+            level={3}
+            className={styles.title}>
+            대본
+          </Heading>
           <span className={styles.count}>{visible.length}문장</span>
         </div>
-        <p className={styles.description}>이동한 문장이 여기에 쌓여요.</p>
-        <ol
+        <Text
+          as='p'
+          className={styles.description}>
+          이동한 문장이 여기에 쌓여요.
+        </Text>
+        <List
           className={styles.sentences}
           ref={list}>
           {visible.map((segment) => (
-            <li
+            <ListItem
               key={segment.id}
-              className={styles.sentence}
-              aria-current={segment.id === currentId ? 'true' : undefined}>
-              <span className={styles.time}>
-                {Math.floor(segment.start / 60)}:
-                {String(Math.floor(segment.start % 60)).padStart(2, '0')}
-              </span>
-              <p className={styles.text}>{segment.text}</p>
-            </li>
+              isSelected={segment.id === currentId}
+              aria-current={segment.id === currentId ? 'true' : undefined}
+              startContent={
+                <Text
+                  type='supporting'
+                  hasTabularNumbers>
+                  {Math.floor(segment.start / 60)}:
+                  {String(Math.floor(segment.start % 60)).padStart(2, '0')}
+                </Text>
+              }
+              label={<Text as='p'>{segment.text}</Text>}
+            />
           ))}
-        </ol>
+        </List>
         {!visible.length && (
-          <p className={styles.description}>첫 문장을 기다리고 있어요.</p>
+          <Text
+            as='p'
+            className={styles.description}>
+            첫 문장을 기다리고 있어요.
+          </Text>
         )}
-      </aside>
+      </Card>
     </div>
   );
 }

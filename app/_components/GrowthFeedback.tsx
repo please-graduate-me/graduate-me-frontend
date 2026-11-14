@@ -1,4 +1,9 @@
 'use client';
+import { Text } from '@astryxdesign/core/Text';
+import { Toast } from '@astryxdesign/core/Toast';
+import { Stack } from '@astryxdesign/core/Stack';
+import { IconButton } from '@/components/ui/primitives/IconButton';
+
 import { useEffect, useRef, useState } from 'react';
 import { rewardEventName } from '@/domains/growth/lib/rewardEvents';
 import { rewardReaction } from '@/domains/growth/lib/rewardReaction';
@@ -31,17 +36,6 @@ export function GrowthFeedback() {
     return () => window.removeEventListener(rewardEventName, receive);
   }, []);
 
-  useEffect(() => {
-    if (!receipt) return;
-
-    const timer = window.setTimeout(
-      () => setReceipts((previous) => previous.slice(1)),
-      4500
-    );
-
-    return () => window.clearTimeout(timer);
-  }, [receipt]);
-
   if (!receipt) return null;
   const levelUp = receipt.level > receipt.previousLevel;
 
@@ -50,37 +44,48 @@ export function GrowthFeedback() {
       key={receipt.id}
       className={styles.toast}
       aria-label='학습 보상'>
-      <BooMascot
-        reaction={rewardReaction(receipt)}
-        eventId={receipt.id}
-        size={80}
+      <Toast
+        key={receipt.id}
+        type='info'
+        isAutoHide
+        autoHideDuration={4500}
+        onDismiss={() => setReceipts((previous) => previous.slice(1))}
+        body={
+          <Stack
+            direction='horizontal'
+            align='center'
+            gap={3}>
+            <BooMascot
+              reaction={rewardReaction(receipt)}
+              eventId={receipt.id}
+              size={80}
+            />
+            <Stack gap={1}>
+              <Text weight='semibold'>
+                {levelUp
+                  ? `레벨 ${receipt.level}로 성장했어요!`
+                  : receipt.dailyBonus
+                    ? '오늘의 학습 목표를 달성했어요!'
+                    : '한 걸음 더 성장했어요'}
+              </Text>
+              <Text type='large'>+{receipt.xp + receipt.dailyBonus} XP</Text>
+              <Text type='supporting'>
+                {receipt.dailyBonus
+                  ? `목표 보너스 ${receipt.dailyBonus} XP 포함 · `
+                  : ''}
+                누적 {receipt.totalXp} XP
+              </Text>
+            </Stack>
+          </Stack>
+        }
+        endContent={
+          <IconButton
+            label='보상 알림 닫기'
+            name='x'
+            onClick={() => setReceipts((previous) => previous.slice(1))}
+          />
+        }
       />
-      <div
-        role='status'
-        aria-live='polite'
-        aria-atomic='true'>
-        <strong>
-          {levelUp
-            ? `레벨 ${receipt.level}로 성장했어요!`
-            : receipt.dailyBonus
-              ? '오늘의 학습 목표를 달성했어요!'
-              : '한 걸음 더 성장했어요'}
-        </strong>
-        <p className={styles.xp}>+{receipt.xp + receipt.dailyBonus} XP</p>
-        <small>
-          {receipt.dailyBonus
-            ? `목표 보너스 ${receipt.dailyBonus} XP 포함 · `
-            : ''}
-          누적 {receipt.totalXp} XP
-        </small>
-      </div>
-      <button
-        className={styles.close}
-        type='button'
-        aria-label='보상 알림 닫기'
-        onClick={() => setReceipts((previous) => previous.slice(1))}>
-        ×
-      </button>
     </aside>
   );
 }

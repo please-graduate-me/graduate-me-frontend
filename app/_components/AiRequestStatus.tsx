@@ -1,3 +1,5 @@
+import { Banner } from '@astryxdesign/core/Banner';
+import { Text } from '@astryxdesign/core/Text';
 import { Button } from '@/components/ui/primitives/Button';
 import * as styles from '@/lib/styles/workspace.css';
 
@@ -23,11 +25,11 @@ export function AiRequestStatus({
     <>
       {loadError && (
         <div className={styles.stack}>
-          <p
+          <Banner
+            status='error'
             role='alert'
-            className={styles.error}>
-            저장 결과를 불러오지 못했습니다. {loadError}
-          </p>
+            title={<>저장 결과를 불러오지 못했습니다. {loadError}</>}
+          />
           <Button
             variant='ghost'
             size='small'
@@ -35,24 +37,28 @@ export function AiRequestStatus({
             onClick={onReload}>
             저장 결과 다시 조회
           </Button>
-          <p className={styles.meta}>
+          <Text
+            as='p'
+            className={styles.meta}>
             저장 결과 조회에는 새 AI 호출이 없습니다.
-          </p>
+          </Text>
         </div>
       )}
       {error && (
-        <p
+        <Banner
+          status='error'
           role='alert'
-          className={styles.error}>
-          {error}
-        </p>
+          title={<>{error}</>}
+        />
       )}
       {error && recovery && (
         <div className={styles.stack}>
-          <p className={styles.meta}>
+          <Text
+            as='p'
+            className={styles.meta}>
             이 생성 요청은 실패로 종료됐습니다. 아래 버튼은 새로 생성하며 AI
             사용량에 포함됩니다.
-          </p>
+          </Text>
           <Button
             size='small'
             variant='secondary'

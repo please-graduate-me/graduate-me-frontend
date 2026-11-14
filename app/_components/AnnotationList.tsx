@@ -1,4 +1,10 @@
 'use client';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+
+import { Collapsible } from '@astryxdesign/core/Collapsible';
+import { Card } from '@astryxdesign/core/Card';
+
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
 import { useState } from 'react';
@@ -56,13 +62,15 @@ export function AnnotationList({
   }
 
   return (
-    <details>
-      <summary>저장한 하이라이트·메모 {items.length}개</summary>
+    <Collapsible
+      defaultIsOpen={false}
+      trigger={<>저장한 하이라이트·메모 {items.length}개</>}>
       {items.map((item) => (
-        <article
+        <Card
+          role='article'
           key={item.id}
           className={styles.stack}>
-          <blockquote className={styles.quote}>{item.source.quote}</blockquote>
+          <Blockquote className={styles.quote}>{item.source.quote}</Blockquote>
           <TextArea
             aria-label='구절 개인 메모'
             disabled={busy}
@@ -77,16 +85,16 @@ export function AnnotationList({
             onClick={() => void remove(item.id)}>
             하이라이트 삭제
           </Button>
-        </article>
+        </Card>
       ))}
       {sessionExpired && <SessionRecovery />}
       {error && (
-        <p
+        <Banner
+          status='error'
           role='alert'
-          className={styles.error}>
-          {error}
-        </p>
+          title={<>{error}</>}
+        />
       )}
-    </details>
+    </Collapsible>
   );
 }

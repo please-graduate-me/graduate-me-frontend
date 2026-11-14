@@ -1,4 +1,9 @@
 'use client';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Collapsible } from '@astryxdesign/core/Collapsible';
+import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@astryxdesign/core/Card';
 import { useState } from 'react';
 import type { ExerciseResult } from '@/domains/ai/model/contracts';
 import { listExerciseAttempts } from '@/domains/ai/api/learning';
@@ -39,8 +44,7 @@ export function ExerciseAttempts({
   }
 
   return (
-    <details>
-      <summary>이 문제의 과거 제출 기록</summary>
+    <Collapsible trigger={<> 이 문제의 과거 제출 기록 </>}>
       <div className={styles.stack}>
         <Button
           size='small'
@@ -50,14 +54,16 @@ export function ExerciseAttempts({
           기록 조회
         </Button>
         {error && (
-          <p
-            className={styles.error}
+          <Banner
+            status='error'
+            title='확인이 필요해요'
+
             role='alert'>
             {error}
-          </p>
+          </Banner>
         )}
         {items.map((item) => (
-          <article
+          <Card
             key={item.id}
             className={styles.message}>
             <div className={styles.row}>
@@ -79,22 +85,44 @@ export function ExerciseAttempts({
                 문제 v{item.version} · {formatDate(item.createdAt)}
               </span>
             </div>
-            <p className={styles.prose}>내 답안: {item.answer}</p>
-            <p className={styles.prose}>
+            <Text
+              as='p'
+              display='block'
+              className={styles.prose}>
+              내 답안: {item.answer}
+            </Text>
+            <Text
+              as='p'
+              display='block'
+              className={styles.prose}>
               당시 기준 답안: {item.expectedAnswer}
-            </p>
-            <p className={styles.prose}>{item.explanation}</p>
-            {item.feedback && <p className={styles.notice}>{item.feedback}</p>}
-            <p className={styles.meta}>
+            </Text>
+            <Text
+              as='p'
+              display='block'
+              className={styles.prose}>
+              {item.explanation}
+            </Text>
+            {item.feedback && (
+              <Banner
+                status='info'
+                title='안내'>
+                {item.feedback}
+              </Banner>
+            )}
+            <Text
+              as='p'
+              display='block'
+              className={styles.meta}>
               {item.hintUsed ? '힌트 사용' : '힌트 사용 안 함'} ·{' '}
               {item.revealed ? '정답 열람 후 제출' : '정답 열람 전 제출'}
-            </p>
-            <blockquote className={styles.quote}>
+            </Text>
+            <Blockquote className={styles.quote}>
               {item.source.quote}
-            </blockquote>
-          </article>
+            </Blockquote>
+          </Card>
         ))}
       </div>
-    </details>
+    </Collapsible>
   );
 }

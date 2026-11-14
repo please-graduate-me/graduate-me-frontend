@@ -1,200 +1,152 @@
 import { globalStyle, style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 영상과 스크립트가 데스크톱 학습 창 전체를 사용하게 한다. */
-export const study = style({
-  minWidth: 1120,
-  color: vars.color.ink,
-  background: vars.color.surface,
-  minHeight: '100vh',
-  borderTop: `4px solid ${vars.color.accent}`,
-});
+/** 학습 작업 공간은 테마 바탕 위에서 화면 폭에 맞춰 확장한다. */
+export const study = style({ minWidth: 0, minHeight: '100vh' });
 
-/** 학습을 떠나는 동작과 현재 자료를 한 줄에서 확인한다. */
+/** 자료 제목과 학습 종료를 입력 영역 밖에 유지한다. */
 export const header = style({
-  height: 80,
   display: 'flex',
   alignItems: 'center',
+  flexWrap: 'wrap',
   gap: vars.space.md,
-  paddingInline: vars.space.lg,
+  padding: vars.space.lg,
   borderBottom: `1px solid ${vars.color.line}`,
 });
 
-/** 자료 제목이 길어져도 종료 동작은 유지한다. */
-export const headerTitle = style({ flex: 1, minWidth: 0 });
+/** 긴 자료 제목은 주변 조작보다 먼저 줄바꿈한다. */
+export const headerTitle = style({ flex: 1, minWidth: 160 });
 
-/** 목록 복귀는 작은 화살표로 표현한다. */
+/** 목록 복귀 아이콘의 터치 영역을 유지한다. */
 export const backLink = style({
   display: 'grid',
   placeItems: 'center',
-  width: 36,
-  height: 36,
-  color: vars.color.muted,
+  width: 40,
+  height: 40,
 });
 
-/** 종료는 학습 입력과 분리된 테두리 링크로 표시한다. */
-export const exitLink = style({
-  padding: '10px 16px',
-  border: `1px solid ${vars.color.line}`,
-  borderRadius: vars.radius.control,
-  textDecoration: 'none',
-  color: vars.color.ink,
-  fontSize: 14,
-});
+/** 학습 종료 링크를 제목과 분리한다. */
+export const exitLink = style({ whiteSpace: 'nowrap' });
 
-/** 영상과 입력은 왼쪽, 스크립트는 오른쪽에 고정한다. */
+/** 넓은 화면은 스크립트를 병렬로, 좁은 화면은 학습 뒤에 배치한다. */
 export const studyGrid = style({
   display: 'grid',
-  gridTemplateColumns: 'minmax(620px, 1fr) 380px',
+  gridTemplateColumns: 'minmax(0, 1fr) 380px',
+  gap: vars.space.lg,
+  padding: vars.space.lg,
   alignItems: 'start',
+  '@media': {
+    '(max-width: 1100px)': { gridTemplateColumns: 'minmax(0, 1fr)' },
+    '(max-width: 600px)': { padding: vars.space.sm },
+  },
 });
 
-/** 영상과 답안을 같은 배경에서 이어 읽게 한다. */
-export const main = style({
-  padding: vars.space.xl,
-  background: vars.color.canvas,
+/** 영상과 답안은 같은 읽기 순서로 이어진다. */
+export const main = style({ display: 'grid', gap: vars.space.lg, minWidth: 0 });
+
+/** 영상과 재생 조작은 하나의 Astryx 카드로 묶는다. */
+export const playerPanel = style({
+  display: 'grid',
+  gap: vars.space.md,
   minWidth: 0,
-  minHeight: 'calc(100vh - 84px)',
 });
 
-/** 플레이어 오류를 원본 영상 가까이 표시한다. */
-export const playerPanel = style({ minWidth: 0 });
-
-/** 준비 전에도 영상 비율과 크기를 유지한다. */
+/** 외부 플레이어가 준비되기 전에도 영상 비율을 확보한다. */
 export const videoFrame = style({
   position: 'relative',
   width: '100%',
   aspectRatio: '16 / 9',
-  borderRadius: vars.radius.control,
   overflow: 'hidden',
   background: vars.color.video,
 });
 
-/** 재생과 속도 및 반복을 실제 컨트롤로 모은다. */
+/** 좁은 화면에서도 재생 조작을 줄바꿈해 접근하게 한다. */
 export const playbackToolbar = style({
   display: 'flex',
   alignItems: 'center',
+  flexWrap: 'wrap',
   gap: vars.space.sm,
-  padding: '10px 12px',
-  background: vars.color.surface,
-  borderRadius: vars.radius.control,
-  marginTop: vars.space.md,
 });
 
-/** 구절 위치는 일정한 숫자 폭으로 유지한다. */
+/** 시간 숫자의 폭이 재생 중 흔들리지 않게 한다. */
 export const time = style({
-  color: vars.color.muted,
-  fontSize: 12,
   whiteSpace: 'nowrap',
   fontVariantNumeric: 'tabular-nums',
 });
 
-/** 실제 재생 시각을 포인터와 키보드로 탐색한다. */
-export const progress = style({
-  accentColor: vars.color.accent,
-  height: 24,
-  flex: 1,
-  minWidth: 70,
-  minHeight: 0,
-  padding: 0,
-  border: 0,
-  margin: 0,
-  cursor: 'pointer',
-});
+/** 탐색 막대가 남는 공간을 사용하게 한다. */
+export const progress = style({ flex: '1 1 160px', minWidth: 100 });
 
-/** 자동 반복은 입력 가능한 체크박스로 제공한다. */
+/** 반복 옵션의 문구가 스위치에서 떨어지지 않게 한다. */
 export const repeatControl = style({
   display: 'flex',
   alignItems: 'center',
   gap: vars.space.xs,
-  fontSize: 12,
   whiteSpace: 'nowrap',
 });
 
-/** 받아쓰기 영역을 얇은 테두리 패널로 분리한다. */
+/** 답안 카드는 내용 길이에 맞게 높이가 늘어난다. */
 export const answerPanel = style({
-  marginTop: vars.space.md,
-  padding: vars.space.lg,
-  background: vars.color.surface,
-  border: `1px solid ${vars.color.line}`,
-  borderRadius: vars.radius.panel,
+  display: 'grid',
+  gap: vars.space.md,
+  minWidth: 0,
 });
 
-/** 구절 번호와 반복 및 저장 상태를 같은 기준선에 놓는다. */
+/** 구절 정보와 저장 상태를 줄바꿈 가능한 행에 배치한다. */
 export const answerHeading = style({
   display: 'flex',
   alignItems: 'center',
+  flexWrap: 'wrap',
   gap: vars.space.sm,
-  marginBottom: vars.space.md,
 });
 
-/** 저장 상태를 구절 제목보다 낮은 위계로 표시한다. */
-export const saveStatus = style({
-  color: vars.color.muted,
-  fontSize: 12,
-  marginLeft: 'auto',
-});
+/** 저장 상태는 구절 조작의 끝에 둔다. */
+export const saveStatus = style({ marginLeft: 'auto' });
 
-/** 학습 모드와 스크립트를 하나의 탭 줄로 맞춘다. */
+/** 학습 모드와 스크립트 공개 동작을 나란히 배치한다. */
 export const modeRow = style({
   display: 'flex',
-  alignItems: 'start',
-  borderBottom: `1px solid ${vars.color.line}`,
-  marginBottom: vars.space.md,
-  gap: vars.space.lg,
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  gap: vars.space.md,
 });
 
-/** 정답 공개를 요청하는 스크립트 탭을 제공한다. */
-export const scriptTab = style({
-  border: 0,
-  borderBottom: '2px solid transparent',
-  background: 'transparent',
-  color: vars.color.muted,
-  minHeight: 44,
-  padding: '12px 0',
-  fontSize: 14,
-  cursor: 'pointer',
-  selectors: {
-    '&[aria-pressed="true"]': {
-      color: vars.color.accent,
-      borderBottomColor: vars.color.accent,
-    },
-  },
-});
-
-/** 문장 속 빈칸을 본문과 같은 읽기 흐름으로 정렬한다. */
+/** 빈칸과 원문을 같은 문장 흐름으로 읽게 한다. */
 export const blankSentence = style({
-  paddingBlock: '12px 18px',
+  paddingBlock: vars.space.md,
   lineHeight: 2.7,
-  fontSize: 16,
   minHeight: 84,
 });
 
-/** 문장 전체 입력도 시안의 간결한 입력 패널을 유지한다. */
-export const answerInput = style({
-  minHeight: 130,
-  padding: vars.space.md,
-  lineHeight: 1.8,
-  fontSize: 17,
+/** Astryx 입력은 문장 사이에서 일정한 폭을 확보한다. */
+export const blankInput = style({
+  display: 'inline-block',
+  width: 160,
+  verticalAlign: 'middle',
+  marginInline: vars.space.xs,
 });
 
-/** 답안을 제출하는 행동과 보조 안내를 가깝게 둔다. */
+/** 전체 받아쓰기 입력에 여러 줄의 작성 공간을 확보한다. */
+export const answerInput = style({ minHeight: 130 });
+
+/** 제출과 보조 동작이 작은 화면에서 자연스럽게 줄바꿈한다. */
 export const answerActions = style({
   display: 'flex',
   alignItems: 'center',
+  flexWrap: 'wrap',
   gap: vars.space.sm,
   marginTop: vars.space.md,
 });
 
-/** 학습 선택과 이동을 제출 동작에서 분리한다. */
+/** 검토와 구절 이동을 답안 제출에서 분리한다. */
 export const secondaryActions = style({
   display: 'flex',
   alignItems: 'center',
+  flexWrap: 'wrap',
   gap: vars.space.sm,
-  marginTop: vars.space.lg,
 });
 
-/** 이전과 다음 구절 이동은 오른쪽 끝에 모은다. */
+/** 이전과 다음 구절은 한 묶음으로 이동한다. */
 export const navigation = style({
   display: 'flex',
   alignItems: 'center',
@@ -202,95 +154,71 @@ export const navigation = style({
   marginLeft: 'auto',
 });
 
-/** 스크립트는 입력 영역과 같은 높이에서 읽게 한다. */
+/** 공개한 스크립트는 충분한 행간으로 이어 읽게 한다. */
 export const scriptReading = style({
-  paddingBlock: vars.space.sm,
-  lineHeight: 1.9,
+  display: 'grid',
+  gap: vars.space.md,
   minHeight: 130,
 });
 
-/** 자주 쓰지 않는 학습 옵션은 접힌 보조 영역에 둔다. */
-export const learningDetails = style({
-  marginTop: vars.space.lg,
-  paddingTop: vars.space.md,
-  borderTop: `1px solid ${vars.color.line}`,
+/** 보조 설정은 주 학습 카드 뒤에 둔다. */
+export const learningDetails = style({ paddingBlock: vars.space.sm });
+
+/** 완료 화면에 다음 학습 행동을 위한 간격을 둔다. */
+export const completion = style({
+  display: 'grid',
+  gap: vars.space.md,
+  minHeight: 360,
 });
 
-/** 완료 상태는 비어 있는 플레이어 대신 결과를 표시한다. */
-export const completion = style({ padding: vars.space.xl, minHeight: 400 });
-
-/** 실제 완료 숫자를 같은 단위로 비교하게 한다. */
+/** 학습 집계는 같은 단위로 나란히 비교하게 한다. */
 export const stats = style({
   display: 'flex',
+  flexWrap: 'wrap',
   gap: vars.space.xl,
-  marginBlock: vars.space.lg,
 });
 
-/** 안내는 상태와 문구로 표현한다. */
-export const notice = style({
-  padding: '12px 16px',
-  background: vars.color.notice,
-  borderRadius: vars.radius.control,
-  marginBlock: vars.space.md,
-  fontSize: 14,
-  lineHeight: 1.7,
-});
-
-/** 실패는 안내와 구분해 입력 가까이 표시한다. */
-export const error = style({
-  padding: '12px 16px',
-  background: vars.color.errorBackground,
-  color: vars.color.error,
-  borderRadius: vars.radius.control,
-  marginBlock: vars.space.md,
-});
-
-/** 정답 피드백의 의미를 성공 배경으로 보완한다. */
-export const success = style({ background: vars.color.success });
-
-/** 단어별 비교가 긴 문장에서도 줄바꿈되게 한다. */
+/** 차이 토큰이 긴 문장에서도 줄바꿈한다. */
 export const differences = style({
   display: 'flex',
   gap: vars.space.xs,
   flexWrap: 'wrap',
 });
 
-/** 개별 차이를 읽을 수 있는 최소 여백을 둔다. */
-export const diff = style({ padding: '3px 7px', borderRadius: 4 });
+/** 채점 비교 토큰에 읽기 여백을 둔다. */
+export const diff = style({
+  padding: '3px 7px',
+  borderRadius: vars.radius.control,
+});
 
-/** 맞힌 단어는 수정 대상에서 구분한다. */
+/** 일치한 단어를 수정 대상과 구분한다. */
 export const match = style({ color: vars.color.match });
 
-/** 빠뜨린 단어를 실제 정답과 함께 표시한다. */
+/** 빠뜨린 단어는 정답과 함께 구분한다. */
 export const missing = style({
   color: vars.color.differenceText,
   background: vars.color.differenceBackground,
 });
 
-/** 교체할 단어를 실제 정답과 함께 표시한다. */
+/** 교체할 단어는 정답과 함께 구분한다. */
 export const replace = style({
   color: vars.color.differenceText,
   background: vars.color.differenceBackground,
 });
 
-/** 추가한 단어는 빠뜨린 단어와 구분한다. */
+/** 추가한 단어를 누락된 단어와 구분한다. */
 export const extra = style({
   color: vars.color.extraText,
   background: vars.color.extraBackground,
 });
 
-/** 보조 설명은 읽기 위계를 낮춘다. */
+/** 보조 설명은 테마의 낮은 읽기 위계를 따른다. */
 export const muted = style({ color: vars.color.muted });
 
-/** 시간과 단축키는 본문보다 작은 크기를 쓴다. */
-export const small = style({ fontSize: 12, color: vars.color.muted });
-
-globalStyle(`${headerTitle} h1`, { fontSize: 18, margin: 0, lineHeight: 1.5 });
-
-globalStyle(`${headerTitle} p`, {
+/** 짧은 학습 안내는 테마의 보조 크기를 따른다. */
+export const small = style({
+  fontSize: vars.fontSize.small,
   color: vars.color.muted,
-  fontSize: 12,
-  margin: '4px 0 0',
 });
 
 globalStyle(`${videoFrame} iframe`, {
@@ -301,22 +229,7 @@ globalStyle(`${videoFrame} iframe`, {
   height: '100%',
 });
 
-globalStyle(`${playbackToolbar} select`, {
-  width: 90,
-  minHeight: 32,
-  fontSize: 12,
+globalStyle(`${stats} strong`, {
+  display: 'block',
+  fontSize: vars.fontSize.heading1,
 });
-
-globalStyle(`${blankSentence} input`, {
-  width: 160,
-  display: 'inline-block',
-  marginInline: vars.space.xs,
-  padding: '6px 10px',
-  borderRadius: vars.radius.control,
-  border: `1px solid ${vars.color.line}`,
-  background: vars.color.selected,
-  color: vars.color.accent,
-  fontSize: 15,
-});
-
-globalStyle(`${stats} strong`, { display: 'block', fontSize: 30 });

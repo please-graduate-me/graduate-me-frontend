@@ -1,4 +1,13 @@
 'use client';
+import { Section } from '@astryxdesign/core/Section';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+
+import { Banner } from '@astryxdesign/core/Banner';
+
+import { Text } from '@astryxdesign/core/Text';
+import { Collapsible } from '@astryxdesign/core/Collapsible';
+import { Heading } from '@astryxdesign/core/Heading';
+
 import { ApiError } from '@/lib/api/request';
 import { canStartNewGeneration } from '@/domains/ai/lib/generationFailure';
 import { AiRequestStatus } from './AiRequestStatus';
@@ -49,7 +58,7 @@ export function LearningAiPanel({
   initialMode?: 'meaning' | 'translation';
   onQuestion?: () => void;
   onSaved?: () => void;
-  beforeNavigate?: () => boolean;
+  beforeNavigate?: () => boolean | Promise<boolean>;
   image?: { base64: string; mimeType: 'image/png' | 'image/jpeg' };
 }) {
   const router = useRouter();
@@ -216,14 +225,14 @@ export function LearningAiPanel({
   }
 
   async function practice() {
-    if (busy || !allowGeneration || (beforeNavigate && !beforeNavigate()))
-      return;
+    if (busy || !allowGeneration) return;
     setBusy(true);
     setError('');
     setFailureRecovery(null);
     setSessionExpired(false);
 
     try {
+      if (beforeNavigate && !(await beforeNavigate())) return;
       const key = JSON.stringify([source, language, exerciseType, latest?.id]);
 
       if (exerciseRequest.current?.key !== key)
@@ -317,7 +326,7 @@ export function LearningAiPanel({
 
   if (compact)
     return (
-      <section
+      <Section
         className={styles.stack}
         aria-label='원문 AI 학습'>
         {sessionExpired && <SessionRecovery />}
@@ -332,12 +341,23 @@ export function LearningAiPanel({
         ) : (
           <>
             {!allowGeneration && (
-              <p className={styles.notice}>
-                지금은 새 AI 생성을 요청할 수 없습니다. 저장 설명·대화·표현과
-                개인 기록은 유지합니다.
-              </p>
+              <Banner
+                status='warning'
+                title={
+                  <>
+                    지금은 새 AI 생성을 요청할 수 없습니다. 저장
+                    설명·대화·표현과 개인 기록은 유지합니다.
+                  </>
+                }
+              />
             )}
-            {loading && <p role='status'>저장된 설명을 불러오고 있어요.</p>}
+            {loading && (
+              <Text
+                as='p'
+                role='status'>
+                저장된 설명을 불러오고 있어요.
+              </Text>
+            )}
             {latest && (
               <AiExplanation
                 value={latest}
@@ -345,10 +365,12 @@ export function LearningAiPanel({
               />
             )}
             {!loading && !latest && (
-              <p className={styles.meta}>
+              <Text
+                as='p'
+                className={styles.meta}>
                 저장된 설명이 없습니다. 필요한 설명을 요청하면 이곳에
                 보관합니다.
-              </p>
+              </Text>
             )}
             <div hidden={conversationView}>
               <div className={styles.row}>
@@ -364,14 +386,14 @@ export function LearningAiPanel({
                   이해 확인
                 </Button>
               </div>
-              <details open={!latest}>
-                <summary>
-                  {latest ? '다른 설명과 연습 요청' : '설명 요청'}
-                </summary>
+              <Collapsible
+                defaultIsOpen={!latest}
+                trigger={<>{latest ? '다른 설명과 연습 요청' : '설명 요청'}</>}>
                 <div className={styles.stack}>
-                  <label className={styles.field}>
-                    살펴볼 내용
+                  <div className={styles.field}>
                     <Select
+                      label='살펴볼 내용'
+
                       value={mode}
                       disabled={busy || !allowGeneration}
                       onChange={(e) => setMode(e.target.value as typeof mode)}>
@@ -380,10 +402,11 @@ export function LearningAiPanel({
                       <option value='structure'>문장 구조</option>
                       <option value='concept'>개념과 적용</option>
                     </Select>
-                  </label>
-                  <label className={styles.field}>
-                    설명 언어
+                  </div>
+                  <div className={styles.field}>
                     <Select
+                      label='설명 언어'
+
                       value={explanationLanguage}
                       disabled={busy || !allowGeneration}
                       onChange={(e) =>
@@ -395,7 +418,7 @@ export function LearningAiPanel({
                       <option value='en'>영어</option>
                       <option value='th'>태국어</option>
                     </Select>
-                  </label>
+                  </div>
                   <Button
                     loading={busy}
                     disabled={busy || !allowGeneration}
@@ -410,9 +433,10 @@ export function LearningAiPanel({
                       이 페이지 이미지로 해석
                     </Button>
                   )}
-                  <label className={styles.field}>
-                    이해 확인 방식
+                  <div className={styles.field}>
                     <Select
+                      label='이해 확인 방식'
+
                       value={exerciseType}
                       disabled={busy || !allowGeneration}
                       onChange={(e) =>
@@ -424,11 +448,12 @@ export function LearningAiPanel({
                         자유 답변과 AI 피드백
                       </option>
                     </Select>
-                  </label>
+                  </div>
                 </div>
-              </details>
-              <details>
-                <summary>저장한 다른 설명과 사용 한도</summary>
+              </Collapsible>
+              <Collapsible
+                defaultIsOpen={false}
+                trigger={<>저장한 다른 설명과 사용 한도</>}>
                 {items.slice(1).map((item) => (
                   <AiExplanation
                     key={item.id}
@@ -444,31 +469,33 @@ export function LearningAiPanel({
                   />
                 ))}
                 {capabilities && (
-                  <p className={styles.meta}>
+                  <Text
+                    as='p'
+                    className={styles.meta}>
                     {aiProviderLabel(capabilities.provider)} ·{' '}
                     {capabilities.models.text}
                     <br />
                     하루 {capabilities.limits.dailyRequests}회 ·{' '}
                     {capabilities.limits.dailyTokens.toLocaleString()}토큰 ·
                     동시 {capabilities.limits.concurrentRequests}개
-                  </p>
+                  </Text>
                 )}
                 <Button
                   variant='ghost'
                   onClick={reloadStoredResults}>
                   저장 결과 새로 조회
                 </Button>
-              </details>
+              </Collapsible>
             </div>
             <hr />
             {!conversation && (
               <form
                 className={styles.stack}
                 onSubmit={(event) => void askFromSource(event)}>
-                <label className={styles.field}>
-                  선택한 구절에 질문하기
+                <div className={styles.field}>
                   <Input
-                    aria-label='선택한 구절에 질문하기'
+                    label='선택한 구절에 질문하기'
+
                     value={quickQuestion}
                     onChange={(event) => setQuickQuestion(event.target.value)}
                     maxLength={3000}
@@ -476,7 +503,7 @@ export function LearningAiPanel({
                     required
                     placeholder='이 구절에 대해 더 물어보세요'
                   />
-                </label>
+                </div>
                 <div>
                   <Button
                     loading={busy}
@@ -520,10 +547,12 @@ export function LearningAiPanel({
               }>
               커뮤니티에 질문하기 →
             </Button>
-            <p className={styles.meta}>
+            <Text
+              as='p'
+              className={styles.meta}>
               설명 조회와 저장에는 새 AI 호출이 없습니다. 새 설명·문제·대화
               답변만 사용량에 포함됩니다.
-            </p>
+            </Text>
           </>
         )}
         <AiRequestStatus
@@ -542,11 +571,11 @@ export function LearningAiPanel({
             onClose={() => setDialog(null)}
           />
         )}
-      </section>
+      </Section>
     );
 
   return (
-    <section
+    <Section
       className={styles.stack}
       aria-label='원문 AI 학습'>
       {sessionExpired && <SessionRecovery />}
@@ -555,7 +584,9 @@ export function LearningAiPanel({
         <span className={styles.meta}>자료 v{source.version ?? 1}</span>
       </div>
       {capabilities && (
-        <p className={styles.meta}>
+        <Text
+          as='p'
+          className={styles.meta}>
           현재 요청 공급자: {aiProviderLabel(capabilities.provider)} · 텍스트{' '}
           {capabilities.models.text} · 이미지 {capabilities.models.image}
           {capabilities.configured ? '' : ' · 연결 설정 필요'}
@@ -563,12 +594,13 @@ export function LearningAiPanel({
           하루 최대 {capabilities.limits.dailyRequests}회 ·{' '}
           {capabilities.limits.dailyTokens.toLocaleString()}토큰 · 동시{' '}
           {capabilities.limits.concurrentRequests}개 요청
-        </p>
+        </Text>
       )}
       <div className={styles.row}>
-        <label className={styles.field}>
-          살펴볼 내용
+        <div className={styles.field}>
           <Select
+            label='살펴볼 내용'
+
             value={mode}
             disabled={busy}
             onChange={(event) => setMode(event.target.value as typeof mode)}>
@@ -577,10 +609,11 @@ export function LearningAiPanel({
             <option value='structure'>문장 구조</option>
             <option value='concept'>개념과 적용</option>
           </Select>
-        </label>
-        <label className={styles.field}>
-          설명 언어
+        </div>
+        <div className={styles.field}>
           <Select
+            label='설명 언어'
+
             value={explanationLanguage}
             disabled={busy}
             onChange={(event) =>
@@ -592,7 +625,7 @@ export function LearningAiPanel({
             <option value='en'>영어</option>
             <option value='th'>태국어</option>
           </Select>
-        </label>
+        </div>
       </div>
       <div className={styles.row}>
         <Button
@@ -612,11 +645,19 @@ export function LearningAiPanel({
           </Button>
         )}
       </div>
-      <p className={styles.meta}>
+      <Text
+        as='p'
+        className={styles.meta}>
         저장 결과를 여는 것만으로 AI를 호출하지 않습니다. 새 설명·질문·연습을
         요청할 때 서버 한도를 확인합니다.
-      </p>
-      {loading && <p role='status'>저장된 설명과 대화를 불러오고 있어요.</p>}
+      </Text>
+      {loading && (
+        <Text
+          as='p'
+          role='status'>
+          저장된 설명과 대화를 불러오고 있어요.
+        </Text>
+      )}
       <div>
         <Button
           size='small'
@@ -655,41 +696,53 @@ export function LearningAiPanel({
         </>
       )}
       {!loading && !latest && (
-        <p className={styles.notice}>
-          아직 저장된 설명이 없습니다. 필요한 내용과 설명 언어를 선택해 요청해
-          보세요.
-        </p>
+        <Banner
+          status='warning'
+          title={
+            <>
+              아직 저장된 설명이 없습니다. 필요한 내용과 설명 언어를 선택해
+              요청해 보세요.
+            </>
+          }
+        />
       )}
       {items.length > 1 && (
-        <details>
-          <summary>이 발췌의 다른 저장 설명 {items.length - 1}개</summary>
+        <Collapsible
+          defaultIsOpen={false}
+          trigger={<>이 발췌의 다른 저장 설명 {items.length - 1}개</>}>
           {items.slice(1).map((value) => (
             <AiExplanation
               key={value.id + ':' + value.version}
               value={value}
             />
           ))}
-        </details>
+        </Collapsible>
       )}
       {related.length > 0 && (
-        <details>
-          <summary>
-            이 페이지·구절의 다른 범위 준비 결과 {related.length}개
-          </summary>
+        <Collapsible
+          defaultIsOpen={false}
+          trigger={
+            <>이 페이지·구절의 다른 범위 준비 결과 {related.length}개</>
+          }>
           {related.map((value) => (
             <div key={value.id + ':' + value.version}>
-              <p className={styles.meta}>이 설명에 사용한 원문 범위</p>
-              <blockquote className={styles.quote}>
+              <Text
+                as='p'
+                className={styles.meta}>
+                이 설명에 사용한 원문 범위
+              </Text>
+              <Blockquote className={styles.quote}>
                 {value.source.quote}
-              </blockquote>
+              </Blockquote>
               <AiExplanation value={value} />
             </div>
           ))}
-        </details>
+        </Collapsible>
       )}
-      <label className={styles.field}>
-        짧은 적용 연습
+      <div className={styles.field}>
         <Select
+          label='짧은 적용 연습'
+
           value={exerciseType}
           onChange={(event) =>
             setExerciseType(event.target.value as typeof exerciseType)
@@ -698,7 +751,7 @@ export function LearningAiPanel({
           <option value='short_answer'>짧은 정답형</option>
           <option value='free_response'>자유 답변과 AI 피드백</option>
         </Select>
-      </label>
+      </div>
       <div>
         <Button
           variant='secondary'
@@ -710,7 +763,7 @@ export function LearningAiPanel({
       </div>
       <hr />
       <div className={styles.row}>
-        <h3>나만의 원문 대화</h3>
+        <Heading level={3}>나만의 원문 대화</Heading>
         <Button
           variant='ghost'
           size='small'
@@ -766,6 +819,6 @@ export function LearningAiPanel({
           onClose={() => setDialog(null)}
         />
       )}
-    </section>
+    </Section>
   );
 }

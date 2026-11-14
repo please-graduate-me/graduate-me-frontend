@@ -1,4 +1,6 @@
 'use client';
+import { List, ListItem } from '@astryxdesign/core/List';
+import { Text } from '@astryxdesign/core/Text';
 import { useEffect, useRef } from 'react';
 import * as styles from './SegmentList.css';
 
@@ -14,7 +16,7 @@ export function SegmentList({
   disabled?: boolean;
   onSelect: (index: number) => void;
 }) {
-  const list = useRef<HTMLOListElement>(null);
+  const list = useRef<HTMLUListElement | HTMLOListElement>(null);
 
   useEffect(() => {
     const active = list.current?.querySelector<HTMLElement>(
@@ -37,38 +39,42 @@ export function SegmentList({
         <span>전체 구절</span>
         <span>{items.length}개</span>
       </div>
-      <ol
+      <List
         className={styles.list}
         ref={list}>
         {items.map((item, index) => (
-          <li key={item.id}>
-            <button
-              type='button'
-              className={styles.item}
-              aria-current={index === currentIndex ? 'step' : undefined}
-              disabled={disabled}
-              onClick={() => onSelect(index)}>
-              <span className={styles.number}>
+          <ListItem
+            key={item.id}
+            isSelected={index === currentIndex}
+            isDisabled={disabled}
+            aria-current={index === currentIndex ? 'step' : undefined}
+            onClick={() => onSelect(index)}
+            startContent={
+              <Text hasTabularNumbers>
                 {String(index + 1).padStart(2, '0')}
-              </span>
-              <span>
-                {index === currentIndex
-                  ? '학습 중'
-                  : item.status === 'correct'
-                    ? '받아쓰기 완료'
-                    : item.status === 'skipped'
-                      ? '건너뛴 구절'
-                      : '아직 듣지 않은 구절'}
-                {item.difficult ? ' · 안 들림' : ''}
-              </span>
-              <time className={styles.time}>
+              </Text>
+            }
+            label={
+              (index === currentIndex
+                ? '학습 중'
+                : item.status === 'correct'
+                  ? '받아쓰기 완료'
+                  : item.status === 'skipped'
+                    ? '건너뛴 구절'
+                    : '아직 듣지 않은 구절') +
+              (item.difficult ? ' · 안 들림' : '')
+            }
+            endContent={
+              <Text
+                type='supporting'
+                hasTabularNumbers>
                 {Math.floor(item.start / 60)}:
                 {String(Math.floor(item.start % 60)).padStart(2, '0')}
-              </time>
-            </button>
-          </li>
+              </Text>
+            }
+          />
         ))}
-      </ol>
+      </List>
     </nav>
   );
 }

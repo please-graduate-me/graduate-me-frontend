@@ -1,4 +1,8 @@
 'use client';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+
+import { Banner } from '@astryxdesign/core/Banner';
+
 import { useState } from 'react';
 import type { SourceInput } from '@/domains/materials/model/source';
 import { createQuestion } from '@/domains/questions/api/questions';
@@ -55,31 +59,33 @@ export function MaterialReportComposer({
             setBusy(false);
           }
         }}>
-        <label className={styles.field}>
-          제목
+        <div className={styles.field}>
           <Input
+            label='제목'
+
             required
             maxLength={200}
             value={title}
             onChange={(event) => setTitle(event.target.value)}
           />
-        </label>
-        <label className={styles.field}>
-          신고 내용
+        </div>
+        <div className={styles.field}>
           <TextArea
+            label='신고 내용'
+
             required
             maxLength={10000}
             value={body}
             onChange={(event) => setBody(event.target.value)}
           />
-        </label>
-        <blockquote className={styles.quote}>{source.quote}</blockquote>
+        </div>
+        <Blockquote className={styles.quote}>{source.quote}</Blockquote>
         {error && (
-          <p
+          <Banner
+            status='error'
             role='alert'
-            className={styles.error}>
-            {error}
-          </p>
+            title={<>{error}</>}
+          />
         )}
         <Button loading={busy}>운영자에게 신고</Button>
       </form>

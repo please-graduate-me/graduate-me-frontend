@@ -1,4 +1,8 @@
 'use client';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+
+import { Banner } from '@astryxdesign/core/Banner';
+
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
 import { useState } from 'react';
@@ -56,32 +60,34 @@ export function AnnotationComposer({
       <form
         className={styles.stack}
         onSubmit={(event) => void save(event)}>
-        <blockquote className={styles.quote}>{source.quote}</blockquote>
-        <label className={styles.field}>
-          하이라이트 색상
+        <Blockquote className={styles.quote}>{source.quote}</Blockquote>
+        <div className={styles.field}>
           <Select
+            label='하이라이트 색상'
+
             value={color}
             onChange={(event) => setColor(event.target.value as typeof color)}>
             <option value='yellow'>노랑</option>
             <option value='blue'>파랑</option>
             <option value='green'>초록</option>
           </Select>
-        </label>
-        <label className={styles.field}>
-          이 구절의 메모
+        </div>
+        <div className={styles.field}>
           <TextArea
+            label='이 구절의 메모'
+
             value={memo}
             maxLength={5000}
             onChange={(event) => setMemo(event.target.value)}
           />
-        </label>
+        </div>
         {sessionExpired && <SessionRecovery />}
         {error && (
-          <p
-            className={styles.error}
-            role='alert'>
-            {error}
-          </p>
+          <Banner
+            status='error'
+            role='alert'
+            title={<>{error}</>}
+          />
         )}
         <div className={styles.row}>
           <Button

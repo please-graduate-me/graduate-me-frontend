@@ -1,6 +1,12 @@
 'use client';
+import { Banner } from '@astryxdesign/core/Banner';
+
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Card } from '@astryxdesign/core/Card';
+
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import { listExpressions } from '@/domains/expressions/api/expressions';
 import type { Expression } from '@/domains/expressions/model/contracts';
 import { listAnnotations } from '@/domains/materials/api/records';
@@ -52,7 +58,7 @@ export function VideoSavedEntries({ videoId }: { videoId: string }) {
   return (
     <div className={styles.stack}>
       <div className={styles.row}>
-        <h3>내 표현과 메모</h3>
+        <Heading level={3}>내 표현과 메모</Heading>
         <Button
           size='small'
           variant='ghost'
@@ -65,18 +71,19 @@ export function VideoSavedEntries({ videoId }: { videoId: string }) {
         </Button>
       </div>
       {loading && (
-        <p
+        <Text
+          as='p'
           className={styles.meta}
           role='status'>
           이 영상에서 저장한 개인 기록을 불러오고 있어요.
-        </p>
+        </Text>
       )}
       {error && (
-        <p
-          className={styles.error}
-          role='alert'>
-          {error}
-        </p>
+        <Banner
+          status='error'
+          role='alert'
+          title={<>{error}</>}
+        />
       )}
       {!loading && !error && !expressions.length && !annotations.length && (
         <EmptyState
@@ -86,7 +93,8 @@ export function VideoSavedEntries({ videoId }: { videoId: string }) {
         />
       )}
       {expressions.map((item) => (
-        <article
+        <Card
+          role='article'
           className={styles.message}
           key={item.id}>
           <Link
@@ -94,17 +102,25 @@ export function VideoSavedEntries({ videoId }: { videoId: string }) {
             href={materialPaths.source(item.source)}>
             {item.text}
           </Link>
-          <p>{item.meaning || '정리한 뜻 없음'}</p>
-          <p className={styles.meta}>
+          <Text as='p'>{item.meaning || '정리한 뜻 없음'}</Text>
+          <Text
+            as='p'
+            className={styles.meta}>
             원문 v{item.source.version ?? 1} · {item.source.start?.toFixed(1)}초
-          </p>
-          {item.note && <p className={styles.prose}>{item.note}</p>}
+          </Text>
+          {item.note && (
+            <Text
+              as='p'
+              className={styles.prose}>
+              {item.note}
+            </Text>
+          )}
           <Link
             href='/expressions'
             className={styles.link}>
             표현집에서 편집
           </Link>
-        </article>
+        </Card>
       ))}
       <AnnotationList
         items={annotations}

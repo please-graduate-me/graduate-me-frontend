@@ -1,3 +1,4 @@
+import { Collapsible } from '@astryxdesign/core/Collapsible';
 import { requireSession } from '../requireSession';
 import { listExpressions } from '@/domains/expressions/api/expressions';
 import { ExpressionPractice } from './_components/ExpressionPractice';
@@ -46,13 +47,12 @@ export default async function PracticePage({
           profile.targetLanguage
         }
       />
-      <details>
-        <summary>내 표현 카드로 자가점검하기</summary>
+      <Collapsible trigger={<> 내 표현 카드로 자가점검하기 </>}>
         <ExpressionPractice
           key={search.expressionId ?? 'all'}
           expressions={items.filter((item) => item.reviewIncluded)}
         />
-      </details>
+      </Collapsible>
     </>
   );
 }

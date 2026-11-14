@@ -1,4 +1,11 @@
 'use client';
+import { List, ListItem } from '@astryxdesign/core/List';
+
+import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Section } from '@astryxdesign/core/Section';
 import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
@@ -159,28 +166,33 @@ export function GeneratedPractice({
       {sessionExpired && <SessionRecovery />}
       <div className={styles.heading}>
         <div>
-          <h1>적용 연습 · 복습</h1>
-          <p className={styles.description}>
+          <Heading level={1}>적용 연습 · 복습</Heading>
+          <Text
+            as='p'
+            display='block'
+            className={styles.description}>
             선택한 표현을 출제 근거로, 최근 30일의 오답·메모·질문을 함께 참고해
             문제를 만듭니다.
-          </p>
+          </Text>
         </div>
         <Badge tone='brand'>저장 문제 재풀이는 AI 호출 없음</Badge>
       </div>
       {unavailable && (
-        <p
-          className={styles.notice}
+        <Banner
+          status='info'
+          title='안내'
+
           role='status'>
           요청한 문제는 삭제되었거나 조회할 수 없습니다. 저장된 다른 문제 목록을
           확인해 주세요.
-        </p>
+        </Banner>
       )}
-      <section className={styles.panel}>
-        <h2>새 적용 문제 요청</h2>
+      <Section className={styles.panel}>
+        <Heading level={2}>새 적용 문제 요청</Heading>
         <div className={styles.filters}>
-          <label className={styles.field}>
-            학습 언어
+          <div className={styles.field}>
             <Select
+              label={contentLabel(<>학습 언어</>)}
               value={language}
               onChange={(event) => {
                 setLanguage(event.target.value as typeof language);
@@ -189,10 +201,10 @@ export function GeneratedPractice({
               <option value='en'>영어</option>
               <option value='th'>태국어</option>
             </Select>
-          </label>
-          <label className={styles.field}>
-            연습 방식
+          </div>
+          <div className={styles.field}>
             <Select
+              label={contentLabel(<>연습 방식</>)}
               value={practiceStyle}
               onChange={(event) => {
                 setPracticeStyle(event.target.value as typeof practiceStyle);
@@ -201,11 +213,11 @@ export function GeneratedPractice({
               <option value='application'>짧은 이해·적용</option>
               <option value='flex'>FLEX형 확장 연습</option>
             </Select>
-          </label>
+          </div>
           {practiceStyle === 'flex' && (
-            <label className={styles.field}>
-              영역
+            <div className={styles.field}>
               <Select
+                label={contentLabel(<>영역</>)}
                 value={skill}
                 onChange={(event) => {
                   setSkill(event.target.value as typeof skill);
@@ -214,21 +226,21 @@ export function GeneratedPractice({
                 <option value='reading'>읽기</option>
                 <option value='listening'>듣기 · 영상 근거</option>
               </Select>
-            </label>
+            </div>
           )}
-          <label className={styles.field}>
-            유형
+          <div className={styles.field}>
             <Select
+              label={contentLabel(<>유형</>)}
               value={type}
               onChange={(event) => setType(event.target.value as typeof type)}>
               <option value='choice'>객관식 이해·적용</option>
               <option value='short_answer'>짧은 정답형</option>
               <option value='free_response'>자유답변 피드백</option>
             </Select>
-          </label>
-          <label className={styles.field}>
-            문제 수
+          </div>
+          <div className={styles.field}>
             <Select
+              label={contentLabel(<>문제 수</>)}
               value={count}
               onChange={(event) => setCount(Number(event.target.value))}>
               {[1, 2, 3, 4, 5].map((value) => (
@@ -239,25 +251,36 @@ export function GeneratedPractice({
                 </option>
               ))}
             </Select>
-          </label>
+          </div>
         </div>
         {practiceStyle === 'flex' && (
-          <p className={styles.notice}>
+          <Banner
+            status='info'
+            title='안내'>
             FLEX형 문맥 이해 연습입니다. 실제 FLEX 시험 문항·점수 또는 공인 능력
             평가가 아닙니다. 듣기는 실제 영상의 원문 구절을 근거로 하며 영상
             출처가 있는 표현만 선택할 수 있습니다.
-          </p>
+          </Banner>
         )}
-        <p className={styles.meta}>
+        <Text
+          as='p'
+          display='block'
+          className={styles.meta}>
           출제에 사용할 저장 항목을 선택하세요. 서버는 같은 언어의 실제 오답과
           미복습 항목을 우선 참고합니다.
-        </p>
+        </Text>
         <div className={styles.stack}>
           {eligible.slice(0, 50).map((item) => (
-            <label
+            <div
               className={styles.row}
               key={item.id}>
               <Checkbox
+                label={contentLabel(
+                  <>
+                    {item.text}
+                    <span className={styles.meta}>{item.source.title}</span>
+                  </>
+                )}
                 checked={expressionIds.includes(item.id)}
                 onChange={(event) =>
                   setExpressionIds((previous) =>
@@ -267,16 +290,16 @@ export function GeneratedPractice({
                   )
                 }
               />
-              {item.text}
-              <span className={styles.meta}>{item.source.title}</span>
-            </label>
+            </div>
           ))}
         </div>
         {!eligible.length && (
-          <p className={styles.notice}>
+          <Banner
+            status='info'
+            title='안내'>
             이 언어에 복습할 저장 표현이 없습니다. 원문에서 표현을 저장하거나
             원문 AI 패널에서 바로 문제를 요청해 보세요.
-          </p>
+          </Banner>
         )}
         <div className={styles.row}>
           <Button
@@ -293,9 +316,10 @@ export function GeneratedPractice({
           </Button>
         </div>
         {error && (
-          <p
-            role='alert'
-            className={styles.error}>
+          <Banner
+            status='error'
+            title='확인이 필요해요'
+            role='alert'>
             {error}
             <Button
               size='small'
@@ -307,9 +331,9 @@ export function GeneratedPractice({
               }}>
               새 문제로 다시 요청
             </Button>
-          </p>
+          </Banner>
         )}
-      </section>
+      </Section>
       <div className={styles.tabs}>
         {(
           [
@@ -319,14 +343,15 @@ export function GeneratedPractice({
             ['excluded', '복습에서 제외'],
           ] as const
         ).map(([value, label]) => (
-          <button
+          <Button
+            variant='secondary'
             key={value}
             type='button'
             className={styles.tab}
             aria-pressed={filter === value}
             onClick={() => setFilter(value)}>
             {label}
-          </button>
+          </Button>
         ))}
       </div>
       {!filtered.length ? (
@@ -337,29 +362,38 @@ export function GeneratedPractice({
         />
       ) : (
         <div className={styles.columns}>
-          <ul className={styles.list}>
+          <List className={styles.list}>
             {filtered.map((item) => (
-              <li key={item.id}>
-                <button
-                  type='button'
-                  className={styles.listItem}
-                  aria-pressed={current?.id === item.id}
-                  onClick={() => setSelected(item.id)}>
-                  <strong>{item.payload.question}</strong>
-                  <p className={styles.meta}>
-                    {item.source.title} · v{item.version} ·{' '}
-                    {item.status === 'suspended'
-                      ? '새 풀이 중단'
-                      : item.latestResult?.correct === false
-                        ? '오답 복습'
-                        : item.latestResult
-                          ? '풀이 기록 있음'
-                          : '미풀이'}
-                  </p>
-                </button>
-              </li>
+              <ListItem
+                key={item.id}
+                label={
+                  <>
+                    <Button
+                      variant='secondary'
+                      type='button'
+                      className={styles.listItem}
+                      aria-pressed={current?.id === item.id}
+                      onClick={() => setSelected(item.id)}>
+                      <strong>{item.payload.question}</strong>
+                      <Text
+                        as='p'
+                        display='block'
+                        className={styles.meta}>
+                        {item.source.title} · v{item.version} ·{' '}
+                        {item.status === 'suspended'
+                          ? '새 풀이 중단'
+                          : item.latestResult?.correct === false
+                            ? '오답 복습'
+                            : item.latestResult
+                              ? '풀이 기록 있음'
+                              : '미풀이'}
+                      </Text>
+                    </Button>
+                  </>
+                }
+              />
             ))}
-          </ul>
+          </List>
           {current && (
             <ExerciseSolver
               key={current.id + ':' + current.version}

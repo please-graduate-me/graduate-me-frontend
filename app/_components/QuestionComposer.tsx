@@ -14,7 +14,7 @@ export function QuestionComposer(props: {
   attachmentText?: string;
   report?: boolean;
   embedded?: boolean;
-  beforeNavigate?: () => boolean;
+  beforeNavigate?: () => boolean | Promise<boolean>;
 }) {
   if (props.report) return <MaterialReportComposer {...props} />;
 

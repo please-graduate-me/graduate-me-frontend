@@ -1,4 +1,11 @@
 'use client';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+
+import { Banner } from '@astryxdesign/core/Banner';
+
+import { Text } from '@astryxdesign/core/Text';
+import { Heading } from '@astryxdesign/core/Heading';
+
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
 import { useEffect, useState } from 'react';
@@ -31,7 +38,7 @@ export function CommunityPostComposer({
   source?: SourceInput;
   initial?: CommunityPost;
   initialBody?: string;
-  beforeNavigate?: () => boolean;
+  beforeNavigate?: () => boolean | Promise<boolean>;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(initial?.title ?? '');
@@ -83,11 +90,13 @@ export function CommunityPostComposer({
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     // 이전 공개 확인을 입력 변경 뒤 재사용하지 않으며 원본 권한은 서버가 다시 확인한다.
-    if (!confirmed || busy || (beforeNavigate && !beforeNavigate())) return;
+    if (!confirmed || busy) return;
     setBusy(true);
     setError('');
 
     try {
+      if (beforeNavigate && !(await beforeNavigate())) return;
+
       const result = await saveCommunityPost(
         {
           title: title.trim(),
@@ -126,9 +135,10 @@ export function CommunityPostComposer({
       <form
         className={styles.stack}
         onSubmit={(event) => void submit(event)}>
-        <label className={styles.field}>
-          제목
+        <div className={styles.field}>
           <Input
+            label='제목'
+
             required
             maxLength={200}
             value={title}
@@ -138,10 +148,11 @@ export function CommunityPostComposer({
               setConfirmed(false);
             }}
           />
-        </label>
-        <label className={styles.field}>
-          내용
+        </div>
+        <div className={styles.field}>
           <TextArea
+            label='내용'
+
             required
             maxLength={10000}
             value={body}
@@ -151,10 +162,11 @@ export function CommunityPostComposer({
               setConfirmed(false);
             }}
           />
-        </label>
-        <label className={styles.field}>
-          학습 언어
+        </div>
+        <div className={styles.field}>
           <Select
+            label='학습 언어'
+
             value={selectedLanguage}
             disabled={busy}
             onChange={(event) => {
@@ -164,10 +176,11 @@ export function CommunityPostComposer({
             <option value='en'>영어</option>
             <option value='th'>태국어</option>
           </Select>
-        </label>
-        <label className={styles.field}>
-          공개 대상
+        </div>
+        <div className={styles.field}>
           <Select
+            label='공개 대상'
+
             value={visibility}
             disabled={busy}
             onChange={(event) => {
@@ -177,11 +190,12 @@ export function CommunityPostComposer({
             <option value='public'>서비스 이용자에게 공개</option>
             <option value='accounts'>지정 계정만</option>
           </Select>
-        </label>
+        </div>
         {visibility === 'accounts' && (
-          <label className={styles.field}>
-            허용할 계정 식별자
+          <div className={styles.field}>
             <TextArea
+              label='허용할 계정 식별자'
+
               required
               placeholder='공유받은 계정 식별자를 공백 또는 줄바꿈으로 구분하세요.'
               value={accounts}
@@ -191,66 +205,71 @@ export function CommunityPostComposer({
                 setConfirmed(false);
               }}
             />
-          </label>
+          </div>
         )}
         <fieldset
           className={styles.stack}
           disabled={busy}>
           <legend>조교 태그</legend>
-          {!helpers.length && <p>현재 태그할 수 있는 조교가 없습니다.</p>}
+          {!helpers.length && (
+            <Text as='p'>현재 태그할 수 있는 조교가 없습니다.</Text>
+          )}
           {helpers.map((helper) => (
-            <label
+            <Checkbox
               key={helper.id}
-              className={styles.row}>
-              <Checkbox
-                checked={tagged.includes(helper.id)}
-                onChange={(event) => {
-                  setTagged((previous) =>
-                    event.target.checked
-                      ? [...previous, helper.id]
-                      : previous.filter((id) => id !== helper.id)
-                  );
+              label={helper.name ?? '조교'}
+              disabled={busy}
+              checked={tagged.includes(helper.id)}
+              onChange={(event) => {
+                setTagged((previous) =>
+                  event.target.checked
+                    ? [...previous, helper.id]
+                    : previous.filter((id) => id !== helper.id)
+                );
 
-                  setConfirmed(false);
-                }}
-              />{' '}
-              {helper.name ?? '조교'}
-            </label>
+                setConfirmed(false);
+              }}
+            />
           ))}
         </fieldset>
         {excerpt && (
           <div className={styles.preview}>
-            <h3>함께 공유할 발췌</h3>
-            <blockquote className={styles.quote}>{excerpt.quote}</blockquote>
-            <p className={styles.meta}>
+            <Heading level={3}>함께 공유할 발췌</Heading>
+            <Blockquote className={styles.quote}>{excerpt.quote}</Blockquote>
+            <Text
+              as='p'
+              className={styles.meta}>
               {excerpt.kind === 'pdf'
                 ? `PDF ${excerpt.page}페이지`
                 : '영상 구절'}{' '}
               · 원문 v{excerpt.version ?? 1}
-            </p>
+            </Text>
           </div>
         )}
-        <p className={styles.notice}>
-          위 제목·본문{excerpt ? '·선택 발췌' : ''}가{' '}
-          {visibility === 'public' ? '서비스 이용자' : '지정 계정'}에게
-          공개됩니다. 개인 메모·전체 자료·답안·비공개 AI 대화는 공유하지
-          않습니다.
-        </p>
-        <label className={styles.row}>
-          <Checkbox
-            checked={confirmed}
-            disabled={busy}
-            onChange={(event) => setConfirmed(event.target.checked)}
-          />
-          공개할 내용과 대상을 확인했어요.
-        </label>
+        <Banner
+          status='warning'
+          title={
+            <>
+              위 제목·본문{excerpt ? '·선택 발췌' : ''}가{' '}
+              {visibility === 'public' ? '서비스 이용자' : '지정 계정'}에게
+              공개됩니다. 개인 메모·전체 자료·답안·비공개 AI 대화는 공유하지
+              않습니다.
+            </>
+          }
+        />
+        <Checkbox
+          label={'공개할 내용과 대상을 확인했어요.'}
+          checked={confirmed}
+          disabled={busy}
+          onChange={(event) => setConfirmed(event.target.checked)}
+        />
         {sessionExpired && <SessionRecovery />}
         {error && (
-          <p
-            className={styles.error}
-            role='alert'>
-            {error}
-          </p>
+          <Banner
+            status='error'
+            role='alert'
+            title={<>{error}</>}
+          />
         )}
         <Button
           loading={busy}

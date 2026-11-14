@@ -1,5 +1,13 @@
+import { Section } from '@astryxdesign/core/Section';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Card } from '@astryxdesign/core/Card';
+import { List, ListItem } from '@astryxdesign/core/List';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Collapsible } from '@astryxdesign/core/Collapsible';
 import { aiProviderLabel } from '@/domains/ai/lib/providerLabel';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import { materialPaths } from '@/domains/materials/config/paths';
 import { sourceLabel } from '@/domains/learning/lib/format';
 import type { Explanation } from '@/domains/ai/model/contracts';
@@ -19,39 +27,53 @@ export function AiExplanation({
 
   if (compact)
     return (
-      <article className={compactStyles.root}>
-        <h3 className={compactStyles.title}>{value.source.quote}</h3>
+      <Card
+        role='article'
+        className={compactStyles.root}>
+        <Heading
+          level={3}
+          className={compactStyles.title}>
+          {value.source.quote}
+        </Heading>
         {data.meaning && (
-          <section>
-            <span className={compactStyles.label}>이 문장에서는</span>
-            <p>{data.meaning}</p>
-          </section>
+          <Section>
+            <Text type='supporting'>이 문장에서는</Text>
+            <Text as='p'>{data.meaning}</Text>
+          </Section>
         )}
         {data.translation && (
-          <section>
-            <span className={compactStyles.label}>번역</span>
-            <p>{data.translation}</p>
-          </section>
+          <Section>
+            <Text type='supporting'>번역</Text>
+            <Text as='p'>{data.translation}</Text>
+          </Section>
         )}
         {data.structure && (
-          <details>
-            <summary>문장 구조</summary>
-            <p>{data.structure}</p>
-          </details>
+          <Collapsible
+            defaultIsOpen={false}
+            trigger={<>문장 구조</>}>
+            <Text as='p'>{data.structure}</Text>
+          </Collapsible>
         )}
         {data.concept && (
-          <details>
-            <summary>개념과 적용</summary>
-            <p>{data.concept}</p>
-          </details>
+          <Collapsible
+            defaultIsOpen={false}
+            trigger={<>개념과 적용</>}>
+            <Text as='p'>{data.concept}</Text>
+          </Collapsible>
         )}
         {data.examples.length > 0 && (
-          <section className={compactStyles.examples}>
-            <span className={compactStyles.label}>AI가 추가한 예문</span>
+          <Card
+            variant='muted'
+            className={compactStyles.examples}>
+            <Text type='supporting'>AI가 추가한 예문</Text>
             {data.examples.map((example, index) => (
-              <p key={index}>{example}</p>
+              <Text
+                as='p'
+                key={index}>
+                {example}
+              </Text>
             ))}
-          </section>
+          </Card>
         )}
         <Badge
           tone={
@@ -67,36 +89,42 @@ export function AiExplanation({
               ? '이 구절·설명 검토 완료'
               : 'AI 설명 · 도우미 검토 전'}
         </Badge>
-        <details>
-          <summary>원문 근거와 생성 정보</summary>
-          <p>
+        <Collapsible
+          defaultIsOpen={false}
+          trigger={<>원문 근거와 생성 정보</>}>
+          <Text as='p'>
             {sourceLabel(value.source)} · 원문 v{value.source.version ?? 1} ·
             설명 v{value.version}
-          </p>
-          <p>
+          </Text>
+          <Text as='p'>
             {aiProviderLabel(value.provider)} · {value.model}
-          </p>
+          </Text>
           {data.contextDescription && (
-            <p>제공한 문맥: {data.contextDescription}</p>
+            <Text as='p'>제공한 문맥: {data.contextDescription}</Text>
           )}
-          <p>
+          <Text as='p'>
             {data.evidenceType === 'page_image_and_text'
               ? '페이지 이미지와 텍스트에 근거합니다.'
               : '텍스트에 근거하며 영상 화면을 분석하지 않았습니다.'}
-          </p>
+          </Text>
           {data.citations.map((cite, index) => (
-            <blockquote key={index}>{cite.quote}</blockquote>
+            <Blockquote key={index}>{cite.quote}</Blockquote>
           ))}
           <Link href={materialPaths.source(value.source)}>원문 위치 보기</Link>
-        </details>
+        </Collapsible>
         {data.uncertainty && (
-          <p className={styles.notice}>해석·추정 및 한계: {data.uncertainty}</p>
+          <Banner
+            status='warning'
+            title={<>해석·추정 및 한계: {data.uncertainty}</>}
+          />
         )}
-      </article>
+      </Card>
     );
 
   return (
-    <article className={styles.stack}>
+    <Card
+      role='article'
+      className={styles.stack}>
       <div className={styles.row}>
         <Badge
           tone={
@@ -118,18 +146,22 @@ export function AiExplanation({
         </span>
       </div>
       {data.contextDescription && (
-        <p className={styles.meta}>
+        <Text
+          as='p'
+          className={styles.meta}>
           실제로 제공한 문맥: {data.contextDescription}
-        </p>
+        </Text>
       )}
       {data.evidenceType && (
-        <p className={styles.meta}>
+        <Text
+          as='p'
+          className={styles.meta}>
           {data.evidenceType === 'page_image_and_text'
             ? 'PDF 페이지 이미지와 텍스트를 확인한 설명입니다.'
             : value.source.kind === 'pdf' && value.source.ocrId
               ? 'OCR로 인식한 텍스트와 주변 문맥에 근거한 설명입니다. 원본과 대조해 확인해 주세요.'
               : '선택 원문과 텍스트 문맥에 근거한 설명입니다. 영상 화면은 분석하지 않았습니다.'}
-        </p>
+        </Text>
       )}
       <Link
         href={materialPaths.source(value.source)}
@@ -146,21 +178,25 @@ export function AiExplanation({
       ).map(
         ([title, text]) =>
           text && (
-            <section key={title}>
-              <h3>{title}</h3>
-              <p className={styles.prose}>{text}</p>
-            </section>
+            <Section key={title}>
+              <Heading level={3}>{title}</Heading>
+              <Text
+                as='p'
+                className={styles.prose}>
+                {text}
+              </Text>
+            </Section>
           )
       )}
       {data.citations.length > 0 && (
-        <section>
-          <h3>원문 근거</h3>
+        <Section>
+          <Heading level={3}>원문 근거</Heading>
           {data.citations.map((item, index) => (
-            <blockquote
+            <Blockquote
               key={index}
               className={styles.quote}>
               {item.quote}
-              <p>
+              <Text as='p'>
                 <Link
                   href={materialPaths.source({
                     ...value.source,
@@ -170,24 +206,30 @@ export function AiExplanation({
                   className={styles.link}>
                   근거 위치로 이동 ↗
                 </Link>
-              </p>
-            </blockquote>
+              </Text>
+            </Blockquote>
           ))}
-        </section>
+        </Section>
       )}
       {data.examples.length > 0 && (
-        <section>
-          <h3>AI가 추가한 예문</h3>
-          <ul>
+        <Section>
+          <Heading level={3}>AI가 추가한 예문</Heading>
+          <List listStyle='disc'>
             {data.examples.map((item, index) => (
-              <li key={index}>{item}</li>
+              <ListItem
+                key={index}
+                label={<Text>{item}</Text>}
+              />
             ))}
-          </ul>
-        </section>
+          </List>
+        </Section>
       )}
       {data.uncertainty && (
-        <p className={styles.notice}>해석·추정 및 한계: {data.uncertainty}</p>
+        <Banner
+          status='warning'
+          title={<>해석·추정 및 한계: {data.uncertainty}</>}
+        />
       )}
-    </article>
+    </Card>
   );
 }

@@ -1,4 +1,10 @@
 'use client';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+
+import { Banner } from '@astryxdesign/core/Banner';
+
+import { Text } from '@astryxdesign/core/Text';
+
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
 import { useState } from 'react';
@@ -85,31 +91,34 @@ export function ExpressionComposer({
         .join(' ')}>
       {sessionExpired && <SessionRecovery />}
       {!embedded && (
-        <blockquote className={styles.quote}>{source.quote}</blockquote>
+        <Blockquote className={styles.quote}>{source.quote}</Blockquote>
       )}
 
-      <label className={styles.field}>
-        표현
+      <div className={styles.field}>
         <Input
+          label='표현'
+
           autoFocus
           required
           maxLength={1000}
           value={text}
           onChange={(event) => setText(event.target.value)}
         />
-      </label>
-      <label className={styles.field}>
-        뜻
+      </div>
+      <div className={styles.field}>
         <Input
+          label='뜻'
+
           maxLength={5000}
           value={meaning}
           onChange={(event) => setMeaning(event.target.value)}
           placeholder='문맥에서 이해한 뜻을 적어 주세요.'
         />
-      </label>
-      <label className={styles.field}>
-        저장 종류
+      </div>
+      <div className={styles.field}>
         <Select
+          label='저장 종류'
+
           value={kind}
           onChange={(event) => setKind(event.target.value as typeof kind)}>
           <option value='word'>단어</option>
@@ -117,28 +126,31 @@ export function ExpressionComposer({
           <option value='sentence'>문장</option>
           <option value='concept'>개념</option>
         </Select>
-      </label>
-      <label className={styles.field}>
-        내 메모
+      </div>
+      <div className={styles.field}>
         <TextArea
+          label='내 메모'
+
           maxLength={5000}
           value={note}
           onChange={(event) => setNote(event.target.value)}
           placeholder='다시 떠올리고 싶은 문맥을 남겨 주세요.'
         />
-      </label>
-      <p className={styles.meta}>
+      </div>
+      <Text
+        as='p'
+        className={styles.meta}>
         표현과 개인 메모는 나에게만 보입니다.{' '}
         {explanation
           ? `AI 설명 v${explanation.version}의 뜻과 연결해 저장합니다. 직접 편집한 뜻과 원래 설명은 구분됩니다.`
           : '직접 정리한 뜻으로 저장합니다.'}
-      </p>
+      </Text>
       {error && (
-        <p
-          className={styles.error}
-          role='alert'>
-          {error}
-        </p>
+        <Banner
+          status='error'
+          role='alert'
+          title={<>{error}</>}
+        />
       )}
       <div className={styles.row}>
         <Button

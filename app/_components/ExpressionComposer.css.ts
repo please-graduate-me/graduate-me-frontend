@@ -1,13 +1,5 @@
-import { globalStyle, style } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 구절 패널 안의 저장 폼은 원문을 가리지 않는 밀도를 사용한다. */
-export const embedded = style({ gap: 20 });
-
-globalStyle(`${embedded} > label`, {
-  color: vars.color.muted,
-  fontSize: 12,
-  fontWeight: 400,
-});
-
-globalStyle(`${embedded} textarea`, { minHeight: 108 });
+/** 삽입 폼의 간격만 조정하고 입력 외형은 Astryx 테마를 따른다. */
+export const embedded = style({ gap: vars.space.md });

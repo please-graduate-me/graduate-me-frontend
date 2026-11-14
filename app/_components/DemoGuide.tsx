@@ -1,4 +1,9 @@
 'use client';
+import { Card } from '@astryxdesign/core/Card';
+
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/primitives/Button';
 import { Badge } from '@/components/ui/primitives/Badge';
@@ -48,7 +53,8 @@ export function DemoGuide() {
     );
 
   return (
-    <section
+    <Card
+      role='region'
       className={styles.guide}
       aria-label='데모 이용 안내'>
       <div className={styles.icon}>
@@ -63,8 +69,8 @@ export function DemoGuide() {
         <Badge tone='brand'>
           체험 안내 {step + 1} / {steps.length}
         </Badge>
-        <h3>{current[0]}</h3>
-        <p>{current[1]}</p>
+        <Heading level={3}>{current[0]}</Heading>
+        <Text as='p'>{current[1]}</Text>
       </div>
       <div className={styles.actions}>
         <Button
@@ -84,6 +90,6 @@ export function DemoGuide() {
           {step === steps.length - 1 ? '체험 시작' : '다음'}
         </Button>
       </div>
-    </section>
+    </Card>
   );
 }

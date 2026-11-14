@@ -1,4 +1,9 @@
-import Link from 'next/link';
+import { Blockquote } from '@astryxdesign/core/Blockquote';
+import { Card } from '@astryxdesign/core/Card';
+import { Banner } from '@astryxdesign/core/Banner';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import { Link } from '@astryxdesign/core/Link';
 import type { ArchivedVideoSource as Archive } from '@/domains/videos/model/archive';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { SourceActions } from '../../../../_components/SourceActions';
@@ -18,26 +23,41 @@ export function ArchivedVideoSource({
   };
 
   return (
-    <section className={styles.panel}>
+    <Card
+      role='region'
+      className={styles.panel}>
       <div className={styles.row}>
         <Badge tone='neutral'>보관된 원문 v{value.version}</Badge>
         <span className={styles.meta}>
           {value.source.start?.toFixed(1)}초 ~ {value.source.end?.toFixed(1)}초
         </span>
       </div>
-      <h1>{value.source.title}</h1>
-      <p className={styles.notice}>
-        과거 설명·답안이 사용한 원문입니다. 현재 구절의 채점과 진도는 이
-        보관본을 열어도 바뀌지 않습니다.
-      </p>
-      <blockquote
-        className={styles.quote}
-        lang={value.source.language}>
-        {value.text}
-      </blockquote>
-      {value.translation && <p className={styles.prose}>{value.translation}</p>}
+      <Heading level={1}>{value.source.title}</Heading>
+      <Banner
+        status='warning'
+        title={
+          <>
+            과거 설명·답안이 사용한 원문입니다. 현재 구절의 채점과 진도는 이
+            보관본을 열어도 바뀌지 않습니다.
+          </>
+        }
+      />
+      <div lang={value.source.language}>
+        <Blockquote className={styles.quote}>{value.text}</Blockquote>
+      </div>
+      {value.translation && (
+        <Text
+          as='p'
+          className={styles.prose}>
+          {value.translation}
+        </Text>
+      )}
       {source.quote !== value.text && (
-        <p className={styles.meta}>이 기록에서 선택한 표현: {source.quote}</p>
+        <Text
+          as='p'
+          className={styles.meta}>
+          이 기록에서 선택한 표현: {source.quote}
+        </Text>
       )}
       <Link
         className={styles.link}
@@ -48,6 +68,6 @@ export function ArchivedVideoSource({
         source={source}
         language={source.language}
       />
-    </section>
+    </Card>
   );
 }

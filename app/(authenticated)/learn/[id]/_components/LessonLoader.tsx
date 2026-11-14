@@ -1,9 +1,14 @@
 'use client';
+import { Banner } from '@astryxdesign/core/Banner';
+
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+
 import { Button } from '@/components/ui/primitives/Button';
 import { Panel } from '@/components/ui/layouts/Panel';
 import * as styles from './LessonLoader.css';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@astryxdesign/core/Link';
 import { getLesson } from '@/domains/videos/api/videos';
 import { jobLabels, learningConfig } from '@/domains/videos/config/catalog';
 import { videoPaths } from '@/domains/videos/config/paths';
@@ -70,35 +75,50 @@ export function LessonLoader({
     <>
       <Link href={videoPaths.library}>← 영상 목록</Link>
       <Panel className={[styles.processing].join(' ')}>
-        <h1>{lesson?.video.title ?? '학습 영상 불러오기'}</h1>
-        <p role='status'>
+        <Heading level={1}>
+          {lesson?.video.title ?? '학습 영상 불러오기'}
+        </Heading>
+        <Text
+          as='p'
+          role='status'>
           {lesson?.job ? jobLabels[lesson.job.status] : '잠시 기다려 주세요.'}
-        </p>
+        </Text>
         {lesson?.job?.status !== 'failed' && (
-          <p className={styles.muted}>
+          <Text
+            as='p'
+            className={styles.muted}>
             오디오를 구절별 학습 자료로 만들고 있어요. 페이지를 닫아도 처리는
             계속됩니다.
-          </p>
+          </Text>
         )}
         {lesson?.job?.errorMessage && (
-          <p className={styles.notice}>{lesson.job.errorMessage}</p>
+          <Banner
+            status='warning'
+            title={<>{lesson.job.errorMessage}</>}
+          />
         )}
         {lesson?.job?.status === 'failed' && (
-          <p className={styles.muted}>
+          <Text
+            as='p'
+            className={styles.muted}>
             자료 분석에 실패했습니다. 원인을 확인하고 다른 자료를 등록해 주세요.
-          </p>
+          </Text>
         )}
         {error && (
-          <div
+          <Banner
+            status='error'
             role='alert'
-            className={styles.error}>
-            {error}{' '}
-            <Button
-              variant='secondary'
-              onClick={() => setReload((value) => value + 1)}>
-              상태 다시 확인
-            </Button>
-          </div>
+            title={
+              <>
+                {error}{' '}
+                <Button
+                  variant='secondary'
+                  onClick={() => setReload((value) => value + 1)}>
+                  상태 다시 확인
+                </Button>
+              </>
+            }
+          />
         )}
       </Panel>
     </>

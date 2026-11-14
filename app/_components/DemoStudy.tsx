@@ -1,4 +1,9 @@
 'use client';
+import { Section } from '@astryxdesign/core/Section';
+import { Banner } from '@astryxdesign/core/Banner';
+
+import { Text } from '@astryxdesign/core/Text';
+
 import { useEffect, useState } from 'react';
 import { getDemoLesson } from '@/domains/videos/api/demo';
 import type { DemoLesson } from '@/domains/videos/model/demo';
@@ -41,24 +46,32 @@ export function DemoStudy() {
   }, []);
 
   return (
-    <section
+    <Section
       className={styles.root}
       id='demo-study'
       aria-label='로그인 없이 체험하기'>
       <DemoGuide />
-      {error && <p role='alert'>{error}</p>}
+      {error && (
+        <Banner
+          status='error'
+          role='alert'
+          title={<>{error}</>}
+        />
+      )}
       {lesson?.status === 'ready' ? (
         <Study
           initial={createDemoLesson(lesson)}
           demo
         />
       ) : (
-        <p role='status'>
+        <Text
+          as='p'
+          role='status'>
           {lesson?.status === 'failed'
             ? '체험 영상의 학습 자료를 준비하지 못했습니다. 잠시 후 다시 방문해 주세요.'
             : '체험 영상의 학습 자료를 준비하고 있습니다.'}
-        </p>
+        </Text>
       )}
-    </section>
+    </Section>
   );
 }

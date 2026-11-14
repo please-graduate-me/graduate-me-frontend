@@ -1,3 +1,8 @@
+'use client';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+} from '@astryxdesign/core/SegmentedControl';
 import type { Mode } from '../model/mode';
 import * as styles from './LearningModeSwitch.css';
 
@@ -16,26 +21,23 @@ export function LearningModeSwitch({
   active?: boolean;
 }) {
   return (
-    <div
+    <SegmentedControl
       className={styles.root}
-      role='group'
-      aria-label='학습 방식'>
-      <button
-        type='button'
-        className={styles.option}
-        aria-pressed={active && mode === 'full'}
-        disabled={disabled}
-        onClick={() => onChange('full')}>
-        문장 전체
-      </button>
-      <button
-        type='button'
-        className={styles.option}
-        aria-pressed={active && mode === 'blank'}
-        disabled={disabled || !blankAvailable}
-        onClick={() => onChange('blank')}>
-        빈칸 채우기
-      </button>
-    </div>
+      label='학습 방식'
+      value={active ? mode : ''}
+      isDisabled={disabled}
+      onChange={(value) => {
+        if (value === 'full' || value === 'blank') onChange(value);
+      }}>
+      <SegmentedControlItem
+        value='full'
+        label='문장 전체'
+      />
+      <SegmentedControlItem
+        value='blank'
+        label='빈칸 채우기'
+        isDisabled={!blankAvailable}
+      />
+    </SegmentedControl>
   );
 }

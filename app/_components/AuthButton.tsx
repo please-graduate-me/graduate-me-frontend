@@ -1,6 +1,7 @@
 'use client';
+import { Banner } from '@astryxdesign/core/Banner';
+
 import { Button } from '@/components/ui/primitives/Button';
-import * as styles from './AuthButton.css';
 import { getCsrfToken, signIn, signOut } from '@/domains/auth/api/auth';
 import { safeReturnPath } from '@/domains/auth/lib/returnPath';
 import { videoPaths } from '@/domains/videos/config/paths';
@@ -62,11 +63,11 @@ export function AuthButton({
           : (label ?? (action === 'signin' ? 'Google로 시작하기' : '로그아웃'))}
       </Button>
       {error && (
-        <p
-          className={styles.error}
-          role='alert'>
-          {error}
-        </p>
+        <Banner
+          status='error'
+          role='alert'
+          title={<>{error}</>}
+        />
       )}
     </>
   );

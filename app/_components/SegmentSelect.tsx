@@ -1,3 +1,6 @@
+'use client';
+import { Select } from '@/components/ui/primitives/Select';
+import { Text } from '@astryxdesign/core/Text';
 import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import type {
   Mode,
@@ -50,16 +53,15 @@ export function SegmentSelect({
 
   return (
     <div className={styles.container}>
-      <label className={styles.label}>
-        <Checkbox
-          checked={onlyDifficult}
-          onChange={(event) => setOnlyDifficult(event.target.checked)}
-        />
-        안 들리는 구절만 보기 ({difficultSegmentIds.length}개)
-      </label>
-      <label className={styles.label}>
-        구절 바로 이동
-        <select
+      <Checkbox
+        label={`안 들리는 구절만 보기 (${difficultSegmentIds.length}개)`}
+        checked={onlyDifficult}
+        onChange={(event) => setOnlyDifficult(event.target.checked)}
+      />
+      <div className={styles.label}>
+        <Select
+          label='구절 바로 이동'
+
           className={styles.select}
           value={options.some((item) => item.position === index) ? index : ''}
           disabled={disabled || options.length === 0}
@@ -88,16 +90,20 @@ export function SegmentSelect({
               </option>
             );
           })}
-        </select>
-      </label>
+        </Select>
+      </div>
       {onlyDifficult && options.length === 0 && (
-        <p className={styles.description}>
+        <Text
+          as='p'
+          className={styles.description}>
           안 들리는 구절로 표시한 문장이 없습니다.
-        </p>
+        </Text>
       )}
-      <p className={styles.description}>
+      <Text
+        as='p'
+        className={styles.description}>
         선택한 구절의 시작으로 이동합니다. 이동만으로 정답 처리되지는 않습니다.
-      </p>
+      </Text>
     </div>
   );
 }
