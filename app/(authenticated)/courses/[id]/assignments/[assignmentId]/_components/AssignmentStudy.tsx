@@ -243,7 +243,7 @@ export function AssignmentStudy({
         className={styles.stack}
         onSubmit={(event) => void submit(event)}>
         {value.source.tasks.map((task, index) => (
-          <Section
+          <Card
             className={styles.panel}
             key={task.id}>
             <Heading level={2}>
@@ -358,7 +358,7 @@ export function AssignmentStudy({
                 />
               </div>
             )}
-          </Section>
+          </Card>
         ))}
         {canSubmit && (
           <>
@@ -384,7 +384,7 @@ export function AssignmentStudy({
         )}
       </form>
       {previousDrafts.map((draft, index) => (
-        <Section
+        <Card
           className={styles.panel}
           key={`${draft.version}:${index}`}>
           <Heading level={2}>이전 과제 v{draft.version} · 미제출 초안</Heading>
@@ -409,7 +409,7 @@ export function AssignmentStudy({
               />
             </div>
           ))}
-        </Section>
+        </Card>
       ))}
       <Section>
         <Heading level={2}>제출 이력</Heading>

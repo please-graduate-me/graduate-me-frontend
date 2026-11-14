@@ -263,7 +263,9 @@ export function QuestionThread({ initial }: { initial: Question }) {
             </Banner>
           )}
         </Section>
-        <aside className={styles.sourcePanel}>
+        <Card
+          variant='muted'
+          className={styles.sourcePanel}>
           <Text
             as='p'
             display='block'
@@ -296,7 +298,7 @@ export function QuestionThread({ initial }: { initial: Question }) {
             이 질문은 선택한 발췌와 질문 내용만 공유합니다. 답변자의 내부 검토
             메모와 운영 이력은 표시하지 않습니다.
           </Banner>
-        </aside>
+        </Card>
       </div>
     </div>
   );

@@ -13,9 +13,6 @@ export const account = style({
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: 24,
-  padding: 24,
-  border: '1px solid ' + vars.color.line,
-  borderRadius: vars.radius.panel,
   margin: '0 0 32px',
 });
 
@@ -31,9 +28,6 @@ export const accountActions = style({
 
 /** 학습 옵션의 전체 범위를 하나의 설정 영역으로 묶는다. */
 export const learning = style({
-  padding: 24,
-  border: '1px solid ' + vars.color.line,
-  borderRadius: vars.radius.panel,
   margin: '0 0 32px',
 });
 
@@ -43,7 +37,4 @@ export const workplace = style({
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: 24,
-  padding: 24,
-  background: vars.color.canvas,
-  borderRadius: vars.radius.panel,
 });

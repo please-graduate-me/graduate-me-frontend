@@ -6,7 +6,6 @@ import { Card } from '@astryxdesign/core/Card';
 import * as styles from './page.css';
 import { AuthButton } from '../_components/AuthButton';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
-import { Link } from '@astryxdesign/core/Link';
 import { videoPaths } from '@/domains/videos/config/paths';
 import { DemoStudy } from '../_components/DemoStudy';
 import { Badge } from '@/components/ui/primitives/Badge';
@@ -67,11 +66,11 @@ export default async function Home({
                 disabled={!configured}
               />
             )}
-            <Link
-              className={styles.secondaryLink}
+            <ButtonLink
+              variant='secondary'
               href='#try-learning'>
               먼저 체험하기
-            </Link>
+            </ButtonLink>
           </div>
           <small>영어 · 태국어 PDF와 영어 영상으로 시작해요.</small>
           {error && (
@@ -92,7 +91,8 @@ export default async function Home({
             </Banner>
           )}
         </div>
-        <div
+        <Card
+          variant='muted'
           className={styles.preview}
           aria-label='원문과 표현집 학습 예시'>
           <Card className={styles.reading}>
@@ -137,7 +137,7 @@ export default async function Home({
               />
             </ButtonLink>
           </Card>
-        </div>
+        </Card>
       </Section>
       <Section
         id='how-it-works'

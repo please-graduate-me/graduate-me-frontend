@@ -1,11 +1,12 @@
 'use client';
+import { Card } from '@astryxdesign/core/Card';
+
 import { List, ListItem } from '@astryxdesign/core/List';
 
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
 import { Banner } from '@astryxdesign/core/Banner';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
-import { Section } from '@astryxdesign/core/Section';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useRef, useState } from 'react';
@@ -164,7 +165,7 @@ export function RecommendedVideos({ initial }: { initial: Recommendations }) {
         소모합니다.
       </Text>
       {value.personalization && (
-        <Section className={styles.panel}>
+        <Card className={styles.panel}>
           <Heading level={2}>내 학습 기록 분석</Heading>
           <Text
             as='p'
@@ -189,7 +190,7 @@ export function RecommendedVideos({ initial }: { initial: Recommendations }) {
             )}{' '}
             분석
           </Text>
-        </Section>
+        </Card>
       )}
       {value.insufficientCandidates && (
         <Banner

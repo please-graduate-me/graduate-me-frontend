@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@astryxdesign/core/Card';
+
 import { List, ListItem } from '@astryxdesign/core/List';
 
 import { Blockquote } from '@astryxdesign/core/Blockquote';
@@ -144,7 +146,8 @@ export function MaterialAnalysisPanel({
         </div>
       )}
       {value && (
-        <Section
+        <Card
+          variant='muted'
           className={styles.sourcePanel}
           aria-live='polite'>
           <Heading level={3}>{statusLabel[value.status]}</Heading>
@@ -206,7 +209,7 @@ export function MaterialAnalysisPanel({
             className={styles.meta}>
             AI가 생성한 정리입니다. 원본과 함께 확인해 주세요.
           </Text>
-        </Section>
+        </Card>
       )}
       {!loading && !value && !error && (
         <Text

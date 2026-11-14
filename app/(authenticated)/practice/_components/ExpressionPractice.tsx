@@ -1,10 +1,11 @@
 'use client';
+import { Card } from '@astryxdesign/core/Card';
+
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
 import { Blockquote } from '@astryxdesign/core/Blockquote';
 import { Banner } from '@astryxdesign/core/Banner';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
-import { Section } from '@astryxdesign/core/Section';
 import { notifyLearningReward } from '@/domains/growth/lib/rewardEvents';
 import { useRef, useState } from 'react';
 import { Link } from '@astryxdesign/core/Link';
@@ -102,7 +103,7 @@ export function ExpressionPractice({
           </Link>
         </EmptyState>
       ) : !expression ? (
-        <Section className={styles.panel}>
+        <Card className={styles.panel}>
           <Badge tone='success'>
             <Icon
               name='check-check'
@@ -131,9 +132,9 @@ export function ExpressionPractice({
               표현집으로
             </ButtonLink>
           </div>
-        </Section>
+        </Card>
       ) : (
-        <Section className={styles.panel}>
+        <Card className={styles.panel}>
           <div className={styles.row}>
             <Badge tone='neutral'>
               {index + 1} / {expressions.length}
@@ -206,7 +207,7 @@ export function ExpressionPractice({
               {error}
             </Banner>
           )}
-        </Section>
+        </Card>
       )}
     </div>
   );

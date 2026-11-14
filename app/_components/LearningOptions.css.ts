@@ -3,9 +3,6 @@ import { vars } from '@/lib/styles/theme.css';
 
 /** 재생 옵션을 영상 조작과 구분하되 같은 영역에서 찾게 한다. */
 export const container = style({
-  border: `1px solid ${vars.color.line}`,
-  borderRadius: '8px',
-  padding: '12px',
   margin: '16px 0',
 });
 

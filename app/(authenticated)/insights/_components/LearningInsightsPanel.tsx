@@ -103,7 +103,7 @@ export function LearningInsightsPanel({
           {error}
         </Banner>
       )}
-      <Section className={styles.panel}>
+      <Card className={styles.panel}>
         <Heading level={2}>
           {value.language === 'en' ? '영어' : '태국어'} · 최근 {value.days}일
         </Heading>
@@ -146,7 +146,7 @@ export function LearningInsightsPanel({
             </Badge>
           ))}
         </div>
-      </Section>
+      </Card>
       <Section>
         <Heading level={2}>실제 오답에서 다시 듣기</Heading>
         {!value.review.length ? (
@@ -192,7 +192,7 @@ export function LearningInsightsPanel({
           ))
         )}
       </Section>
-      <Section className={styles.panel}>
+      <Card className={styles.panel}>
         <Heading level={2}>학년별 권장 로드맵</Heading>
         <Banner
           status='info'
@@ -212,7 +212,7 @@ export function LearningInsightsPanel({
           </Card>
         ))}
         <Link href='/settings'>학습 언어와 목표 설정</Link>
-      </Section>
+      </Card>
     </div>
   );
 }

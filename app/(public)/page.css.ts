@@ -1,7 +1,7 @@
 import { style, globalStyle } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 소개와 원문 예시를 Figma의 두 열 구성으로 보여 준다. */
+/** 소개와 원문 예시를 두 열로 배치한다. */
 export const hero = style({
   display: 'grid',
   gridTemplateColumns: '530px 550px',
@@ -30,18 +30,10 @@ export const preview = style({
   width: 550,
   display: 'grid',
   gap: 24,
-  padding: 30,
-  borderRadius: 24,
-  background: vars.color.neutral,
 });
 
-/** 학습용 문서는 제어 영역과 다른 종이 질감의 색을 사용한다. */
-export const reading = style({
-  padding: 28,
-  border: '1px solid ' + vars.color.line,
-  borderRadius: vars.radius.panel,
-  background: vars.color.surface,
-});
+/** 원문 카드의 긴 내용이 배치 너비를 밀어내지 않게 한다. */
+export const reading = style({ minWidth: 0 });
 
 globalStyle('.' + reading + ' small', {
   color: vars.color.documentInk,
@@ -73,10 +65,6 @@ export const expression = style({
   flexDirection: 'column',
   alignItems: 'flex-start',
   gap: 12,
-  padding: 24,
-  border: '1px solid ' + vars.color.line,
-  borderRadius: vars.radius.panel,
-  background: vars.color.surface,
 });
 
 /** 표현의 영문 제목과 저장 아이콘을 한 행에 놓는다. */
@@ -101,39 +89,6 @@ export const accountActions = style({
   display: 'flex',
   alignItems: 'center',
   gap: 14,
-});
-
-/** 이동 행동도 같은 높이의 공통 색상 체계를 적용한다. */
-export const primaryLink = style({
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 6,
-  background: vars.color.accent,
-  color: vars.color.surface,
-  border: '1px solid ' + vars.color.accent,
-  borderRadius: vars.radius.control,
-  padding: '10px 16px',
-  textDecoration: 'none',
-  fontSize: vars.fontSize.small,
-  fontWeight: 500,
-  minHeight: 44,
-  selectors: { '&:hover': { background: vars.color.accentHover } },
-});
-
-/** 체험 진입은 로그인보다 낮은 위계로 표현한다. */
-export const secondaryLink = style({
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: vars.color.ink,
-  border: '1px solid ' + vars.color.line,
-  borderRadius: vars.radius.control,
-  padding: '10px 16px',
-  textDecoration: 'none',
-  fontSize: vars.fontSize.small,
-  minHeight: 44,
-  selectors: { '&:hover': { background: vars.color.canvas } },
 });
 
 /** 예시 다음에 실제 사용 순서를 짧게 안내한다. */

@@ -1,5 +1,5 @@
 'use client';
-import { Section } from '@astryxdesign/core/Section';
+import { Card } from '@astryxdesign/core/Card';
 import { Heading } from '@astryxdesign/core/Heading';
 import { ProgressBar } from '@astryxdesign/core/ProgressBar';
 import { Text } from '@astryxdesign/core/Text';
@@ -46,7 +46,8 @@ export function GrowthCard() {
   }, [reload]);
 
   return (
-    <Section
+    <Card
+      variant='muted'
       className={styles.card}
       aria-label='나의 학습 성장'>
       <div>
@@ -121,6 +122,6 @@ export function GrowthCard() {
           </Button>
         </div>
       )}
-    </Section>
+    </Card>
   );
 }

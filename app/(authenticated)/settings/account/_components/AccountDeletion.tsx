@@ -1,8 +1,9 @@
 'use client';
+import { Card } from '@astryxdesign/core/Card';
+
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
 import { Banner } from '@astryxdesign/core/Banner';
 import { Heading } from '@astryxdesign/core/Heading';
-import { Section } from '@astryxdesign/core/Section';
 import { Text } from '@astryxdesign/core/Text';
 import { useState } from 'react';
 import { Link } from '@astryxdesign/core/Link';
@@ -48,7 +49,7 @@ export function AccountDeletion() {
         ← 학습 설정
       </Link>
       <Heading level={1}>계정 탈퇴와 기록 삭제</Heading>
-      <Section className={styles.panel}>
+      <Card className={styles.panel}>
         <Heading level={2}>삭제되는 개인 기록</Heading>
         <Text
           as='p'
@@ -103,7 +104,7 @@ export function AccountDeletion() {
             </Button>
           </div>
         </form>
-      </Section>
+      </Card>
     </div>
   );
 }

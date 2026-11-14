@@ -83,21 +83,10 @@ globalStyle(`${textLayer} ::selection`, {
   color: 'transparent',
 });
 
-/** 저장한 뜻의 보조 표시는 원본 선택과 포인터 동작을 가로막지 않는다. */
-export const meaningTooltip = style({
+/** 원문 좌표에 투명 기준점만 두고 툴팁 외형과 포털 배치는 Astryx에 맡긴다. */
+export const meaningAnchor = style({
   position: 'absolute',
-  zIndex: 3,
+  width: 1,
+  height: 1,
   pointerEvents: 'none',
-  width: 240,
-  maxHeight: 240,
-  overflow: 'hidden',
-  borderRadius: vars.radius.control,
-  padding: 12,
-  background: vars.color.surface,
-  color: vars.color.ink,
-  boxShadow: vars.shadow.popover,
-  fontSize: 12,
-  lineHeight: '18px',
 });
-
-globalStyle(`${meaningTooltip} small`, { color: vars.color.muted });

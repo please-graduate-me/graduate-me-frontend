@@ -2,7 +2,6 @@
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
 import { Blockquote } from '@astryxdesign/core/Blockquote';
 import { Banner } from '@astryxdesign/core/Banner';
-import { Section } from '@astryxdesign/core/Section';
 import { Text } from '@astryxdesign/core/Text';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Card } from '@astryxdesign/core/Card';
@@ -217,7 +216,7 @@ export function ExerciseSolver({
   }
 
   return (
-    <Section className={styles.panel}>
+    <Card className={styles.panel}>
       {sessionExpired && <SessionRecovery />}
       {exercise.payload.practiceStyle === 'flex' && (
         <Banner
@@ -519,6 +518,6 @@ export function ExerciseSolver({
           onClose={() => setReport(false)}
         />
       )}
-    </Section>
+    </Card>
   );
 }

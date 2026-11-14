@@ -1,8 +1,8 @@
+import { Card } from '@astryxdesign/core/Card';
 import { Blockquote } from '@astryxdesign/core/Blockquote';
 import { Banner } from '@astryxdesign/core/Banner';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
-import { Section } from '@astryxdesign/core/Section';
 import { notFound } from 'next/navigation';
 import { Link } from '@astryxdesign/core/Link';
 import { requireSession } from '../../requireSession';
@@ -45,7 +45,7 @@ export default async function SharedExcerptPage({
           </Text>
         </div>
       </div>
-      <Section className={styles.panel}>
+      <Card className={styles.panel}>
         <Blockquote className={styles.quote}>{item.source.quote}</Blockquote>
         <Banner
           status='info'
@@ -74,7 +74,7 @@ export default async function SharedExcerptPage({
           className={styles.link}>
           내 자료로 돌아가기
         </Link>
-      </Section>
+      </Card>
     </div>
   );
 }

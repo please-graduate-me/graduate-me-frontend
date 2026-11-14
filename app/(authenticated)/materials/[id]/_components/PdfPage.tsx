@@ -1,4 +1,6 @@
 'use client';
+import { Tooltip } from '@astryxdesign/core/Tooltip';
+import { Stack } from '@astryxdesign/core/Stack';
 import { Banner } from '@astryxdesign/core/Banner';
 import { Text } from '@astryxdesign/core/Text';
 import { useEffect, useRef, useState } from 'react';
@@ -48,6 +50,7 @@ export function PdfPage({
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const layer = useRef<HTMLDivElement>(null);
+  const meaningAnchor = useRef<HTMLSpanElement>(null);
   const onRenderedRef = useRef(onRendered);
 
   useEffect(() => {
@@ -224,24 +227,39 @@ export function PdfPage({
           onAction={onSelectionAction}
         />
       )}
-      {hovered && (
-        <div
-          className={styles.meaningTooltip}
-          role='tooltip'
-          style={{ left: hovered.x, top: hovered.y }}>
-          <small>이 위치에 저장한 나의 뜻</small>
-          {hovered.meanings.map((item, index) => (
+      <span
+        ref={meaningAnchor}
+        aria-hidden='true'
+        className={styles.meaningAnchor}
+        style={hovered ? { left: hovered.x, top: hovered.y } : undefined}
+      />
+      <Tooltip
+        anchorRef={meaningAnchor}
+        isOpen={hovered !== null}
+        placement='below'
+        alignment='start'
+        content={
+          <Stack gap={2}>
             <Text
-              as='p'
-              display='block'
-              key={index}>
-              <strong>{item.text}</strong>
-              <br />
-              {item.meaning}
+              type='supporting'
+              color='inherit'>
+              이 위치에 저장한 나의 뜻
             </Text>
-          ))}
-        </div>
-      )}
+            {hovered?.meanings.map((item, index) => (
+              <Stack
+                key={index}
+                gap={1}>
+                <Text
+                  weight='semibold'
+                  color='inherit'>
+                  {item.text}
+                </Text>
+                <Text color='inherit'>{item.meaning}</Text>
+              </Stack>
+            ))}
+          </Stack>
+        }
+      />
       {error && (
         <Banner
           status='error'

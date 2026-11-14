@@ -1,5 +1,10 @@
 'use client';
 import { List, ListItem } from '@astryxdesign/core/List';
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+} from '@astryxdesign/core/SegmentedControl';
+import { Banner } from '@astryxdesign/core/Banner';
 
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
 import { Section } from '@astryxdesign/core/Section';
@@ -173,7 +178,7 @@ export function MyVideos({
             최근 학습을 불러오고 있어요.
           </Text>
         ) : (
-          <div className={styles.empty}>
+          <div>
             <EmptyState
               title='나의 첫 자료로 시작해 보세요'
               description='PDF나 영상 링크를 추가하면 여기서 이어서 학습할 수 있어요.'>
@@ -199,10 +204,11 @@ export function MyVideos({
           </Heading>
           <Link href='/materials'>전체 보기</Link>
         </div>
-        <div
+        <SegmentedControl
           className={styles.tabs}
-          role='group'
-          aria-label='자료 종류'>
+          label='자료 종류'
+          value={filter}
+          onChange={(value) => setFilter(value as typeof filter)}>
           {(
             [
               ['all', '전체', materialCount + videos.length],
@@ -210,21 +216,17 @@ export function MyVideos({
               ['video', '영상', videos.length],
             ] as const
           ).map(([value, label, count]) => (
-            <Button
-              variant='secondary'
+            <SegmentedControlItem
               key={value}
-              type='button'
-              className={styles.tab}
-              aria-pressed={filter === value}
-              onClick={() => setFilter(value)}>
-              {label}
-              {!loading && <span>{count}</span>}
-            </Button>
+              value={value}
+              label={loading ? label : `${label} ${count}`}
+            />
           ))}
-        </div>
+        </SegmentedControl>
         {error && (
-          <div
-            className={styles.error}
+          <Banner
+            status='error'
+            title='자료를 불러오지 못했어요'
             role='alert'>
             <Text
               as='p'
@@ -237,7 +239,7 @@ export function MyVideos({
               onClick={() => setReload((value) => value + 1)}>
               영상 목록 다시 불러오기
             </Button>
-          </div>
+          </Banner>
         )}
         {items.length > 0 ? (
           <List className={styles.list}>
@@ -252,44 +254,39 @@ export function MyVideos({
               return (
                 <ListItem
                   key={id}
-                  className={styles.item}
-                  label={
+                  label={<Link href={href}>{item.title}</Link>}
+                  startContent={
+                    <Icon
+                      name={video ? 'play' : 'file-text'}
+                      size={20}
+                    />
+                  }
+                  description={
                     <>
-                      <span
-                        className={styles.fileType}
-                        data-kind={video ? 'video' : 'pdf'}>
-                        <Icon
-                          name={video ? 'play' : 'file-text'}
-                          size={18}
-                        />
-                      </span>
-                      <div className={styles.information}>
-                        <Heading level={3}>
-                          <Link href={href}>{item.title}</Link>
-                        </Heading>
-                        <Text
-                          as='p'
-                          display='block'>
-                          {video
-                            ? (item.language === 'th' ? '태국어' : '영어') +
-                              ' · 영상 · 정답 구절 ' +
-                              Math.min(item.completedCount ?? 0, item.count) +
-                              ' / ' +
-                              item.count
-                            : (item.language === 'th' ? '태국어' : '영어') +
-                              ' · 읽기 자료 · ' +
-                              item.pageCount +
-                              '페이지'}
-                        </Text>
-                        {video && item.status !== 'ready' && (
-                          <Badge
-                            tone={
-                              item.status === 'failed' ? 'error' : 'warning'
-                            }>
-                            {jobLabels[item.status] ?? item.status}
-                          </Badge>
-                        )}
-                      </div>
+                      <Text
+                        type='supporting'
+                        color='secondary'>
+                        {video
+                          ? (item.language === 'th' ? '태국어' : '영어') +
+                            ' · 영상 · 정답 구절 ' +
+                            Math.min(item.completedCount ?? 0, item.count) +
+                            ' / ' +
+                            item.count
+                          : (item.language === 'th' ? '태국어' : '영어') +
+                            ' · 읽기 자료 · ' +
+                            item.pageCount +
+                            '페이지'}
+                      </Text>
+                      {video && item.status !== 'ready' && (
+                        <Badge
+                          tone={item.status === 'failed' ? 'error' : 'warning'}>
+                          {jobLabels[item.status] ?? item.status}
+                        </Badge>
+                      )}
+                    </>
+                  }
+                  endContent={
+                    <>
                       <time
                         className={styles.updated}
                         dateTime={item.updatedAt}>
@@ -319,7 +316,6 @@ export function MyVideos({
                       ) : (
                         <Link
                           href={href}
-                          className={styles.open}
                           aria-label={item.title + ' 열기'}>
                           <Icon
                             name='arrow-up-right'

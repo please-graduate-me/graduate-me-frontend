@@ -43,22 +43,11 @@ export const questionColumns = style({
   alignItems: 'start',
 });
 
-/** 목록과 읽기 영역을 패널 경계로 구분한다. */
-export const panel = style({
-  padding: vars.space.lg,
-  borderRadius: vars.radius.panel,
-  background: vars.color.surface,
-  border: `1px solid ${vars.color.line}`,
-  minWidth: 0,
-});
+/** 카드 안의 긴 내용이 화면 너비를 밀어내지 않게 한다. */
+export const panel = style({ minWidth: 0 });
 
-/** 출처와 부가 정보를 학습 본문과 구분한다. */
-export const sourcePanel = style({
-  padding: vars.space.lg,
-  borderRadius: vars.radius.panel,
-  background: vars.color.selected,
-  minWidth: 0,
-});
+/** 출처 카드의 내용 너비만 제한하고 외형은 Astryx 변형으로 정한다. */
+export const sourcePanel = style({ minWidth: 0 });
 
 /** 본문 안의 주요 표현을 명확한 크기로 읽게 한다. */
 export const expressionTitle = style({
@@ -104,24 +93,6 @@ export const filters = style({
 /** 목록을 읽기 영역처럼 보여주고 기본 들여쓰기를 없앤다. */
 export const list = style({ listStyle: 'none', padding: 0, margin: 0 });
 
-/** 선택한 학습 항목을 색과 테두리로 구분한다. */
-export const listItem = style({
-  display: 'block',
-  width: '100%',
-  padding: '20px 18px',
-  border: 0,
-  borderBottom: `1px solid ${vars.color.line}`,
-  background: vars.color.surface,
-  color: vars.color.ink,
-  textAlign: 'left',
-  borderRadius: vars.radius.control,
-  cursor: 'pointer',
-  selectors: {
-    '&[aria-pressed="true"]': { background: vars.color.selected },
-    '&:hover': { background: vars.color.canvas },
-  },
-});
-
 /** 표현과 질문 제목의 링크는 주요 색상을 사용한다. */
 export const link = style({
   color: vars.color.accent,
@@ -139,12 +110,6 @@ export const meta = style({
 /** 긴 원문을 발췌 영역 안에서 읽을 수 있게 한다. */
 export const quote = style({
   margin: '16px 0',
-  padding: '16px 18px',
-  borderRadius: vars.radius.control,
-  background: vars.color.notice,
-  color: vars.color.ink,
-  fontSize: 15,
-  lineHeight: 1.8,
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere',
 });

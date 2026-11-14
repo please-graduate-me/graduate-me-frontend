@@ -1,6 +1,6 @@
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
-import { Section } from '@astryxdesign/core/Section';
+import { Card } from '@astryxdesign/core/Card';
 import { requireSession } from '../requireSession';
 import { Link } from '@astryxdesign/core/Link';
 import { getLearningSettings } from '@/domains/users/api/settings';
@@ -34,7 +34,7 @@ export default async function SettingsPage() {
           나의 속도에 맞게 듣기와 반복을 조정해 보세요.
         </Text>
       </div>
-      <Section
+      <Card
         className={styles.account}
         aria-labelledby='account-title'>
         <div>
@@ -54,8 +54,8 @@ export default async function SettingsPage() {
           <Badge tone='brand'>학생 학습 공간</Badge>
           <AuthButton action='signout' />
         </div>
-      </Section>
-      <Section
+      </Card>
+      <Card
         className={styles.learning}
         aria-labelledby='learning-profile-title'>
         <Heading
@@ -64,8 +64,8 @@ export default async function SettingsPage() {
           언어와 학습 목표
         </Heading>
         <ProfileEditor initial={profile} />
-      </Section>
-      <Section
+      </Card>
+      <Card
         className={styles.learning}
         aria-labelledby='learning-options-title'>
         <Heading
@@ -80,9 +80,9 @@ export default async function SettingsPage() {
           변경한 설정은 계정에 자동 저장되며 모든 영상에 적용됩니다.
         </Text>
         <SettingsEditor initial={initial} />
-      </Section>
+      </Card>
       {access.role && (
-        <Section className={styles.workplace}>
+        <Card className={styles.workplace}>
           <div>
             <Heading level={2}>답변 도우미·운영 관리</Heading>
             <Text
@@ -98,9 +98,9 @@ export default async function SettingsPage() {
               size={16}
             />
           </Link>
-        </Section>
+        </Card>
       )}
-      <Section className={styles.workplace}>
+      <Card className={styles.workplace}>
         <div>
           <Heading level={2}>계정과 개인정보</Heading>
           <Text
@@ -111,7 +111,7 @@ export default async function SettingsPage() {
           </Text>
         </div>
         <Link href='/settings/account'>계정 탈퇴 안내</Link>
-      </Section>
+      </Card>
     </div>
   );
 }

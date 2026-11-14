@@ -173,30 +173,29 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
               {filtered.map((item) => (
                 <ListItem
                   key={item.id}
-                  label={
+                  isSelected={selected?.id === item.id}
+                  onClick={() => setSelectedId(item.id)}
+                  label={item.text}
+                  description={
                     <>
-                      <Button
-                        variant='secondary'
-                        type='button'
-                        className={styles.listItem}
-                        aria-pressed={selected?.id === item.id}
-                        onClick={() => setSelectedId(item.id)}>
-                        <div className={styles.row}>
-                          <strong className={styles.link}>{item.text}</strong>
-                          <span className={styles.meta}>
-                            {formatDate(item.createdAt)}
-                          </span>
-                        </div>
-                        <Text
-                          as='p'
-                          display='block'>
-                          {item.meaning || '뜻을 정리해 보세요.'}
-                        </Text>
-                        <span className={styles.meta}>
-                          {sourceLabel(item.source)} · {item.source.title}
-                        </span>
-                      </Button>
+                      <Text
+                        as='p'
+                        display='block'>
+                        {item.meaning || '뜻을 정리해 보세요.'}
+                      </Text>
+                      <Text
+                        type='supporting'
+                        color='secondary'>
+                        {sourceLabel(item.source)} · {item.source.title}
+                      </Text>
                     </>
+                  }
+                  endContent={
+                    <Text
+                      type='supporting'
+                      color='secondary'>
+                      {formatDate(item.createdAt)}
+                    </Text>
                   }
                 />
               ))}

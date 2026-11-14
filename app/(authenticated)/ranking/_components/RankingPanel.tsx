@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@astryxdesign/core/Card';
+
 import { List, ListItem } from '@astryxdesign/core/List';
 
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
@@ -156,7 +158,7 @@ export function RankingPanel({
           </Text>
         </div>
       </Section>
-      <Section className={styles.panel}>
+      <Card className={styles.panel}>
         <Heading level={2}>랭킹 참여 설정</Heading>
         <Text
           as='p'
@@ -212,8 +214,8 @@ export function RankingPanel({
             {error}
           </Banner>
         )}
-      </Section>
-      <Section className={styles.panel}>
+      </Card>
+      <Card className={styles.panel}>
         <Heading level={2}>이번 주 학습 랭킹</Heading>
         <Text
           as='p'
@@ -268,8 +270,8 @@ export function RankingPanel({
             </Table>
           </div>
         )}
-      </Section>
-      <Section className={styles.panel}>
+      </Card>
+      <Card className={styles.panel}>
         <Heading level={2}>어떻게 XP를 모으나요?</Heading>
         <List>
           <ListItem
@@ -307,7 +309,7 @@ export function RankingPanel({
             공식 캐릭터 안내
           </Link>
         </Text>
-      </Section>
+      </Card>
     </div>
   );
 }

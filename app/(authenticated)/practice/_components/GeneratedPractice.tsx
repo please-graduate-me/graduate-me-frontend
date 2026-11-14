@@ -5,7 +5,7 @@ import { contentLabel } from '@/components/ui/primitives/contentLabel';
 import { Banner } from '@astryxdesign/core/Banner';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
-import { Section } from '@astryxdesign/core/Section';
+import { Card } from '@astryxdesign/core/Card';
 import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
@@ -187,7 +187,7 @@ export function GeneratedPractice({
           확인해 주세요.
         </Banner>
       )}
-      <Section className={styles.panel}>
+      <Card className={styles.panel}>
         <Heading level={2}>새 적용 문제 요청</Heading>
         <div className={styles.filters}>
           <div className={styles.field}>
@@ -333,7 +333,7 @@ export function GeneratedPractice({
             </Button>
           </Banner>
         )}
-      </Section>
+      </Card>
       <div className={styles.tabs}>
         {(
           [
@@ -366,30 +366,22 @@ export function GeneratedPractice({
             {filtered.map((item) => (
               <ListItem
                 key={item.id}
-                label={
-                  <>
-                    <Button
-                      variant='secondary'
-                      type='button'
-                      className={styles.listItem}
-                      aria-pressed={current?.id === item.id}
-                      onClick={() => setSelected(item.id)}>
-                      <strong>{item.payload.question}</strong>
-                      <Text
-                        as='p'
-                        display='block'
-                        className={styles.meta}>
-                        {item.source.title} · v{item.version} ·{' '}
-                        {item.status === 'suspended'
-                          ? '새 풀이 중단'
-                          : item.latestResult?.correct === false
-                            ? '오답 복습'
-                            : item.latestResult
-                              ? '풀이 기록 있음'
-                              : '미풀이'}
-                      </Text>
-                    </Button>
-                  </>
+                isSelected={current?.id === item.id}
+                onClick={() => setSelected(item.id)}
+                label={item.payload.question}
+                description={
+                  <Text
+                    type='supporting'
+                    color='secondary'>
+                    {item.source.title} · v{item.version} ·{' '}
+                    {item.status === 'suspended'
+                      ? '새 풀이 중단'
+                      : item.latestResult?.correct === false
+                        ? '오답 복습'
+                        : item.latestResult
+                          ? '풀이 기록 있음'
+                          : '미풀이'}
+                  </Text>
                 }
               />
             ))}
