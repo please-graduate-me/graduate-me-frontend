@@ -13,6 +13,9 @@ import { useConfirmation } from '@/lib/hooks/useConfirmation';
 import { notifyLearningReward } from '@/domains/growth/lib/rewardEvents';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
+import { GraduationStamp } from './GraduationStamp';
+import { StudyFeedbackSheet } from './StudyFeedbackSheet';
+import { ProgressBar } from '@astryxdesign/core/ProgressBar';
 import { useWatchPosition } from './useWatchPosition';
 import { useAnswerViewport } from './useAnswerViewport';
 import { Button } from '@/components/ui/primitives/Button';
@@ -658,32 +661,44 @@ export function Study({
     (item) => item.mode === mode && item.revealed
   ).length;
 
+  const allCorrect = segments.length > 0 && correct === segments.length;
+
   return (
     <div className={styles.study}>
       <AlertDialog {...confirmation.dialog} />
       <header className={styles.header}>
-        <Link
-          href={videoPaths.library}
-          className={styles.backLink}
-          aria-label='내 학습으로 돌아가기'>
-          <Icon name='arrow-left' />
-        </Link>
+        <div className={styles.topBar}>
+          <Link
+            href={videoPaths.library}
+            className={styles.backLink}
+            aria-label='내 학습으로 돌아가기'>
+            <Icon name='arrow-left' />
+          </Link>
+          <ProgressBar
+            className={styles.lessonProgress}
+            label='구절 정답 진행률'
+            isLabelHidden
+            value={correct}
+            // 구절이 없을 때 0으로 나누지 않도록 최대값을 1 이상으로 둔다.
+            max={Math.max(1, segments.length)}
+          />
+          <Badge tone='brand'>
+            <Icon
+              name='headphones'
+              size={16}
+            />{' '}
+            {correct} / {segments.length} 구절 완료
+          </Badge>
+          <Link
+            href={videoPaths.library}
+            className={styles.exitLink}>
+            학습 종료
+          </Link>
+        </div>
         <div className={styles.headerTitle}>
           <Heading level={1}>{video.title}</Heading>
           <Text as='p'>영상 학습 · {segments.length}개 구절</Text>
         </div>
-        <Badge tone='brand'>
-          <Icon
-            name='headphones'
-            size={16}
-          />{' '}
-          {correct} / {segments.length} 구절 완료
-        </Badge>
-        <Link
-          href={videoPaths.library}
-          className={styles.exitLink}>
-          학습 종료
-        </Link>
       </header>
       {(sessionExpired || watch.sessionExpired) && <SessionRecovery />}
       {watch.error && (
@@ -1019,16 +1034,20 @@ export function Study({
                       </div>
                     )}
                     <div className={styles.answerActions}>
-                      <Button disabled={busy}>
-                        {busy ? '저장 중…' : '제출하기'}
-                      </Button>
-                      <Button
-                        type='button'
-                        variant='secondary'
-                        disabled={busy}
-                        onClick={replay}>
-                        다시 듣기
-                      </Button>
+                      <span className={styles.pressable}>
+                        <Button disabled={busy}>
+                          {busy ? '저장 중…' : '제출하기'}
+                        </Button>
+                      </span>
+                      <span className={styles.pressable}>
+                        <Button
+                          type='button'
+                          variant='secondary'
+                          disabled={busy}
+                          onClick={replay}>
+                          다시 듣기
+                        </Button>
+                      </span>
                       <span className={styles.small}>Enter 제출</span>
                       <Button
                         type='button'
@@ -1088,43 +1107,7 @@ export function Study({
                     title={<>표현 힌트: {hint} · 도움 사용으로 기록됩니다.</>}
                   />
                 )}
-                {feedback && (
-                  <Banner
-                    status={feedback.correct ? 'success' : 'warning'}
-                    role='status'
-                    title={
-                      <>
-                        {feedback.correct ? (
-                          '정답이에요. 다음 구절로 이동했어요.'
-                        ) : (
-                          <>
-                            <Text as='p'>
-                              다른 부분을 확인하고 다시 들어보세요.
-                            </Text>
-                            <div className={styles.differences}>
-                              {feedback.differences.map((diff, i) => (
-                                <span
-                                  key={i}
-                                  className={[
-                                    styles.diff,
-                                    styles[diff.kind],
-                                  ].join(' ')}>
-                                  {diff.kind === 'match'
-                                    ? diff.expected
-                                    : diff.kind === 'missing'
-                                      ? `누락: ${diff.expected}`
-                                      : diff.kind === 'extra'
-                                        ? `추가: ${diff.actual}`
-                                        : `${diff.actual} → ${diff.expected}`}
-                                </span>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </>
-                    }
-                  />
-                )}
+                {feedback && <StudyFeedbackSheet grade={feedback} />}
                 {!scriptView && (state?.revealed || scriptViewed) && (
                   <Banner
                     status='warning'
@@ -1188,55 +1171,59 @@ export function Study({
             </>
           )}
           {complete && (
-            <Panel className={styles.completion}>
-              <Badge
-                tone={
-                  segments.length > 0 && correct === segments.length
-                    ? 'success'
-                    : 'warning'
-                }>
-                <Icon
-                  name='check-check'
-                  size={16}
-                />
-                {segments.length > 0 && correct === segments.length
-                  ? '학습 완료'
-                  : '끝 위치에 도착 · 미완료 구절 있음'}
-              </Badge>
-              <Heading level={2}>마지막 구절까지 도착했어요.</Heading>
-              <Text as='p'>
-                {mode === 'full' ? '문장 전체' : '빈칸 채우기'} · 전체{' '}
-                {segments.length}구절
-              </Text>
-              <div className={styles.stats}>
-                <span>
-                  정답 <strong>{correct}</strong>
-                </span>
-                <span>
-                  건너뛰기 <strong>{skipped}</strong>
-                </span>
-                <span>
-                  미완료 <strong>{segments.length - correct}</strong>
-                </span>
+            <Panel>
+              <div className={styles.completion}>
+                {allCorrect && <GraduationStamp size={112} />}
+                <Badge tone={allCorrect ? 'success' : 'warning'}>
+                  <Icon
+                    name='check-check'
+                    size={16}
+                  />
+                  {allCorrect
+                    ? '학습 완료'
+                    : '끝 위치에 도착 · 미완료 구절 있음'}
+                </Badge>
+                <Heading level={2}>마지막 구절까지 도착했어요.</Heading>
+                <Text as='p'>
+                  {mode === 'full' ? '문장 전체' : '빈칸 채우기'} · 전체{' '}
+                  {segments.length}구절
+                </Text>
+                <div className={styles.stats}>
+                  <span className={styles.stat}>
+                    정답 <strong>{correct}</strong>
+                  </span>
+                  <span className={styles.stat}>
+                    건너뛰기 <strong>{skipped}</strong>
+                  </span>
+                  <span className={styles.stat}>
+                    미완료 <strong>{segments.length - correct}</strong>
+                  </span>
+                </div>
+                <Text
+                  as='p'
+                  className={styles.muted}>
+                  정답을 확인한 구절: {revealed}개
+                </Text>
+                <div className={styles.completionActions}>
+                  <span className={styles.pressable}>
+                    <Button
+                      disabled={busy}
+                      onClick={() => void navigate(0)}>
+                      처음부터 복습
+                    </Button>
+                  </span>
+                  <span className={styles.pressable}>
+                    <Button
+                      variant='secondary'
+                      disabled={busy || (!blankAvailable && mode === 'full')}
+                      onClick={() =>
+                        void navigate(0, mode === 'full' ? 'blank' : 'full')
+                      }>
+                      다른 모드로 학습
+                    </Button>
+                  </span>
+                </div>
               </div>
-              <Text
-                as='p'
-                className={styles.muted}>
-                정답을 확인한 구절: {revealed}개
-              </Text>
-              <Button
-                disabled={busy}
-                onClick={() => void navigate(0)}>
-                처음부터 복습
-              </Button>
-              <Button
-                variant='secondary'
-                disabled={busy || (!blankAvailable && mode === 'full')}
-                onClick={() =>
-                  void navigate(0, mode === 'full' ? 'blank' : 'full')
-                }>
-                다른 모드로 학습
-              </Button>
             </Panel>
           )}
           <Collapsible

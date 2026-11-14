@@ -15,8 +15,8 @@ export function ButtonLink({
   'href' | 'target' | 'rel' | 'className' | 'style' | 'children' | 'aria-label'
 > & {
   onClick?: () => void;
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: 'small' | 'medium';
+  variant?: 'primary' | 'ink' | 'secondary' | 'ghost' | 'danger';
+  size?: 'small' | 'medium' | 'large';
 }) {
   return (
     <AstryxButton
@@ -24,7 +24,7 @@ export function ButtonLink({
       onClick={onClick}
       label={props['aria-label'] ?? contentLabel(children)}
       variant={variant === 'danger' ? 'destructive' : variant}
-      size={size === 'small' ? 'sm' : 'md'}>
+      size={size === 'small' ? 'sm' : size === 'large' ? 'lg' : 'md'}>
       {children}
     </AstryxButton>
   );

@@ -290,9 +290,11 @@ export function MaterialAnalysisPanel({
             trigger={<>핵심 단어·표현 {value.overview.vocabulary.length}개</>}>
             <dl className={analysisStyles.words}>
               {value.overview.vocabulary.map((word) => (
-                <div key={word.id}>
+                <div
+                  key={word.id}
+                  className={analysisStyles.word}>
                   <dt>
-                    <strong>{word.term}</strong>{' '}
+                    <strong className={analysisStyles.term}>{word.term}</strong>{' '}
                     <span className={styles.meta}>
                       {word.lemma} · {word.partOfSpeech}
                     </span>

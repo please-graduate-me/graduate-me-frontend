@@ -4,5 +4,6 @@ coverage/
 .next/
 next-env.d.ts
 *.tsbuildinfo
+lib/styles/pgm.*
 
 pnpm-lock.yaml

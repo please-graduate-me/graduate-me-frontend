@@ -5,6 +5,8 @@
   "scripts": {
     "mascot:scene": "node design/boo-rive/build-scene.mjs",
     "mascot:runtime": "node design/boo-rive/copy-runtime.mjs",
+    "theme:build": "astryx theme build lib/styles/pgmTheme.ts",
+    "theme:check": "astryx theme build lib/styles/pgmTheme.ts --check",
     "dev": "docker compose -f compose.yaml -f compose.dev.yaml up --build --watch",
     "build": "next build --webpack",
     "start": "next start --hostname 0.0.0.0",

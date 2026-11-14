@@ -95,9 +95,7 @@ export function ResumeCard({
               ? '정답 구절 ' + current + ' / ' + total
               : current + '페이지에서 이어 읽기'}
           </Text>
-          <ButtonLink
-            href={href}
-            variant='secondary'>
+          <ButtonLink href={href}>
             {video ? '계속 듣기' : '이어서 읽기'}
           </ButtonLink>
         </div>

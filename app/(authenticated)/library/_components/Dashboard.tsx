@@ -73,7 +73,7 @@ export function Dashboard() {
           summaryLoading={!summary && !error}
         />
       </div>
-      <aside
+      <section
         className={styles.sidebar}
         aria-label='표현 복습과 질문'>
         <Panel className={styles.review}>
@@ -205,7 +205,7 @@ export function Dashboard() {
             </div>
           )}
         </Section>
-      </aside>
+      </section>
     </div>
   );
 }

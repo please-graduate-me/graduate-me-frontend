@@ -23,7 +23,7 @@ globalFontFace('Noto Serif', {
 });
 
 // 서비스 글꼴만 연결하고 기본 UI 외형은 Astryx 테마가 담당한다.
-globalStyle(':root, [data-astryx-theme="neutral"]', {
+globalStyle(':root, [data-astryx-theme="pgm"]', {
   colorScheme: 'light',
   vars: {
     '--font-family-body': vars.font.body,

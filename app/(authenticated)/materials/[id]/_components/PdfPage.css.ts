@@ -20,11 +20,12 @@ export const highlight = style({
   },
 });
 
-/** 원본 PDF 캔버스와 텍스트 층의 좌표 기준을 일치시킨다. */
+/** 원본 PDF 캔버스와 텍스트 층의 좌표 기준을 일치시키고 회색 바탕 위 종이처럼 띄운다. */
 export const page = style({
   position: 'relative',
-  background: vars.color.surface,
-  boxShadow: '0 2px 14px rgb(36 49 75 / 8%)',
+  background: '#FFFFFF',
+  // 크기를 바꾸지 않는 그림자만 써서 선택 좌표 계산에 영향을 주지 않는다.
+  boxShadow: '0 1px 3px rgb(22 24 29 / 8%), 0 12px 32px rgb(22 24 29 / 6%)',
   flexShrink: 0,
 });
 

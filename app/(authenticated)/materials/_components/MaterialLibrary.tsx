@@ -1,27 +1,25 @@
 'use client';
-import { List, ListItem } from '@astryxdesign/core/List';
-
 import { AlertDialog } from '@astryxdesign/core/AlertDialog';
 import { useConfirmation } from '@/lib/hooks/useConfirmation';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
 import { Banner } from '@astryxdesign/core/Banner';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
-import { DropdownMenu } from '@astryxdesign/core/DropdownMenu';
 import { Select } from '@/components/ui/primitives/Select';
 import { useEffect, useState } from 'react';
-import { Link } from '@astryxdesign/core/Link';
 import type { MaterialSummary } from '@/domains/materials/model/contracts';
 import type { VideoHistory } from '@/domains/videos/model/contracts';
 import { listVideos } from '@/domains/videos/api/videos';
 import { deleteMaterial } from '@/domains/materials/api/materials';
-import { formatDate } from '@/domains/learning/lib/format';
 import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
-import { Badge } from '@/components/ui/primitives/Badge';
 import { Icon } from '@/components/ui/primitives/Icon';
 import { EmptyState } from '@/components/ui/composites/EmptyState';
 import { MaterialRegistration } from './MaterialRegistration';
+import { MaterialSection } from './MaterialSection';
+import { MaterialAddTile } from './MaterialAddTile';
+import { PdfTile } from './PdfTile';
+import { VideoTile } from './VideoTile';
 import * as styles from '@/lib/styles/workspace.css';
 import * as libraryStyles from './MaterialLibrary.css';
 import { ApiError } from '@/lib/api/request';
@@ -119,10 +117,13 @@ export function MaterialLibrary({
             (language === 'all' || (item.language ?? 'en') === language)
         );
 
+  const learningVideos = filteredVideos.filter((item) => !item.isComplete);
+  const completedVideos = filteredVideos.filter((item) => item.isComplete);
+
   return (
-    <div className={styles.page}>
+    <div className={libraryStyles.root}>
       <AlertDialog {...confirmation.dialog} />
-      <div className={styles.heading}>
+      <div className={libraryStyles.header}>
         <div>
           <Heading level={1}>자료 보관함</Heading>
           <Text
@@ -132,7 +133,9 @@ export function MaterialLibrary({
             학습하고 싶은 PDF와 영상을 한곳에 모아 두세요.
           </Text>
         </div>
-        <Button onClick={() => setAdding(true)}>
+        <Button
+          variant='ink'
+          onClick={() => setAdding(true)}>
           <Icon
             name='plus'
             size={18}
@@ -140,32 +143,32 @@ export function MaterialLibrary({
           자료 추가
         </Button>
       </div>
-      <div className={styles.tabs}>
-        {(
-          [
-            ['all', '전체'],
-            ['pdf', 'PDF'],
-            ['video', '영상'],
-          ] as const
-        ).map(([value, label]) => (
-          <Button
-            variant='secondary'
-            key={value}
-            type='button'
-            className={styles.tab}
-            aria-pressed={kind === value}
-            onClick={() => setKind(value)}>
-            {label}{' '}
-            {value === 'all'
-              ? materials.length + videos.length
-              : value === 'pdf'
-                ? materials.length
-                : videos.length}
-          </Button>
-        ))}
-      </div>
-      <div className={styles.filters}>
-        <div>
+      <div className={libraryStyles.toolbar}>
+        <div className={libraryStyles.tabs}>
+          {(
+            [
+              ['all', '전체'],
+              ['pdf', 'PDF'],
+              ['video', '영상'],
+            ] as const
+          ).map(([value, label]) => (
+            <Button
+              variant='secondary'
+              key={value}
+              type='button'
+              className={styles.tab}
+              aria-pressed={kind === value}
+              onClick={() => setKind(value)}>
+              {label}{' '}
+              {value === 'all'
+                ? materials.length + videos.length
+                : value === 'pdf'
+                  ? materials.length
+                  : videos.length}
+            </Button>
+          ))}
+        </div>
+        <div className={libraryStyles.filters}>
           <Select
             label={contentLabel(<>학습 언어 </>)}
             aria-label='학습 언어 필터'
@@ -177,20 +180,19 @@ export function MaterialLibrary({
             <option value='en'>영어</option>
             <option value='th'>태국어</option>
           </Select>
+          <Input
+            aria-label='자료 이름 검색'
+            placeholder='자료 이름으로 찾기'
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
         </div>
-        <Input
-          aria-label='자료 이름 검색'
-          placeholder='자료 이름으로 찾기'
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
       </div>
       {sessionExpired && <SessionRecovery />}
       {error && (
         <Banner
           status='error'
           title='확인이 필요해요'
-
           role='alert'>
           {error}
           <Button
@@ -236,141 +238,46 @@ export function MaterialLibrary({
           </div>
         </EmptyState>
       ) : (
-        <List
-          className={libraryStyles.list}
-          aria-label='내 PDF와 영상 자료'>
-          {pdfs.map((material) => (
-            <ListItem
-              key={material.id}
-              className={libraryStyles.row}
-              label={
-                <>
-                  <span
-                    className={libraryStyles.cover}
-                    data-kind='pdf'>
-                    <Icon
-                      name='file-text'
-                      size={18}
-                    />
-                  </span>
-                  <div className={libraryStyles.info}>
-                    <Link
-                      className={styles.link}
-                      href={`/materials/${encodeURIComponent(material.id)}`}>
-                      {material.title}
-                    </Link>
-                    <Text
-                      as='p'
-                      display='block'
-                      className={styles.meta}>
-                      {material.language === 'en' ? '영어' : '태국어'} · 읽기
-                      자료 · {material.pageCount}페이지 · 원본 v
-                      {material.version ?? 1}
-                    </Text>
-                    <span className={styles.meta}>
-                      {material.visibility === 'public'
-                        ? '공개 자료'
-                        : material.visibility === 'accounts'
-                          ? '지정 계정 공유'
-                          : '나만 보기'}{' '}
-                      · {material.currentPage}페이지에서 이어 읽기
-                    </span>
-                  </div>
-                  <span className={libraryStyles.status}>
-                    <Badge tone='success'>원본 준비 완료</Badge>
-                    <time className={styles.meta}>
-                      {formatDate(material.updatedAt)}
-                    </time>
-                  </span>
-                  {material.owned && (
-                    <DropdownMenu
-                      button={{
-                        label: material.title + ' 관리',
-                        variant: 'ghost',
-                      }}
-                      items={[
-                        {
-                          label: '새 원본 버전 등록',
-                          onClick: () => setReplacement(material),
-                        },
-                        {
-                          label: '내 PDF 삭제',
-                          isDisabled: removing === material.id,
-                          onClick: () => void remove(material),
-                        },
-                      ]}
-                    />
-                  )}
-                </>
-              }
-            />
-          ))}
-          {filteredVideos.map((video) => (
-            <ListItem
-              key={video.videoId}
-              className={libraryStyles.row}
-              label={
-                <>
-                  <span
-                    className={libraryStyles.cover}
-                    data-kind='video'>
-                    <Icon
-                      name='play'
-                      size={18}
-                    />
-                  </span>
-                  <div className={libraryStyles.info}>
-                    <Link
-                      className={styles.link}
-                      href={`/learn/${encodeURIComponent(video.videoId)}`}>
-                      {video.title}
-                    </Link>
-                    <Text
-                      as='p'
-                      display='block'
-                      className={styles.meta}>
-                      {video.language === 'th' ? '태국어' : '영어'} · 영상 ·
-                      정답 구절 {video.completedCount ?? 0} / {video.count}
-                    </Text>
-                    <span className={styles.meta}>
-                      {video.isComplete
-                        ? '모든 학습 구절 정답 통과'
-                        : '저장한 위치에서 이어 학습'}
-                    </span>
-                  </div>
-                  <span className={libraryStyles.status}>
-                    <Badge
-                      tone={
-                        video.status === 'ready'
-                          ? 'success'
-                          : video.status === 'failed'
-                            ? 'error'
-                            : 'warning'
-                      }>
-                      {video.status === 'ready'
-                        ? '학습 가능'
-                        : video.status === 'failed'
-                          ? '분석 실패'
-                          : '자료 준비 중'}
-                    </Badge>
-                    <time className={styles.meta}>
-                      {formatDate(video.updatedAt)}
-                    </time>
-                  </span>
-                  <Link
-                    href={`/learn/${encodeURIComponent(video.videoId)}`}
-                    className={styles.link}
-                    aria-label={`${video.title} 열기`}>
-                    <Icon
-                      name='arrow-up-right'
-                      size={18}
-                    />
-                  </Link>
-                </>
-              }
-            />
-          ))}
-        </List>
+        <div
+          role='group'
+          aria-label='내 PDF와 영상 자료'
+          className={libraryStyles.sections}>
+          <MaterialSection
+            icon='chart-no-axes-column'
+            title='학습 중인 자료'
+            description='PDF는 읽던 페이지, 영상은 저장한 위치에서 이어 가요'>
+            {pdfs.map((material) => (
+              <PdfTile
+                key={material.id}
+                material={material}
+                removing={removing === material.id}
+                onReplace={() => setReplacement(material)}
+                onRemove={() => void remove(material)}
+              />
+            ))}
+            {learningVideos.map((video) => (
+              <VideoTile
+                key={video.videoId}
+                video={video}
+              />
+            ))}
+            <MaterialAddTile onAdd={() => setAdding(true)} />
+          </MaterialSection>
+          {completedVideos.length > 0 && (
+            <MaterialSection
+              icon='check-check'
+              tone='muted'
+              title='완료한 자료'
+              description='학습 기록과 표현은 그대로 남아 있어요'>
+              {completedVideos.map((video) => (
+                <VideoTile
+                  key={video.videoId}
+                  video={video}
+                />
+              ))}
+            </MaterialSection>
+          )}
+        </div>
       )}
 
       {adding && <MaterialRegistration onClose={() => setAdding(false)} />}

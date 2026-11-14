@@ -13,11 +13,13 @@ export function AuthButton({
   disabled = false,
   label,
   variant,
+  size,
 }: {
   action: 'signin' | 'signout';
   disabled?: boolean;
   label?: string;
   variant?: ComponentProps<typeof Button>['variant'];
+  size?: ComponentProps<typeof Button>['size'];
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -55,6 +57,7 @@ export function AuthButton({
     <>
       <Button
         variant={variant ?? (action === 'signout' ? 'secondary' : 'primary')}
+        size={size}
         disabled={disabled}
         loading={busy}
         onClick={() => void authenticate()}>

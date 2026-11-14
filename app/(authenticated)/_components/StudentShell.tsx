@@ -4,32 +4,46 @@ import { usePathname } from 'next/navigation';
 import { Icon, type IconName } from '@/components/ui/primitives/Icon';
 import { AppShell } from '@astryxdesign/core/AppShell';
 import {
-  SideNav,
-  SideNavHeading,
-  SideNavItem,
-  SideNavSection,
-} from '@astryxdesign/core/SideNav';
-import { TopNav, TopNavHeading } from '@astryxdesign/core/TopNav';
+  TopNav,
+  TopNavHeading,
+  TopNavItem,
+  TopNavMenu,
+} from '@astryxdesign/core/TopNav';
 import { Avatar } from '@astryxdesign/core/Avatar';
-import { Badge } from '@astryxdesign/core/Badge';
 import { HStack } from '@astryxdesign/core/HStack';
-import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
+import { BrandLogo } from '../../_components/BrandLogo';
+import { HeaderGrowth } from './HeaderGrowth';
 import * as styles from './StudentShell.css';
 
-const destinations: { href: string; label: string; icon: IconName }[] = [
-  { href: '/library', label: '내 학습', icon: 'house' },
+type Destination = { href: string; label: string; icon: IconName };
+
+const primary: Destination[] = [
+  { href: '/library', label: '홈', icon: 'house' },
   { href: '/materials', label: '자료 보관함', icon: 'layers' },
-  { href: '/expressions', label: '개인 표현집', icon: 'bookmark' },
-  { href: '/practice', label: '연습·복습', icon: 'repeat-2' },
-  { href: '/history', label: '학습 기록', icon: 'chart-no-axes-column' },
-  { href: '/ranking', label: '학습 성장·랭킹', icon: 'chart-no-axes-column' },
-  { href: '/insights', label: '학습 분석', icon: 'chart-no-axes-column' },
-  { href: '/recommendations', label: '추천 영상', icon: 'play' },
-  { href: '/courses', label: '내 수업과 과제', icon: 'users' },
-  { href: '/community', label: '학습 커뮤니티', icon: 'message-circle' },
+  { href: '/community', label: '커뮤니티', icon: 'message-circle' },
+  { href: '/ranking', label: '랭킹', icon: 'chart-no-axes-column' },
 ];
 
-/** 학생의 학습 탐색과 계정 정보를 제공하고 전용 학습 화면에는 전체 폭을 내어 준다. */
+const more: Destination[] = [
+  { href: '/expressions', label: '개인 표현집', icon: 'bookmark' },
+  { href: '/practice', label: '연습·복습', icon: 'repeat-2' },
+  { href: '/courses', label: '내 수업과 과제', icon: 'users' },
+  { href: '/history', label: '학습 기록', icon: 'clock' },
+  { href: '/insights', label: '학습 분석', icon: 'chart-no-axes-column' },
+  { href: '/recommendations', label: '추천 영상', icon: 'play' },
+  { href: '/questions', label: '커뮤니티에 질문하기', icon: 'send' },
+];
+
+const tagged: Destination = {
+  href: '/community/tagged',
+  label: '나를 태그한 글',
+  icon: 'bell',
+};
+
+const isWithin = (pathname: string, href: string) =>
+  pathname === href || pathname.startsWith(href + '/');
+
+/** 주요 학습 공간 4곳은 상단 탭으로, 나머지는 더보기로 묶고 전용 학습 화면에는 전체 폭을 내어 준다. */
 export function StudentShell({
   children,
   name,
@@ -41,31 +55,12 @@ export function StudentShell({
 }) {
   const pathname = usePathname();
   const immersive = /^\/(?:learn|materials)\/[^/]+/.test(pathname);
+  const extra = isHelper ? [tagged, ...more] : more;
 
-  const navigation = isHelper
-    ? [
-        ...destinations,
-        {
-          href: '/community/tagged',
-          label: '나를 태그한 글',
-          icon: 'bell' as const,
-        },
-      ]
-    : destinations;
-
-  const current = [...navigation]
-    .reverse()
-    .find(
-      (item) => pathname === item.href || pathname.startsWith(item.href + '/')
-    );
-
-  const title =
-    current?.label ??
-    (pathname === '/settings'
-      ? '학습 설정'
-      : pathname === '/admin'
-        ? '관리자 앱 안내'
-        : '내 학습 공간');
+  // 조교 전용 하위 경로가 커뮤니티 탭까지 선택하지 않도록 가장 긴 일치 경로 하나만 고른다.
+  const selected = [...primary, ...extra]
+    .filter((item) => isWithin(pathname, item.href))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
   if (immersive) return <div className={styles.immersive}>{children}</div>;
 
@@ -73,83 +68,44 @@ export function StudentShell({
     <AppShell
       height='auto'
       contentPadding={0}
-      sideNav={
-        <SideNav
-          aria-label='학생 서비스 탐색'
-          header={
-            <SideNavHeading
-              heading='graduate me'
-              headingHref='/library'
-              subheading='나의 언어 학습 공간'
-            />
-          }
-          footer={
-            <SideNavItem
-              label={name}
-              href='/settings'
-              isSelected={pathname.startsWith('/settings')}
-              icon={
-                <Avatar
-                  name={name}
-                  size='sm'
-                  tooltip={false}
-                />
-              }
-              endContent={<Badge label={isHelper ? '조교' : '학습자'} />}
-            />
-          }>
-          <SideNavSection title='학습 공간'>
-            {navigation.map((item) => (
-              <SideNavItem
-                key={item.href}
-                href={item.href}
-                label={item.label}
-                isSelected={current?.href === item.href}
-                icon={
-                  <Icon
-                    name={item.icon}
-                    size={18}
-                  />
-                }
-              />
-            ))}
-          </SideNavSection>
-          <SideNavSection title='도움과 설정'>
-            <SideNavItem
-              label='학습 설정'
-              href='/settings'
-              icon={
-                <Icon
-                  name='settings'
-                  size={18}
-                />
-              }
-              isSelected={pathname.startsWith('/settings')}
-            />
-            <SideNavItem
-              label='커뮤니티에 질문하기'
-              href='/questions'
-              icon={
-                <Icon
-                  name='message-circle'
-                  size={18}
-                />
-              }
-            />
-          </SideNavSection>
-        </SideNav>
-      }
       topNav={
         <TopNav
           label='학습 공간 상단 탐색'
-          heading={<TopNavHeading heading={title} />}
+          heading={
+            <TopNavHeading
+              heading='Please graduate me'
+              headingHref='/library'
+              logo={<BrandLogo />}
+            />
+          }
+          startContent={
+            <>
+              {primary.map((item) => (
+                <TopNavItem
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                  isSelected={selected === item.href}
+                />
+              ))}
+              <TopNavMenu
+                label='더보기'
+                items={extra.map((item) => ({
+                  title: item.label,
+                  href: item.href,
+                  icon: (
+                    <Icon
+                      name={item.icon}
+                      size={18}
+                    />
+                  ),
+                }))}
+              />
+            </>
+          }
           endContent={
             <HStack gap={3}>
-              <ButtonLink
-                href='/materials'
-                variant='secondary'>
-                자료 검색
-              </ButtonLink>
+              <HeaderGrowth />
               <Avatar
                 name={name}
                 href='/settings'

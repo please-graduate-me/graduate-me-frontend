@@ -29,11 +29,14 @@ export const divider = style({
   background: vars.color.line,
 });
 
-/** 확대 조작과 배율 선택을 함께 배치한다. */
+/** 확대 조작과 배율 선택을 둥근 알약 하나로 묶는다. */
 export const zoomControls = style({
   display: 'flex',
   alignItems: 'center',
-  gap: vars.space.xs,
+  gap: vars.space.xxs,
+  padding: 2,
+  border: `1px solid ${vars.color.line}`,
+  borderRadius: 999,
 });
 
 /** 잘못 입력한 페이지는 도구 모음 아래에 안내한다. */

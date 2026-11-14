@@ -51,7 +51,10 @@ export type IconName =
   | 'pause'
   | 'rotate-ccw'
   | 'hand'
-  | 'pencil';
+  | 'pencil'
+  | 'flame'
+  | 'zap'
+  | 'thumbs-up';
 
 const iconNames: IconName[] = [
   'house',
@@ -103,6 +106,9 @@ const iconNames: IconName[] = [
   'rotate-ccw',
   'hand',
   'pencil',
+  'flame',
+  'zap',
+  'thumbs-up',
 ];
 
 registerIcons(

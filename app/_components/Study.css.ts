@@ -4,39 +4,69 @@ import { vars } from '@/lib/styles/theme.css';
 /** 학습 작업 공간은 테마 바탕 위에서 화면 폭에 맞춰 확장한다. */
 export const study = style({ minWidth: 0, minHeight: '100vh' });
 
-/** 자료 제목과 학습 종료를 입력 영역 밖에 유지한다. */
+/** 집중 학습 상단은 본문과 같은 폭의 가운데 열에 둔다. */
 export const header = style({
+  display: 'grid',
+  gap: vars.space.md,
+  width: '100%',
+  maxWidth: 1120,
+  marginInline: 'auto',
+  boxSizing: 'border-box',
+  padding: `${vars.space.compact} ${vars.space.lg} 0`,
+  '@media': {
+    '(max-width: 1100px)': { maxWidth: 760 },
+    '(max-width: 600px)': {
+      padding: `${vars.space.sm} ${vars.space.sm} 0`,
+    },
+  },
+});
+
+/** 닫기, 진행 막대, 진도 배지를 한 줄의 얇은 막대로 묶는다. */
+export const topBar = style({
   display: 'flex',
   alignItems: 'center',
   flexWrap: 'wrap',
   gap: vars.space.md,
-  padding: vars.space.lg,
-  borderBottom: `1px solid ${vars.color.line}`,
 });
 
-/** 긴 자료 제목은 주변 조작보다 먼저 줄바꿈한다. */
-export const headerTitle = style({ flex: 1, minWidth: 160 });
+/** 진행 막대가 상단 막대의 남는 폭을 차지하고 좁으면 먼저 줄어든다. */
+export const lessonProgress = style({ flex: '1 1 120px', minWidth: 80 });
+
+/** 긴 자료 제목은 상단 막대 아래에서 줄바꿈한다. */
+export const headerTitle = style({ display: 'grid', gap: vars.space.xxs });
 
 /** 목록 복귀 아이콘의 터치 영역을 유지한다. */
 export const backLink = style({
   display: 'grid',
   placeItems: 'center',
-  width: 40,
-  height: 40,
+  flex: 'none',
+  width: 44,
+  height: 44,
+  borderRadius: vars.radius.control,
+  color: vars.color.muted,
+  transition: 'background-color 150ms ease',
+  selectors: { '&:hover': { background: vars.color.canvas } },
 });
 
 /** 학습 종료 링크를 제목과 분리한다. */
 export const exitLink = style({ whiteSpace: 'nowrap' });
 
-/** 넓은 화면은 스크립트를 병렬로, 좁은 화면은 학습 뒤에 배치한다. */
+/** 넓은 화면은 스크립트를 병렬로, 좁은 화면은 학습 뒤에 가운데 열로 배치한다. */
 export const studyGrid = style({
   display: 'grid',
   gridTemplateColumns: 'minmax(0, 1fr) 380px',
   gap: vars.space.lg,
+  width: '100%',
+  maxWidth: 1120,
+  marginInline: 'auto',
+  boxSizing: 'border-box',
   padding: vars.space.lg,
   alignItems: 'start',
   '@media': {
-    '(max-width: 1100px)': { gridTemplateColumns: 'minmax(0, 1fr)' },
+    '(max-width: 1100px)': {
+      gridTemplateColumns: 'minmax(0, 1fr)',
+      maxWidth: 760,
+    },
     '(max-width: 600px)': { padding: vars.space.sm },
   },
 });
@@ -111,9 +141,10 @@ export const modeRow = style({
   gap: vars.space.md,
 });
 
-/** 빈칸과 원문을 같은 문장 흐름으로 읽게 한다. */
+/** 빈칸과 원문을 같은 문장 흐름으로 크게 읽게 한다. */
 export const blankSentence = style({
   paddingBlock: vars.space.md,
+  fontSize: vars.fontSize.heading3,
   lineHeight: 2.7,
   minHeight: 84,
 });
@@ -136,6 +167,27 @@ export const answerActions = style({
   flexWrap: 'wrap',
   gap: vars.space.sm,
   marginTop: vars.space.md,
+});
+
+/** 주요 버튼 묶음은 눌릴 때 살짝 내려가고 비활성이나 모션 축소 설정에서는 움직이지 않는다. */
+export const pressable = style({
+  display: 'inline-flex',
+  transition: 'transform 100ms ease',
+  selectors: {
+    '&:active:not(:has(:disabled, [aria-disabled="true"]))': {
+      transform: 'translateY(2px)',
+    },
+  },
+  '@media': {
+    '(prefers-reduced-motion: reduce)': {
+      transition: 'none',
+      selectors: {
+        '&:active:not(:has(:disabled, [aria-disabled="true"]))': {
+          transform: 'none',
+        },
+      },
+    },
+  },
 });
 
 /** 검토와 구절 이동을 답안 제출에서 분리한다. */
@@ -164,52 +216,45 @@ export const scriptReading = style({
 /** 보조 설정은 주 학습 카드 뒤에 둔다. */
 export const learningDetails = style({ paddingBlock: vars.space.sm });
 
-/** 완료 화면에 다음 학습 행동을 위한 간격을 둔다. */
+/** 완료 화면은 도장과 집계, 다음 행동을 가운데 정렬로 쌓는다. */
 export const completion = style({
   display: 'grid',
+  justifyItems: 'center',
+  alignContent: 'center',
   gap: vars.space.md,
   minHeight: 360,
+  paddingBlock: vars.space.lg,
+  textAlign: 'center',
 });
 
 /** 학습 집계는 같은 단위로 나란히 비교하게 한다. */
 export const stats = style({
   display: 'flex',
   flexWrap: 'wrap',
-  gap: vars.space.xl,
+  justifyContent: 'center',
+  gap: vars.space.compact,
 });
 
-/** 차이 토큰이 긴 문장에서도 줄바꿈한다. */
-export const differences = style({
+/** 집계 칸은 숫자를 이름 위에 크게 보여 주되 읽는 순서는 이름이 먼저다. */
+export const stat = style({
   display: 'flex',
-  gap: vars.space.xs,
+  flexDirection: 'column-reverse',
+  alignItems: 'center',
+  gap: vars.space.xxs,
+  minWidth: 96,
+  padding: `${vars.space.compact} ${vars.space.comfortable}`,
+  border: `1px solid ${vars.color.line}`,
+  borderRadius: vars.radius.panel,
+  fontSize: vars.fontSize.small,
+  color: vars.color.muted,
+});
+
+/** 복습과 모드 전환을 한 줄에 두고 좁으면 줄바꿈한다. */
+export const completionActions = style({
+  display: 'flex',
   flexWrap: 'wrap',
-});
-
-/** 채점 비교 토큰에 읽기 여백을 둔다. */
-export const diff = style({
-  padding: '3px 7px',
-  borderRadius: vars.radius.control,
-});
-
-/** 일치한 단어를 수정 대상과 구분한다. */
-export const match = style({ color: vars.color.match });
-
-/** 빠뜨린 단어는 정답과 함께 구분한다. */
-export const missing = style({
-  color: vars.color.differenceText,
-  background: vars.color.differenceBackground,
-});
-
-/** 교체할 단어는 정답과 함께 구분한다. */
-export const replace = style({
-  color: vars.color.differenceText,
-  background: vars.color.differenceBackground,
-});
-
-/** 추가한 단어를 누락된 단어와 구분한다. */
-export const extra = style({
-  color: vars.color.extraText,
-  background: vars.color.extraBackground,
+  justifyContent: 'center',
+  gap: vars.space.sm,
 });
 
 /** 보조 설명은 테마의 낮은 읽기 위계를 따른다. */
@@ -229,7 +274,8 @@ globalStyle(`${videoFrame} iframe`, {
   height: '100%',
 });
 
-globalStyle(`${stats} strong`, {
-  display: 'block',
+globalStyle(`${stat} strong`, {
   fontSize: vars.fontSize.heading1,
+  lineHeight: 1.1,
+  color: vars.color.ink,
 });

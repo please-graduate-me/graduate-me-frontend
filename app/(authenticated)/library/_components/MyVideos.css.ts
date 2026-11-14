@@ -4,10 +4,10 @@ import { vars } from '@/lib/styles/theme.css';
 /** 자료 영역의 제목과 다음 학습 카드 사이를 일정하게 유지한다. */
 export const root = style({ margin: '0 0 26px' });
 
-/** 최근 자료 카드를 같은 크기의 두 열로 배치한다. */
+/** 최근 자료 카드를 같은 크기로 배치하고 좁은 화면에서는 한 열로 내린다. */
 export const resume = style({
   display: 'grid',
-  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
   gap: 18,
 });
 

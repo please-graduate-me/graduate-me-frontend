@@ -9,6 +9,7 @@ import { TabList, Tab } from '@astryxdesign/core/TabList';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
 import { Collapsible } from '@astryxdesign/core/Collapsible';
+import { ProgressBar } from '@astryxdesign/core/ProgressBar';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../../_components/SessionRecovery';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -425,14 +426,15 @@ export function PdfStudy({
           href='/materials'
           className={styles.back}
           aria-label='자료 보관함으로 돌아가기'>
-          <Icon name='arrow-left' />
+          <Icon name='chevron-left' />
         </Link>
-        <Icon name='file-text' />
         <div className={styles.title}>
-          <Heading level={1}>{initial.title}</Heading>
           <Text
             as='p'
-            display='block'>
+            display='block'
+            type='supporting'
+            weight='semibold'
+            maxLines={1}>
             {initial.owned ? '내 자료' : '공유 자료'} /{' '}
             {initial.language === 'en' ? '영어' : '태국어'} ·{' '}
             {initial.visibility === 'public'
@@ -442,6 +444,25 @@ export function PdfStudy({
                 : '나만 보기'}{' '}
             · 원본 v{initial.version ?? 1}
           </Text>
+          <Heading
+            level={1}
+            maxLines={1}>
+            {initial.title}
+          </Heading>
+        </div>
+        <div className={styles.progress}>
+          <ProgressBar
+            label='읽기 진행률'
+            isLabelHidden
+            className={styles.progressBar}
+            value={page}
+            max={initial.pageCount}
+          />
+          <span
+            className={styles.progressText}
+            aria-hidden='true'>
+            {page} / {initial.pageCount}쪽
+          </span>
         </div>
         <span
           className={styles.meta}
@@ -694,17 +715,20 @@ export function PdfStudy({
             ))}
           </TabList>
           {quote && tab !== 'overview' && (
-            <Blockquote className={styles.quote}>
-              <small>
-                PDF · {page}페이지 · 원본 v{source.version}
-                {ocrSelectionId ? ' · OCR' : ''}
-              </small>
-              <Text
-                as='p'
-                display='block'>
-                {quote}
-              </Text>
-            </Blockquote>
+            <div className={styles.passage}>
+              <Blockquote className={styles.quote}>
+                <small>
+                  PDF · {page}페이지 · 원본 v{source.version}
+                  {ocrSelectionId ? ' · OCR' : ''}
+                </small>
+                <Text
+                  as='p'
+                  display='block'
+                  type='inherit'>
+                  {quote}
+                </Text>
+              </Blockquote>
+            </div>
           )}
           <div
             role='tabpanel'

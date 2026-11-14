@@ -99,7 +99,8 @@
 ## Astryx UI
 
 - 기본 UI는 Astryx의 공식 컴포넌트를 사용하고 개별 경로에서 import한다. 화면의 의미에 따라 Heading·Text·Card·Section·Table·Collapsible·Banner 등을 조합한다.
-- 앱 초기화는 `app/Providers.tsx`에서 한국어 안내, 사전 빌드된 neutral 테마와 Next.js LinkProvider를 연결한다. 루트 레이아웃에서 reset, Astryx CSS, 테마 CSS를 순서대로 불러온다.
+- 앱 초기화는 `app/Providers.tsx`에서 한국어 안내, 사전 빌드된 pgm 테마와 Next.js LinkProvider를 연결한다. 루트 레이아웃에서 reset, Astryx CSS, 테마 CSS를 순서대로 불러온다.
+- pgm 테마는 `lib/styles/pgmTheme.ts`에서 neutral 테마를 확장해 정의한다. 원본을 바꾼 뒤 `pnpm theme:build`로 `lib/styles/pgm.*` 산출물을 다시 만들고, 산출물은 직접 수정하지 않는다.
 - `components/ui/`의 어댑터는 기존 폼의 값 변경·ref·이벤트·접근성 계약을 Astryx에 연결한다. 단순 외형 재구현이나 앱 간 공통 패키지는 만들지 않는다.
 - 영상·PDF 캔버스·OCR 위치·채점 강조·마스코트는 서비스 전용 표현으로 유지하고 주변 조작 UI는 Astryx를 사용한다.
 

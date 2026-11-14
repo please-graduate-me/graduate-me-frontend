@@ -22,12 +22,20 @@ export function PdfThumbnail({
       onChange={() => onSelect(number)}
       className={styles.root}
       aria-current={selected ? 'page' : undefined}>
-      <PdfPage
-        document={document}
-        number={number}
-        scale={0.105}
-      />
-      <span>{number}</span>
+      <div
+        className={styles.frame}
+        data-selected={selected}>
+        <PdfPage
+          document={document}
+          number={number}
+          scale={0.105}
+        />
+      </div>
+      <span
+        className={styles.number}
+        data-selected={selected}>
+        {number}
+      </span>
     </SelectableCard>
   );
 }

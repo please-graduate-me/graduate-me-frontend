@@ -1,26 +1,29 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 이어 학습과 자료를 주 영역에, 복습과 질문을 보조 영역에 배치한다. */
+/** 이어 학습과 자료를 위에, 복습과 질문 카드를 그 아래 한 줄에 배치한다. */
 export const workspace = style({
   display: 'grid',
-  gridTemplateColumns: 'minmax(0, 1fr) 332px',
-  '@media': { '(max-width: 1000px)': { gridTemplateColumns: '1fr' } },
+  gridTemplateColumns: 'minmax(0, 1fr)',
   gap: 28,
-  alignItems: 'start',
 });
 
-/** 긴 자료 제목이 고정된 보조 영역을 밀지 않게 한다. */
+/** 긴 자료 제목이 복습 카드 줄을 밀지 않게 한다. */
 export const library = style({ minWidth: 0 });
 
-/** 보조 활동은 세로 흐름으로 조용히 구분한다. */
-export const sidebar = style({ display: 'grid', gap: 26 });
+/** 오늘의 복습, 도우미 답변, 최근 표현을 같은 높이의 카드로 나란히 둔다. */
+export const sidebar = style({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+  gap: vars.space.md,
+});
 
 /** 복습의 주 행동을 연한 브랜드 바탕에 묶는다. */
 export const review = style({
   background: vars.color.selected,
   padding: 24,
   margin: 0,
+  borderRadius: vars.radius.panel,
 });
 
 /** 복습 영역의 작은 표식을 제목보다 낮은 위계로 둔다. */
@@ -48,11 +51,12 @@ export const primaryLink = style({
   selectors: { '&:hover': { background: vars.color.accentHover } },
 });
 
-/** 새 답변과 최근 표현을 선과 여백으로 나눈다. */
+/** 새 답변과 최근 표현을 복습 카드와 같은 크기의 테두리 카드로 둔다. */
 export const sideSection = style({
   margin: 0,
-  paddingBottom: 24,
-  borderBottom: '1px solid ' + vars.color.line,
+  padding: 24,
+  border: '1px solid ' + vars.color.line,
+  borderRadius: vars.radius.panel,
 });
 
 /** 영역 제목과 전체 목록 이동을 같은 줄에 둔다. */

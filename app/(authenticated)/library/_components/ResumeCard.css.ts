@@ -1,13 +1,29 @@
 import { globalStyle, style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 최근 학습은 얇은 테두리와 실제 진행 위치로 구별한다. */
+/** 최근 학습은 뒤에 카드가 겹쳐 쌓인 모양으로 이어 할 학습이 더 있음을 보여 준다. */
 export const root = style({
   padding: 18,
+  marginBottom: 14,
   border: '1px solid ' + vars.color.line,
   borderRadius: vars.radius.panel,
   background: vars.color.surface,
   minWidth: 0,
+  // 음수 spread 그림자 두 겹으로 아래쪽에 비치는 뒷장 카드 가장자리를 그린다.
+  boxShadow: [
+    `0 7px 0 -1px ${vars.color.surface}`,
+    `0 7px 0 0 ${vars.color.line}`,
+    `0 14px 0 -3px ${vars.color.surface}`,
+    `0 14px 0 -2px ${vars.color.line}`,
+  ].join(', '),
+  transition: 'transform 180ms ease',
+  selectors: { '&:hover': { transform: 'translateY(-2px)' } },
+  '@media': {
+    '(prefers-reduced-motion: reduce)': {
+      transition: 'none',
+      selectors: { '&:hover': { transform: 'none' } },
+    },
+  },
 });
 
 /** 표지와 제목을 두 열로 배치한다. */

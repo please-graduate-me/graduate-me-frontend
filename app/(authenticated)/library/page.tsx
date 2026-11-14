@@ -20,27 +20,34 @@ export default async function LibraryPage() {
 
   return (
     <div className={styles.root}>
-      <div className={styles.intro}>
-        <div>
-          <Text
-            as='p'
-            display='block'>
-            {today}
-          </Text>
-          <Heading level={1}>
-            {session.user.name ?? '학습자'}님, 오늘은 어디서 이어갈까요?
-          </Heading>
+      <aside className={styles.aside}>
+        <GrowthCard />
+      </aside>
+      <div className={styles.main}>
+        <div className={styles.intro}>
+          <div>
+            <Text
+              as='p'
+              display='block'
+              color='secondary'>
+              {today}
+            </Text>
+            <Heading level={1}>
+              {session.user.name ?? '학습자'}님, 오늘은 어디서 이어갈까요?
+            </Heading>
+          </div>
+          <ButtonLink
+            href='/materials?add=1'
+            variant='ink'>
+            <Icon
+              name='plus'
+              size={16}
+            />
+            자료 추가
+          </ButtonLink>
         </div>
-        <ButtonLink href='/materials?add=1'>
-          <Icon
-            name='plus'
-            size={16}
-          />
-          자료 추가
-        </ButtonLink>
+        <Dashboard />
       </div>
-      <GrowthCard />
-      <Dashboard />
     </div>
   );
 }

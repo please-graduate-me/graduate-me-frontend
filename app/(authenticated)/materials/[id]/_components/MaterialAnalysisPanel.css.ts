@@ -20,9 +20,21 @@ export const progress = style({
 /** 어휘의 뜻과 실제 예문을 항목별로 묶는다. */
 export const words = style({
   display: 'grid',
-  gap: vars.space.lg,
+  gap: vars.space.sm,
   overflowWrap: 'anywhere',
 });
+
+/** 핵심 표현 하나를 테두리 있는 둥근 카드로 나눠 훑어보기 쉽게 한다. */
+export const word = style({
+  display: 'grid',
+  gap: vars.space.xs,
+  padding: 14,
+  border: `1px solid ${vars.color.line}`,
+  borderRadius: 14,
+});
+
+/** 표현 자체를 뜻보다 먼저 읽히게 굵게 둔다. */
+export const term = style({ fontSize: 15, fontWeight: 700 });
 
 /** 긴 번역은 페이지별로 접어 원본 읽기와 함께 사용할 수 있게 한다. */
 export const translation = style({

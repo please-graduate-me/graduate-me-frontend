@@ -4,8 +4,8 @@ import type { ComponentProps } from 'react';
 import { contentLabel } from './contentLabel';
 
 type ButtonProps = ComponentProps<'button'> & {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: 'small' | 'medium';
+  variant?: 'primary' | 'ink' | 'secondary' | 'ghost' | 'danger';
+  size?: 'small' | 'medium' | 'large';
   loading?: boolean;
 };
 
@@ -33,7 +33,7 @@ export function Button({
             ? 'primary'
             : variant
       }
-      size={size === 'small' ? 'sm' : 'md'}>
+      size={size === 'small' ? 'sm' : size === 'large' ? 'lg' : 'md'}>
       {children}
     </AstryxButton>
   );

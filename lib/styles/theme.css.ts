@@ -32,6 +32,7 @@ export const vars = createGlobalTheme(':root', {
     document: 'var(--color-background-card)',
     documentInk: 'var(--color-text-primary)',
     overlay: 'var(--color-overlay)',
+    streak: '#C2540A',
   },
   font: {
     body: '"DM Sans", "Noto Sans KR", sans-serif',

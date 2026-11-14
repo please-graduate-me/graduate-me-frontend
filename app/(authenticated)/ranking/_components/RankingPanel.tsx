@@ -7,16 +7,8 @@ import { contentLabel } from '@/components/ui/primitives/contentLabel';
 import { Banner } from '@astryxdesign/core/Banner';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
-import { Section } from '@astryxdesign/core/Section';
-import { ProgressBar } from '@astryxdesign/core/ProgressBar';
-import { Table } from '@astryxdesign/core/Table';
-import { TableHeader } from '@astryxdesign/core/Table';
-import { TableRow } from '@astryxdesign/core/Table';
-import { TableHeaderCell } from '@astryxdesign/core/Table';
-import { TableBody } from '@astryxdesign/core/Table';
-import { TableCell } from '@astryxdesign/core/Table';
 import { Link } from '@astryxdesign/core/Link';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { BooMascot } from '@/domains/growth/ui/BooMascot';
 import {
   getGrowth,
@@ -32,7 +24,9 @@ import { Input } from '@/components/ui/primitives/Input';
 import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import { EmptyState } from '@/components/ui/composites/EmptyState';
 import * as styles from '@/lib/styles/workspace.css';
+import { LeaderboardList } from './LeaderboardList';
 import * as rankingStyles from './RankingPanel.css';
+import { WeeklyRecord } from './WeeklyRecord';
 
 /** 실명 대신 공개 닉네임으로 참여하며 공동 순위와 내 위치를 구분한다. */
 export function RankingPanel({
@@ -49,6 +43,7 @@ export function RankingPanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const boardTitleId = useId();
 
   async function refresh() {
     setBusy(true);
@@ -101,215 +96,174 @@ export function RankingPanel({
     }
   }
 
+  const myRank = leaderboard.items.find((item) => item.isMe)?.rank;
+
   return (
-    <div className={styles.page}>
-      <div className={styles.heading}>
-        <div>
+    <div className={rankingStyles.root}>
+      <div className={rankingStyles.main}>
+        <header className={rankingStyles.hero}>
+          <BooMascot size={112} />
           <Heading level={1}>부와 함께, 한 걸음 더</Heading>
           <Text
             as='p'
             display='block'
-            className={styles.description}>
+            color='secondary'>
             어제의 나보다 조금 더. 꾸준히 쌓은 학습을 함께 응원해요.
           </Text>
-        </div>
-        <Button
-          variant='secondary'
-          disabled={busy}
-          onClick={() => void refresh()}>
-          현재 순위 새로 조회
-        </Button>
-      </div>
-      <Section
-        className={rankingStyles.hero}
-        aria-label='개인 성장'>
-        <BooMascot size={128} />
-        <div>
-          <Heading level={2}>레벨 {summary.level}</Heading>
-          <Text
-            as='p'
-            display='block'>
-            누적 {summary.totalXp} XP · 이번 주 {summary.weeklyXp} XP
-          </Text>
-          <ProgressBar
-            label='진행 상황'
-            isLabelHidden
-            className={rankingStyles.progress}
-            aria-label='다음 레벨 진행률'
-            value={summary.levelXp}
-            max={summary.levelTarget}
-          />
-          <Text
-            as='p'
-            display='block'>
-            다음 레벨까지 {summary.levelTarget - summary.levelXp} XP
-          </Text>
-        </div>
-        <div>
-          <Heading level={3}>
-            {summary.dailyGoalReached
-              ? '오늘의 목표를 달성했어요!'
-              : `오늘 목표 ${Math.min(summary.dailyCompleted, summary.dailyGoal)} / ${summary.dailyGoal}`}
-          </Heading>
-          <Text
-            as='p'
-            display='block'>
-            목표 달성 {summary.streak}일 연속
-          </Text>
-        </div>
-      </Section>
-      <Card className={styles.panel}>
-        <Heading level={2}>랭킹 참여 설정</Heading>
-        <Text
-          as='p'
-          display='block'>
-          기본은 비공개예요. 참여하면 이번 주 XP와 공개 닉네임이 보여요.
-          실명이나 이메일을 닉네임으로 쓰지 마세요.
-        </Text>
-        <form
-          className={styles.stack}
-          onSubmit={(event) => void save(event)}>
-          <div className={styles.field}>
-            <Input
-              label={contentLabel(<>공개 닉네임</>)}
-              value={nickname}
-              required
-              minLength={2}
-              maxLength={20}
+        </header>
+        <section
+          className={rankingStyles.board}
+          aria-labelledby={boardTitleId}>
+          <div className={rankingStyles.boardHeader}>
+            <div className={rankingStyles.boardTitle}>
+              <Heading
+                level={2}
+                id={boardTitleId}>
+                이번 주 학습 랭킹
+              </Heading>
+              <Text
+                as='p'
+                display='block'
+                color='secondary'>
+                {leaderboard.weekStart} 시작 · 매주 월요일 00:00 초기화 (한국
+                시간)
+              </Text>
+            </div>
+            <Button
+              variant='secondary'
               disabled={busy}
-              placeholder='공개할 별명 2~20자'
-              onChange={(event) => setNickname(event.target.value)}
-            />
+              onClick={() => void refresh()}>
+              현재 순위 새로 조회
+            </Button>
           </div>
+          {!summary.participating && (
+            <Banner
+              status='info'
+              title='안내'>
+              지금은 랭킹 비참여 상태예요. 개인 XP와 레벨은 계속 쌓여요.
+            </Banner>
+          )}
+          {!leaderboard.items.length ? (
+            <EmptyState
+              title='이번 주 첫 걸음을 기다리고 있어요'
+              description='랭킹에 참여하고 학습 XP를 쌓으면 여기에 표시돼요.'
+              icon='users'
+            />
+          ) : (
+            <LeaderboardList items={leaderboard.items} />
+          )}
           <Text
             as='p'
             display='block'
             className={styles.meta}>
-            한글·영문 등 문자, 숫자, 공백과 _ . -를 사용할 수 있어요.
+            상위 20명과 내 주변 순위예요. 같은 XP는 공동 순위이며, XP는 실력
+            평가가 아닌 학습 참여 기록이에요.
           </Text>
-          <div className={styles.row}>
-            <Checkbox
-              label={contentLabel(<>주간 랭킹에 내 닉네임과 XP 공개</>)}
-              checked={participating}
-              disabled={busy}
-              onChange={(event) => setParticipating(event.target.checked)}
+        </section>
+        <Card className={rankingStyles.panel}>
+          <Heading level={2}>어떻게 XP를 모으나요?</Heading>
+          <List>
+            <ListItem
+              label={
+                <>구절 받아쓰기·적용 문제 최초 정답: 10 XP, 도움 사용 시 5 XP</>
+              }
             />
-          </div>
-          <Button disabled={busy}>참여 설정 저장</Button>
-        </form>
-        {message && (
+            <ListItem
+              label={
+                <>
+                  전날까지 저장한 표현 자가점검: 같은 표현·원문 하루 1회, 5 XP
+                </>
+              }
+            />
+            <ListItem label={<>하루 학습 3개 달성: 보너스 20 XP</>} />
+            <ListItem
+              label={<>하루 기본 학습 XP 한도: 100 XP, 목표 보너스 별도</>}
+            />
+            <ListItem
+              label={
+                <>
+                  누적 100 XP마다 레벨 상승. 정답 재제출·AI 생성·자료 열기는
+                  추가 보상이 없어요.
+                </>
+              }
+            />
+          </List>
           <Text
             as='p'
             display='block'
-            role='status'>
-            {message}
+            className={styles.meta}>
+            캐릭터: 한국외국어대학교 부(Boo).{' '}
+            <Link
+              href='https://www.hufs.ac.kr/hufs/11137/subview.do'
+              target='_blank'
+              rel='noreferrer'>
+              공식 캐릭터 안내
+            </Link>
           </Text>
-        )}
-        {error && (
-          <Banner
-            status='error'
-            title='확인이 필요해요'
-
-            role='alert'>
-            {error}
-          </Banner>
-        )}
-      </Card>
-      <Card className={styles.panel}>
-        <Heading level={2}>이번 주 학습 랭킹</Heading>
-        <Text
-          as='p'
-          display='block'>
-          {leaderboard.weekStart} 시작 · 매주 월요일 00:00 초기화 (한국 시간)
-        </Text>
-        <Text
-          as='p'
-          display='block'
-          className={styles.meta}>
-          상위 20명과 내 주변 순위예요. 같은 XP는 공동 순위이며, XP는 실력
-          평가가 아닌 학습 참여 기록이에요.
-        </Text>
-        {!summary.participating && (
-          <Banner
-            status='info'
-            title='안내'>
-            지금은 랭킹 비참여 상태예요. 개인 XP와 레벨은 계속 쌓여요.
-          </Banner>
-        )}
-        {!leaderboard.items.length ? (
-          <EmptyState
-            title='이번 주 첫 걸음을 기다리고 있어요'
-            description='랭킹에 참여하고 학습 XP를 쌓으면 여기에 표시돼요.'
-            icon='users'
-          />
-        ) : (
-          <div className={rankingStyles.tableScroll}>
-            <Table className={rankingStyles.table}>
-              <caption>주간 XP 순위</caption>
-              <TableHeader>
-                <TableRow>
-                  <TableHeaderCell scope='col'>순위</TableHeaderCell>
-                  <TableHeaderCell scope='col'>닉네임</TableHeaderCell>
-                  <TableHeaderCell scope='col'>주간 XP</TableHeaderCell>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leaderboard.items.map((item) => (
-                  <TableRow
-                    key={item.position}
-                    className={item.isMe ? rankingStyles.me : undefined}>
-                    <TableCell>{item.rank}위</TableCell>
-                    <TableHeaderCell scope='row'>
-                      {item.nickname}
-                      {item.isMe ? ' (나)' : ''}
-                    </TableHeaderCell>
-                    <TableCell>{item.xp} XP</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </Card>
-      <Card className={styles.panel}>
-        <Heading level={2}>어떻게 XP를 모으나요?</Heading>
-        <List>
-          <ListItem
-            label={
-              <>구절 받아쓰기·적용 문제 최초 정답: 10 XP, 도움 사용 시 5 XP</>
-            }
-          />
-          <ListItem
-            label={
-              <>전날까지 저장한 표현 자가점검: 같은 표현·원문 하루 1회, 5 XP</>
-            }
-          />
-          <ListItem label={<>하루 학습 3개 달성: 보너스 20 XP</>} />
-          <ListItem
-            label={<>하루 기본 학습 XP 한도: 100 XP, 목표 보너스 별도</>}
-          />
-          <ListItem
-            label={
-              <>
-                누적 100 XP마다 레벨 상승. 정답 재제출·AI 생성·자료 열기는 추가
-                보상이 없어요.
-              </>
-            }
-          />
-        </List>
-        <Text
-          as='p'
-          display='block'
-          className={styles.meta}>
-          캐릭터: 한국외국어대학교 부(Boo).{' '}
-          <Link
-            href='https://www.hufs.ac.kr/hufs/11137/subview.do'
-            target='_blank'
-            rel='noreferrer'>
-            공식 캐릭터 안내
-          </Link>
-        </Text>
-      </Card>
+        </Card>
+      </div>
+      <aside className={rankingStyles.aside}>
+        <WeeklyRecord
+          summary={summary}
+          myRank={myRank}
+        />
+        <Card className={rankingStyles.panel}>
+          <Heading level={2}>랭킹 참여 설정</Heading>
+          <Text
+            as='p'
+            display='block'>
+            기본은 비공개예요. 참여하면 이번 주 XP와 공개 닉네임이 보여요.
+            실명이나 이메일을 닉네임으로 쓰지 마세요.
+          </Text>
+          <form
+            className={styles.stack}
+            onSubmit={(event) => void save(event)}>
+            <div className={styles.field}>
+              <Input
+                label={contentLabel(<>공개 닉네임</>)}
+                value={nickname}
+                required
+                minLength={2}
+                maxLength={20}
+                disabled={busy}
+                placeholder='공개할 별명 2~20자'
+                onChange={(event) => setNickname(event.target.value)}
+              />
+            </div>
+            <Text
+              as='p'
+              display='block'
+              className={styles.meta}>
+              한글·영문 등 문자, 숫자, 공백과 _ . -를 사용할 수 있어요.
+            </Text>
+            <div className={styles.row}>
+              <Checkbox
+                label={contentLabel(<>주간 랭킹에 내 닉네임과 XP 공개</>)}
+                checked={participating}
+                disabled={busy}
+                onChange={(event) => setParticipating(event.target.checked)}
+              />
+            </div>
+            <Button disabled={busy}>참여 설정 저장</Button>
+          </form>
+          {message && (
+            <Text
+              as='p'
+              display='block'
+              role='status'>
+              {message}
+            </Text>
+          )}
+          {error && (
+            <Banner
+              status='error'
+              title='확인이 필요해요'
+              role='alert'>
+              {error}
+            </Banner>
+          )}
+        </Card>
+      </aside>
     </div>
   );
 }

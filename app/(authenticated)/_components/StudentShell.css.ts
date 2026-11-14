@@ -9,7 +9,7 @@ export const immersive = style({
 
 /** 탐색 UI 외형은 Astryx에 맡기고 본문 폭과 반응형 여백만 조정한다. */
 export const content = style({
-  maxWidth: 1600,
+  maxWidth: 1200,
   marginInline: 'auto',
   padding: '32px',
   minWidth: 0,
