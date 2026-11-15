@@ -59,3 +59,13 @@ docker compose -f compose.yaml -f compose.dev.yaml down
 기존 개인 질문은 이력으로 보존하고 새 질문은 커뮤니티에서 작성합니다. 원문 오류 신고는 운영자에게 별도로 전달합니다. 수업 개설·구성원·과제 관리도 이 앱에서 수행하며 수업 조교 역할과 커뮤니티 조교 타이틀은 별개입니다.
 
 별도 운영 콘솔은 관리자 아이디·비밀번호를 사용하며 사용자 Google 세션과 공유하지 않습니다.
+
+## 앱별 CI/CD
+
+`.github/workflows/check.yaml`은 PR과 `main` push에서 포맷·린트·타입·테스트·빌드와 로컬 Compose 구성을 검사합니다. 검사가 통과한 `main`은 infra의 재사용 workflow를 호출해 이 저장소의 Dockerfile로 `linux/amd64` 이미지를 만듭니다. Tailscale·SSH로 홈서버에 직접 전송한 뒤 `web`를 배포합니다. 이미지 저장소나 홈서버 빌드는 사용하지 않습니다.
+
+학생 웹 배포는 자기 컨테이너만 교체하고 API·DB·다른 앱을 유지합니다.
+
+연결 설정 후 저장소 Variable `DEPLOY_ENABLED=true`일 때 자동 배포합니다. 최초 연결 전에는 검사는 실행하고 배포만 생략합니다. PR 코드는 홈서버에서 실행하지 않습니다. 수동 재배포는 GitHub Actions에서 `main`을 선택해 실행합니다. 새 merge가 이미 있으면 오래된 커밋의 배포는 생략합니다.
+
+Dockerfile은 이미지에 들어갈 환경·코드·기본 실행 명령을 관리하고, 로컬 Compose는 개발 실행을 담당합니다. 홈서버의 운영 환경변수·네트워크·이미지 버전·재시작 정책과 배포 절차는 [infra 운영 안내](https://github.com/please-graduate-me/graduate-me-infra#readme)를 따릅니다. infra의 새 설정은 수동으로 적용한 뒤에만 다음 앱 배포에서 사용합니다.

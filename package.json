@@ -18,7 +18,8 @@
     "test:watch": "vitest",
     "dev:app": "next dev --webpack --hostname 0.0.0.0",
     "dev:down": "docker compose -f compose.yaml -f compose.dev.yaml down",
-    "dev:logs": "docker compose logs --follow --tail=50"
+    "dev:logs": "docker compose logs --follow --tail=50",
+    "check:ci": "pnpm format:check && pnpm lint && pnpm typecheck"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "2.2.1",
