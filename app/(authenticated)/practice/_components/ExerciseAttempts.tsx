@@ -9,8 +9,8 @@ import type { ExerciseResult } from '@/domains/ai/model/contracts';
 import { listExerciseAttempts } from '@/domains/ai/api/learning';
 import { Button } from '@/components/ui/primitives/Button';
 import { Badge } from '@/components/ui/primitives/Badge';
-import { formatDate } from '@/domains/learning/lib/format';
-import * as styles from '@/lib/styles/workspace.css';
+import { RelativeTime } from '@/components/ui/primitives/RelativeTime';
+import * as styles from './ExerciseAttempts.css';
 
 /** 문제 수정 이후에도 제출 당시 버전·답안·정답·근거를 구분해 확인한다. */
 export function ExerciseAttempts({
@@ -20,14 +20,14 @@ export function ExerciseAttempts({
   id: string;
   reload: number;
 }) {
-  const [items, setItems] = useState<ExerciseResult[]>([]);
+  const [items, setItems] = useState<ExerciseResult[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [previous, setPrevious] = useState(reload);
 
   if (previous !== reload) {
     setPrevious(reload);
-    setItems([]);
+    setItems(null);
   }
 
   async function load() {
@@ -47,9 +47,12 @@ export function ExerciseAttempts({
     <Collapsible trigger={<> 이 문제의 과거 제출 기록 </>}>
       <div className={styles.stack}>
         <Button
+          type='button'
           size='small'
           variant='secondary'
+          className={styles.load}
           disabled={busy}
+          loading={busy}
           onClick={() => void load()}>
           기록 조회
         </Button>
@@ -57,15 +60,25 @@ export function ExerciseAttempts({
           <Banner
             status='error'
             title='확인이 필요해요'
-
             role='alert'>
             {error}
           </Banner>
         )}
-        {items.map((item) => (
+        {items?.length === 0 && (
+          <Text
+            as='p'
+            display='block'
+            color='secondary'
+            role='status'
+            className={styles.meta}>
+            아직 제출 기록이 없어요.
+          </Text>
+        )}
+        {items?.map((item) => (
           <Card
+            as='article'
             key={item.id}
-            className={styles.message}>
+            className={styles.attempt}>
             <div className={styles.row}>
               <Badge
                 tone={
@@ -81,9 +94,11 @@ export function ExerciseAttempts({
                     ? '정답'
                     : '오답'}
               </Badge>
-              <span className={styles.meta}>
-                문제 v{item.version} · {formatDate(item.createdAt)}
-              </span>
+              <Text
+                color='secondary'
+                className={styles.meta}>
+                문제 v{item.version} · <RelativeTime value={item.createdAt} />
+              </Text>
             </div>
             <Text
               as='p'
@@ -105,7 +120,9 @@ export function ExerciseAttempts({
             </Text>
             {item.feedback && (
               <Banner
-                status='info'
+                status='note'
+                icon='info'
+                layout='inline'
                 title='안내'>
                 {item.feedback}
               </Banner>
@@ -113,12 +130,13 @@ export function ExerciseAttempts({
             <Text
               as='p'
               display='block'
+              color='secondary'
               className={styles.meta}>
               {item.hintUsed ? '힌트 사용' : '힌트 사용 안 함'} ·{' '}
               {item.revealed ? '정답 열람 후 제출' : '정답 열람 전 제출'}
             </Text>
             <Blockquote className={styles.quote}>
-              {item.source.quote}
+              “{item.source.quote}”
             </Blockquote>
           </Card>
         ))}

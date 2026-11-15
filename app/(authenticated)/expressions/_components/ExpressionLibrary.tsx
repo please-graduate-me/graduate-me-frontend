@@ -1,23 +1,48 @@
 'use client';
 import { List } from '@/components/ui/composites/List';
 import { ListItem } from '@/components/ui/composites/ListItem';
-
 import { Heading } from '@/components/ui/primitives/Heading';
 import { Text } from '@/components/ui/primitives/Text';
 import { Section } from '@/components/ui/layouts/Section';
 import { useState } from 'react';
 import { Link } from '@/components/ui/primitives/Link';
 import type { Expression } from '@/domains/expressions/model/contracts';
-import { sourceLabel, formatDate } from '@/domains/learning/lib/format';
+import { sourceLabel } from '@/domains/learning/lib/format';
+import { RelativeTime } from '@/components/ui/primitives/RelativeTime';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
 import { Button } from '@/components/ui/primitives/Button';
-import { Input } from '@/components/ui/primitives/Input';
+import { SearchField } from '@/components/ui/composites/SearchField';
 import { Select } from '@/components/ui/primitives/Select';
+import { Badge } from '@/components/ui/primitives/Badge';
 import { Icon } from '@/components/ui/primitives/Icon';
 import { EmptyState } from '@/components/ui/composites/EmptyState';
+import {
+  formatReviewDay,
+  reviewStepMax,
+} from '@/domains/expressions/lib/reviewSchedule';
 import { ExpressionDetail } from './ExpressionDetail';
-import * as styles from '@/lib/styles/workspace.css';
-import * as expressionStyles from './ExpressionLibrary.css';
+import * as styles from './ExpressionLibrary.css';
+
+const entryKinds = [
+  ['all', '전체'],
+  ['vocabulary', '단어·표현'],
+  ['sentence', '문장'],
+  ['concept', '개념'],
+] as const;
+
+type EntryKind = (typeof entryKinds)[number][0];
+
+const matchesKind = (item: Expression, kind: EntryKind) =>
+  kind === 'all' ||
+  (kind === 'vocabulary'
+    ? item.kind === 'word' || item.kind === 'phrase'
+    : item.kind === kind);
+
+const matchesReview = (item: Expression, review: string) =>
+  review === 'all' ||
+  (review === 'due'
+    ? item.reviewIncluded && item.reviewDue
+    : item.reviewIncluded === (review === 'included'));
 
 /** 표현 검색과 출처별 탐색을 개인 메모 상세와 연결한다. */
 export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
@@ -26,11 +51,7 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<'all' | 'pdf' | 'video'>('all');
   const [language, setLanguage] = useState('all');
-
-  const [entryKind, setEntryKind] = useState<
-    'all' | 'vocabulary' | 'sentence' | 'concept'
-  >('all');
-
+  const [entryKind, setEntryKind] = useState<EntryKind>('all');
   const [review, setReview] = useState('all');
   const [sort, setSort] = useState('recent');
 
@@ -39,11 +60,8 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
       (item) =>
         (kind === 'all' || item.source.kind === kind) &&
         (language === 'all' || item.source.language === language) &&
-        (entryKind === 'all' ||
-          (entryKind === 'vocabulary'
-            ? item.kind === 'word' || item.kind === 'phrase'
-            : item.kind === entryKind)) &&
-        (review === 'all' || item.reviewIncluded === (review === 'included')) &&
+        matchesKind(item, entryKind) &&
+        matchesReview(item, review) &&
         `${item.text} ${item.meaning} ${item.note} ${item.source.title}`
           .toLowerCase()
           .includes(query.toLowerCase())
@@ -59,46 +77,40 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
 
   return (
     <div className={styles.page}>
-      <div className={styles.heading}>
+      <div className={styles.header}>
         <div>
           <Heading level={1}>개인 표현집</Heading>
           <Text
             as='p'
             display='block'
+            color='secondary'
             className={styles.description}>
             내가 발견한 표현과 문맥을 모아 두는 곳
           </Text>
         </div>
         <ButtonLink
           href='/materials'
-          className={styles.link}>
+          variant='ink'
+          size='comfortable'
+          startIcon='plus'>
           원문에서 표현 추가
         </ButtonLink>
       </div>
-      <div className={styles.tabs}>
-        {(
-          [
-            ['all', '전체'],
-            ['vocabulary', '단어·표현'],
-            ['sentence', '문장'],
-            ['concept', '개념'],
-          ] as const
-        ).map(([value, label]) => (
+      <div
+        role='group'
+        aria-label='저장 종류'
+        className={styles.kinds}>
+        {entryKinds.map(([value, label]) => (
           <Button
             variant='secondary'
             key={value}
             type='button'
-            className={styles.tab}
             aria-pressed={entryKind === value}
             onClick={() => setEntryKind(value)}>
-            {label}{' '}
-            {value === 'all'
-              ? items.length
-              : items.filter((item) =>
-                  value === 'vocabulary'
-                    ? item.kind === 'word' || item.kind === 'phrase'
-                    : item.kind === value
-                ).length}
+            {label}
+            <span className={styles.kindCount}>
+              {items.filter((item) => matchesKind(item, value)).length}
+            </span>
           </Button>
         ))}
       </div>
@@ -107,27 +119,19 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
           title='아직 저장한 표현이 없어요'
           icon='bookmark'
           description='원문에서 인상 깊은 구절을 선택하고 표현 저장을 눌러 보세요.'>
-          <Link
-            href='/materials'
-            className={styles.link}>
-            자료 보관함으로
-          </Link>
+          <Link href='/materials'>자료 보관함으로</Link>
         </EmptyState>
       ) : (
-        <div className={expressionStyles.columns}>
-          <Section>
-            <div className={styles.filters}>
-              <Input
-                aria-label='표현이나 뜻 검색'
-                placeholder='표현이나 뜻으로 찾기'
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-              />
-              <Icon
-                name='search'
-                size={18}
-              />
-            </div>
+        <div className={styles.columns}>
+          <Section
+            aria-label='표현 목록'
+            className={styles.listColumn}>
+            <SearchField
+              label='표현이나 뜻 검색'
+              placeholder='표현이나 뜻으로 찾기'
+              value={query}
+              onChange={setQuery}
+            />
             <div className={styles.filters}>
               <Select
                 aria-label='표현 언어'
@@ -152,6 +156,7 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
                 value={review}
                 onChange={(event) => setReview(event.target.value)}>
                 <option value='all'>모든 복습 상태</option>
+                <option value='due'>오늘 복습할 표현</option>
                 <option value='included'>복습에 포함</option>
                 <option value='excluded'>잠시 제외</option>
               </Select>
@@ -166,47 +171,77 @@ export function ExpressionLibrary({ initial }: { initial: Expression[] }) {
             <Text
               as='p'
               display='block'
-              className={styles.meta}>
+              color='secondary'
+              role='status'
+              className={styles.count}>
               {sort === 'oldest' ? '오래된 저장순' : '최근 저장순'} ·{' '}
               {filtered.length}개
             </Text>
-            <List className={styles.list}>
-              {filtered.map((item) => (
-                <ListItem
-                  key={item.id}
-                  isSelected={selected?.id === item.id}
-                  onClick={() => setSelectedId(item.id)}
-                  label={item.text}
-                  description={
-                    <>
-                      <Text
-                        as='p'
-                        display='block'>
-                        {item.meaning || '뜻을 정리해 보세요.'}
-                      </Text>
-                      <Text
-                        type='supporting'
-                        color='secondary'>
-                        {sourceLabel(item.source)} · {item.source.title}
-                      </Text>
-                    </>
-                  }
-                  endContent={
-                    <Text
-                      type='supporting'
-                      color='secondary'>
-                      {formatDate(item.createdAt)}
-                    </Text>
-                  }
-                />
-              ))}
-            </List>
+            {filtered.length > 0 && (
+              <List className={styles.list}>
+                {filtered.map((item) => (
+                  <ListItem
+                    key={item.id}
+                    variant='card'
+                    isSelected={selected?.id === item.id}
+                    onClick={() => setSelectedId(item.id)}
+                    startContent={
+                      <span
+                        className={styles.source}
+                        data-kind={item.source.kind}>
+                        <Icon
+                          name={
+                            item.source.kind === 'pdf' ? 'file-text' : 'play'
+                          }
+                          size={18}
+                        />
+                      </span>
+                    }
+                    label={<span className={styles.itemText}>{item.text}</span>}
+                    description={
+                      <>
+                        <span
+                          className={
+                            item.meaning
+                              ? styles.itemMeaning
+                              : `${styles.itemMeaning} ${styles.empty}`
+                          }>
+                          {item.meaning || '뜻을 정리해 보세요.'}
+                        </span>
+                        <span className={styles.itemSource}>
+                          {sourceLabel(item.source)} · {item.source.title}
+                        </span>
+                      </>
+                    }
+                    endContent={
+                      <span className={styles.itemEnd}>
+                        <RelativeTime value={item.createdAt} />
+                        {!item.reviewIncluded ? (
+                          <Badge tone='neutral'>복습 제외</Badge>
+                        ) : item.reviewDue || !item.nextReviewOn ? (
+                          <Badge tone='warning'>오늘 복습</Badge>
+                        ) : (
+                          <span className={styles.itemReview}>
+                            {item.reviewStep}/{reviewStepMax}단계 ·{' '}
+                            {formatReviewDay(item.nextReviewOn)}
+                          </span>
+                        )}
+                      </span>
+                    }
+                  />
+                ))}
+              </List>
+            )}
             {!filtered.length && (
               <EmptyState
+                variant='dashed'
+                iconTone='neutral'
+                headingLevel={2}
                 title='검색한 표현이 없어요'
                 description='다른 검색어나 출처를 선택해 보세요.'
                 icon='search'>
                 <Button
+                  type='button'
                   variant='secondary'
                   onClick={() => {
                     setQuery('');
