@@ -13,7 +13,9 @@ import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
 import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import { Button } from '@/components/ui/primitives/Button';
-import * as styles from '@/lib/styles/workspace.css';
+import { SegmentedControl } from '@/components/ui/primitives/SegmentedControl';
+import { SegmentedControlItem } from '@/components/ui/primitives/SegmentedControlItem';
+import * as styles from './CourseAssignmentEditor.css';
 
 /** 과제 원본과 제출 정책은 버전으로 보존하고 학생 화면과 같은 자료를 선택한다. */
 export function CourseAssignmentEditor({
@@ -75,12 +77,13 @@ export function CourseAssignmentEditor({
   return (
     <Dialog
       open
+      width={600}
       title={assignment ? '과제 수정' : '과제 만들기'}
       onClose={() => {
         if (!busy) onClose();
       }}>
       <form
-        className={styles.stack}
+        className={styles.form}
         onSubmit={async (event) => {
           event.preventDefault();
           if (busy) return;
@@ -137,43 +140,51 @@ export function CourseAssignmentEditor({
           }
         }}>
         <fieldset
-          className={styles.stack}
+          className={styles.fields}
           disabled={busy}>
+          <Input
+            disabled={busy}
+            label={contentLabel(<>과제 이름</>)}
+            name='title'
+            required
+            maxLength={200}
+            defaultValue={assignment?.title}
+          />
           <div className={styles.field}>
-            <Input
-              disabled={busy}
-              label={contentLabel(<>과제 이름</>)}
-              name='title'
-              required
-              maxLength={200}
-              defaultValue={assignment?.title}
-            />
-          </div>
-          <div className={styles.field}>
-            <Select
-              disabled={busy}
-              label={contentLabel(<>자료 종류</>)}
+            <span
+              aria-hidden='true'
+              className={styles.label}>
+              자료 종류
+            </span>
+            <SegmentedControl
+              label='자료 종류'
               value={kind}
-              onChange={(event) => {
-                setKind(event.target.value as typeof kind);
+              isDisabled={busy}
+              onChange={(next) => {
+                setKind(next as typeof kind);
                 setPage(1);
               }}>
-              <option value='video'>영상</option>
-              <option value='pdf'>PDF</option>
-            </Select>
+              <SegmentedControlItem
+                value='video'
+                label='영상'
+              />
+              <SegmentedControlItem
+                value='pdf'
+                label='PDF'
+              />
+            </SegmentedControl>
           </div>
           {kind === 'video' && (
-            <div className={styles.field}>
-              <Input
-                disabled={busy}
-                label={contentLabel(<>영상 검색</>)}
-                value={q}
-                onChange={(event) => {
-                  setQuery(event.target.value);
-                  setPage(1);
-                }}
-              />
-            </div>
+            <Input
+              disabled={busy}
+              type='search'
+              label={contentLabel(<>영상 검색</>)}
+              value={q}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setPage(1);
+              }}
+            />
           )}
           <div className={styles.field}>
             <Select
@@ -200,24 +211,28 @@ export function CourseAssignmentEditor({
                 </option>
               ))}
             </Select>
+            {kind === 'video' && (
+              <div className={styles.pager}>
+                <Button
+                  type='button'
+                  variant='secondary'
+                  className={styles.pagerButton}
+                  disabled={busy || page <= 1}
+                  onClick={() => setPage(page - 1)}>
+                  이전 자료
+                </Button>
+                <Button
+                  type='button'
+                  variant='secondary'
+                  className={styles.pagerButton}
+                  disabled={busy || !hasMore}
+                  onClick={() => setPage(page + 1)}>
+                  다음 자료
+                </Button>
+              </div>
+            )}
           </div>
-          {kind === 'video' && (
-            <div className={styles.row}>
-              <Button
-                type='button'
-                disabled={busy || page <= 1}
-                onClick={() => setPage(page - 1)}>
-                이전 자료
-              </Button>
-              <Button
-                type='button'
-                disabled={busy || !hasMore}
-                onClick={() => setPage(page + 1)}>
-                다음 자료
-              </Button>
-            </div>
-          )}
-          <div className={styles.field}>
+          <div className={styles.pair}>
             <Input
               disabled={busy}
               label={contentLabel(
@@ -229,8 +244,6 @@ export function CourseAssignmentEditor({
               required
               defaultValue={(assignment?.source.fromIndex ?? 0) + 1}
             />
-          </div>
-          <div className={styles.field}>
             <Input
               disabled={busy}
               label={contentLabel(
@@ -244,82 +257,74 @@ export function CourseAssignmentEditor({
             />
           </div>
           {kind === 'video' && (
-            <>
-              <div className={styles.field}>
-                <Select
-                  disabled={busy}
-                  label={contentLabel(<>풀이 방식</>)}
-                  name='mode'
-                  defaultValue={assignment?.mode ?? 'full'}>
-                  <option value='full'>전체 받아쓰기</option>
-                  <option value='blank'>빈칸 받아쓰기</option>
-                </Select>
-              </div>
-              <div className={styles.field}>
-                <Select
-                  disabled={busy}
-                  label={contentLabel(<>빈칸 비율</>)}
-                  name='blankRatio'
-                  defaultValue={assignment?.source.blankRatio ?? 20}>
-                  <option value={20}>20%</option>
-                  <option value={40}>40%</option>
-                  <option value={60}>60%</option>
-                </Select>
-              </div>
-            </>
+            <div className={styles.pair}>
+              <Select
+                disabled={busy}
+                label={contentLabel(<>풀이 방식</>)}
+                name='mode'
+                defaultValue={assignment?.mode ?? 'full'}>
+                <option value='full'>전체 받아쓰기</option>
+                <option value='blank'>빈칸 받아쓰기</option>
+              </Select>
+              <Select
+                disabled={busy}
+                label={contentLabel(<>빈칸 비율</>)}
+                name='blankRatio'
+                defaultValue={assignment?.source.blankRatio ?? 20}>
+                <option value={20}>20%</option>
+                <option value={40}>40%</option>
+                <option value={60}>60%</option>
+              </Select>
+            </div>
           )}
-          <div className={styles.field}>
-            <Input
-              disabled={busy}
-              label={contentLabel(<>제출 기한</>)}
-              type='datetime-local'
-              name='dueAt'
-              required
-              defaultValue={localDate}
-            />
-          </div>
-          <div>
+          <Input
+            disabled={busy}
+            label={contentLabel(<>제출 기한</>)}
+            type='datetime-local'
+            name='dueAt'
+            required
+            defaultValue={localDate}
+          />
+          <fieldset className={styles.policies}>
+            <legend className={styles.legend}>제출 정책</legend>
+            {/* 새 과제는 시안 기본값대로 기한 후 제출만 막고 재제출, 힌트, 정답 공개를 허용한 채 시작한다. */}
             <Checkbox
               disabled={busy}
-              label={contentLabel(<> 기한 후 제출 허용</>)}
+              label={contentLabel(<>기한 후 제출 허용</>)}
+              variant='tile'
               name='allowLate'
               defaultChecked={assignment?.allowLate}
             />
-          </div>
-          <div>
             <Checkbox
               disabled={busy}
-              label={contentLabel(<> 재제출 허용</>)}
+              label={contentLabel(<>재제출 허용</>)}
+              variant='tile'
               name='allowResubmit'
-              defaultChecked={assignment?.allowResubmit}
+              defaultChecked={assignment ? assignment.allowResubmit : true}
             />
-          </div>
-          <div>
             <Checkbox
               disabled={busy}
-              label={contentLabel(<> 힌트 허용</>)}
+              label={contentLabel(<>힌트 허용</>)}
+              variant='tile'
               name='allowHints'
-              defaultChecked={assignment?.allowHints}
+              defaultChecked={assignment ? assignment.allowHints : true}
             />
-          </div>
-          <div>
             <Checkbox
               disabled={busy}
-              label={contentLabel(<> 제출 후 정답 공개</>)}
+              label={contentLabel(<>제출 후 정답 공개</>)}
+              variant='tile'
               name='revealAfterSubmit'
-              defaultChecked={assignment?.revealAfterSubmit}
+              defaultChecked={assignment ? assignment.revealAfterSubmit : true}
             />
-          </div>
+          </fieldset>
           {assignment && (
-            <div className={styles.field}>
-              <Input
-                disabled={busy}
-                label={contentLabel(<>수정 이유</>)}
-                name='reason'
-                required
-                maxLength={2000}
-              />
-            </div>
+            <Input
+              disabled={busy}
+              label={contentLabel(<>수정 이유</>)}
+              name='reason'
+              required
+              maxLength={2000}
+            />
           )}
         </fieldset>
         {error && (
@@ -331,6 +336,9 @@ export function CourseAssignmentEditor({
           </Banner>
         )}
         <Button
+          size='prominent'
+          shape='rounded'
+          className={styles.submit}
           disabled={busy}
           loading={busy}>
           과제 저장

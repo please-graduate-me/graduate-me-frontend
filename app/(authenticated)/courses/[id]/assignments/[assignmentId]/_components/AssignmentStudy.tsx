@@ -1,16 +1,17 @@
 'use client';
 import { contentLabel } from '@/components/ui/primitives/contentLabel';
-import { Blockquote } from '@/components/ui/primitives/Blockquote';
 import { Banner } from '@/components/ui/composites/Banner';
 import { Heading } from '@/components/ui/primitives/Heading';
 import { Text } from '@/components/ui/primitives/Text';
-import { Section } from '@/components/ui/layouts/Section';
 import { Card } from '@/components/ui/primitives/Card';
 import { Collapsible } from '@/components/ui/composites/Collapsible';
+import { ProgressBar } from '@/components/ui/primitives/ProgressBar';
+import { Icon } from '@/components/ui/primitives/Icon';
 import { CourseAssignmentEditor } from '../../../../_components/CourseAssignmentEditor';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../../../../_components/SessionRecovery';
-import { useRef, useState } from 'react';
+import { GraduationStamp } from '../../../../../../_components/GraduationStamp';
+import { useId, useRef, useState } from 'react';
 import {
   archiveAssignmentDraft,
   type AssignmentDraft,
@@ -24,12 +25,36 @@ import {
 import { Button } from '@/components/ui/primitives/Button';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
 import { Input } from '@/components/ui/primitives/Input';
-import { TextArea } from '@/components/ui/primitives/TextArea';
 import { Checkbox } from '@/components/ui/primitives/Checkbox';
 import { Badge } from '@/components/ui/primitives/Badge';
 import { formatDate } from '@/domains/learning/lib/format';
-import * as styles from '@/lib/styles/workspace.css';
-import * as assignmentStyles from './AssignmentStudy.css';
+import { RelativeTime } from '@/components/ui/primitives/RelativeTime';
+import { AssignmentTask } from './AssignmentTask';
+import { AssignmentSubmission } from './AssignmentSubmission';
+import * as styles from './AssignmentStudy.css';
+
+const modes = {
+  reading: '읽기',
+  full: '전체 받아쓰기',
+  blank: '빈칸 받아쓰기',
+} as const;
+
+/** 빈칸은 모두, 문장 답안은 공백이 아닌 글자가 있어야 채운 구절로 본다. */
+function isFilled(
+  task: Assignment['source']['tasks'][number],
+  answer: string | string[] | undefined
+) {
+  if (Array.isArray(answer))
+    return (
+      answer.length === task.blanks.length &&
+      answer.every((item) => item.trim() !== '')
+    );
+
+  return typeof answer === 'string' && answer.trim() !== '';
+}
+
+const hintsByTask = (assignment: Assignment) =>
+  Object.fromEntries(assignment.hints.map((item) => [item.taskId, item.hint]));
 
 /** 개인 답안과 별개로 과제 당시 버전의 최종 제출과 이력을 보존한다. */
 export function AssignmentStudy({
@@ -39,12 +64,15 @@ export function AssignmentStudy({
   initial: Assignment;
   canSubmit: boolean;
 }) {
+  const formId = useId();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(initial);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [confirmed, setConfirmed] = useState(false);
   const [previousDrafts, setPreviousDrafts] = useState<AssignmentDraft[]>([]);
-  const [hints, setHints] = useState<Record<string, string>>({});
+  // 이미 받은 힌트는 서버 기록으로 복원해 새로고침 뒤 다시 요청하며 사용 횟수가 늘지 않게 한다.
+  const [hints, setHints] = useState(() => hintsByTask(initial));
+  const [step, setStep] = useState(0);
 
   const [listeningTaskId, setListeningTaskId] = useState(
     initial.source.tasks[0]?.id
@@ -54,6 +82,12 @@ export function AssignmentStudy({
   const [error, setError] = useState('');
   const [sessionExpired, setSessionExpired] = useState(false);
   const [message, setMessage] = useState('');
+
+  const [submitted, setSubmitted] = useState<{
+    id: string;
+    late: boolean;
+  } | null>(null);
+
   const request = useRef<{ key: string; id: string } | null>(null);
 
   const blocked =
@@ -61,15 +95,41 @@ export function AssignmentStudy({
     value.sourceAvailable === false ||
     (!value.allowResubmit && value.submissions.length > 0);
 
+  const tasks = value.source.tasks;
+  const unit = value.mode === 'reading' ? '페이지' : '구절';
+  const current = Math.min(step, Math.max(tasks.length - 1, 0));
+
+  const filled = tasks.map((task) => isFilled(task, answers[task.id]));
+  const doneCount = filled.filter(Boolean).length;
+
+  const canHint =
+    value.allowHints && canSubmit && value.sourceAvailable !== false;
+
+  function answer(taskId: string, next: string | string[]) {
+    setAnswers((previous) => ({ ...previous, [taskId]: next }));
+    // 답안을 다시 고치면 재제출 흐름이므로 완료 시트를 내리고 제출 막대를 되돌린다.
+    setSubmitted(null);
+  }
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (blocked || busy) return;
+    if (blocked || busy || !confirmed) return;
+    const missing = filled.indexOf(false);
+
+    // 한 번에 한 구절만 보이므로 숨은 빈 답안은 브라우저 검사 대신 직접 찾아 보여 준다.
+    if (missing >= 0) {
+      setStep(missing);
+      setError(`모든 ${unit}의 답을 채워 주세요.`);
+
+      return;
+    }
+
     setBusy(true);
     setError('');
     setMessage('');
 
     try {
-      const input = value.source.tasks.map((task) => ({
+      const input = tasks.map((task) => ({
         id: task.id,
         answer:
           answers[task.id] ??
@@ -97,11 +157,7 @@ export function AssignmentStudy({
         ],
       }));
 
-      setMessage(
-        result.late
-          ? '기한 후 제출을 저장했습니다.'
-          : '과제 제출을 저장했습니다. 개인 학습 진도는 변경하지 않습니다.'
-      );
+      setSubmitted({ id: result.id, late: result.late });
     } catch (error) {
       setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
@@ -148,6 +204,8 @@ export function AssignmentStudy({
         if (draft) setPreviousDrafts((previous) => [draft, ...previous]);
         setAnswers({});
         setConfirmed(false);
+        setStep(0);
+        setSubmitted(null);
 
         setMessage(
           result.sourceAvailable === false
@@ -157,6 +215,7 @@ export function AssignmentStudy({
       }
 
       setValue(result);
+      setHints(hintsByTask(result));
     } catch (error) {
       setSessionExpired(error instanceof ApiError && error.status === 401);
       setError((error as Error).message);
@@ -165,11 +224,55 @@ export function AssignmentStudy({
     }
   }
 
+  const task = tasks[current];
+
   return (
-    <div className={styles.page}>
-      {!canSubmit && (
-        <Button onClick={() => setEditing(true)}>과제 수정</Button>
-      )}
+    <div className={styles.root}>
+      <header className={styles.header}>
+        <ButtonLink
+          href={`/courses/${encodeURIComponent(value.courseId)}`}
+          variant='ghost'
+          aria-label='수업 과제로 돌아가기'
+          className={styles.close}>
+          <Icon
+            name='x'
+            size={22}
+          />
+        </ButtonLink>
+        {canSubmit && tasks.length > 0 ? (
+          <ProgressBar
+            label={`답을 채운 ${unit}`}
+            isLabelHidden
+            value={doneCount}
+            max={tasks.length}
+            className={styles.progress}
+          />
+        ) : (
+          <span className={styles.spacer} />
+        )}
+        <div className={styles.headerActions}>
+          {!canSubmit && (
+            <Button
+              type='button'
+              variant='ink'
+              onClick={() => setEditing(true)}>
+              <Icon
+                name='pencil'
+                size={16}
+              />
+              과제 수정
+            </Button>
+          )}
+          <Button
+            type='button'
+            variant='soft'
+            disabled={busy}
+            startIcon='rotate-ccw'
+            onClick={() => void refresh()}>
+            현재 상태 확인
+          </Button>
+        </div>
+      </header>
       {editing && (
         <CourseAssignmentEditor
           courseId={value.courseId}
@@ -181,307 +284,278 @@ export function AssignmentStudy({
           }}
         />
       )}
-      <ButtonLink
-        href={`/courses/${encodeURIComponent(value.courseId)}`}
-        variant='ghost'>
-        ← 수업 과제
-      </ButtonLink>
-      <div className={styles.heading}>
-        <div>
-          <Heading level={1}>{value.title}</Heading>
-          <Text
-            as='p'
-            display='block'>
+      <main className={styles.main}>
+        <div className={styles.intro}>
+          <Badge
+            tone='review'
+            className={styles.kind}>
+            {modes[value.mode]} · {tasks.length}
+            {unit}
+          </Badge>
+          <Heading
+            level={1}
+            className={styles.title}>
+            {value.title}
+          </Heading>
+          <p className={styles.meta}>
             과제 v{value.version} · 원본 v{value.source.version} ·{' '}
             {value.source.title}
-          </Text>
-        </div>
-        <Button
-          variant='secondary'
-          disabled={busy}
-          onClick={() => void refresh()}>
-          현재 상태 확인
-        </Button>
-      </div>
-      <Banner
-        status='info'
-        title='안내'>
-        기한 {formatDate(value.dueAt)} · 기한 후 제출{' '}
-        {value.allowLate ? '허용' : '불가'} · 재제출{' '}
-        {value.allowResubmit ? '허용' : '불가'} · 제출 후 정답{' '}
-        {value.revealAfterSubmit ? '공개' : '비공개'} · 힌트{' '}
-        {value.allowHints ? '허용' : '불가'}
-      </Banner>
-      {sessionExpired && <SessionRecovery />}
-      {value.sourceAvailable === false && (
-        <Banner
-          status='info'
-          title='안내'>
-          원본이 삭제되었거나 현재 열람 권한이 없습니다. 새 학습·제출·힌트는
-          중지하며 본인의 과거 제출과 변경 이력은 계속 확인할 수 있습니다.
-        </Banner>
-      )}
-      {error && (
-        <Banner
-          status='error'
-          title='확인이 필요해요'
-
-          role='alert'>
-          {error}
-        </Banner>
-      )}
-      {message && (
-        <Banner
-          status='info'
-          title='안내'
-
-          role='status'>
-          {message}
-        </Banner>
-      )}
-      <form
-        className={styles.stack}
-        onSubmit={(event) => void submit(event)}>
-        {value.source.tasks.map((task, index) => (
-          <Card
-            className={styles.panel}
-            key={task.id}>
-            <Heading level={2}>
-              {index + 1}.{' '}
-              {value.mode === 'reading'
-                ? `${task.page}페이지 읽기`
-                : `${task.start?.toFixed(1)}초 ~ ${task.end?.toFixed(1)}초`}
-            </Heading>
-            {value.source.kind === 'video' &&
-              value.source.youtubeId &&
-              listeningTaskId === task.id && (
-                <iframe
-                  className={assignmentStyles.player}
-                  src={`https://www.youtube.com/embed/${encodeURIComponent(value.source.youtubeId)}?start=${Math.floor(task.start ?? 0)}&end=${Math.ceil(task.end ?? 0)}`}
-                  title={`${index + 1}번 과제 원본 영상`}
-                  allow='encrypted-media; picture-in-picture'
-                  allowFullScreen
-                />
-              )}
-            {value.source.kind === 'video' && (
-              <Button
-                type='button'
-                variant='secondary'
-                onClick={() => setListeningTaskId(task.id)}>
-                이 구절 음성 듣기
-              </Button>
-            )}
-            {value.allowHints &&
-              canSubmit &&
-              value.sourceAvailable !== false && (
-                <Button
-                  type='button'
-                  variant='ghost'
-                  disabled={busy}
-                  onClick={() => void hint(task.id)}>
-                  힌트 확인 · 사용 기록됨
-                </Button>
-              )}
-            {hints[task.id] && (
-              <Banner
-                status='info'
-                title='안내'>
-                {hints[task.id]}
-              </Banner>
-            )}
-            {value.mode === 'reading' && (
-              <>
-                <Blockquote className={styles.quote}>{task.text}</Blockquote>
-                <ButtonLink
-                  href={`/materials/${encodeURIComponent(value.source.id)}?page=${task.page}&version=${task.version}`}
-                  variant='ghost'>
-                  원본 PDF 페이지 열기 ↗
-                </ButtonLink>
-              </>
-            )}
-            {value.mode === 'blank' ? (
-              <div className={styles.row}>
-                {task.units.map((unit, position) =>
-                  unit === null ? (
-                    <Input
-                      key={position}
-                      aria-label={`${index + 1}번 구절 ${task.blanks.indexOf(position) + 1}번 빈칸`}
-                      disabled={blocked || busy}
-                      required
-                      value={
-                        Array.isArray(answers[task.id])
-                          ? (answers[task.id][task.blanks.indexOf(position)] ??
-                            '')
-                          : ''
-                      }
-                      onChange={(event) => {
-                        const next = Array.isArray(answers[task.id])
-                          ? [...answers[task.id]]
-                          : task.blanks.map(() => '');
-
-                        next[task.blanks.indexOf(position)] =
-                          event.target.value;
-
-                        setAnswers((previous) => ({
-                          ...previous,
-                          [task.id]: next,
-                        }));
-                      }}
-                    />
-                  ) : (
-                    <span key={position}>{unit} </span>
-                  )
-                )}
-              </div>
-            ) : (
-              <div className={styles.field}>
-                <TextArea
-                  label={contentLabel(
-                    <>
-                      {value.mode === 'reading'
-                        ? '읽고 이해한 내용'
-                        : '들은 전체 문장'}
-                    </>
-                  )}
-                  disabled={blocked || busy}
-                  required
-                  maxLength={10000}
-                  value={
-                    typeof answers[task.id] === 'string' ? answers[task.id] : ''
-                  }
-                  onChange={(event) =>
-                    setAnswers((previous) => ({
-                      ...previous,
-                      [task.id]: event.target.value,
-                    }))
-                  }
-                />
-              </div>
-            )}
-          </Card>
-        ))}
-        {canSubmit && (
-          <>
-            <div className={styles.row}>
-              <Checkbox
-                label={contentLabel(
-                  <>
-                    과제 v{value.version}의 답안을 수업 담당자에게 제출하는 데
-                    동의합니다.
-                  </>
-                )}
-                checked={confirmed}
-                disabled={busy || blocked}
-                onChange={(event) => setConfirmed(event.target.checked)}
+          </p>
+          <ul
+            aria-label='제출 조건'
+            className={styles.conditions}>
+            <li className={`${styles.condition} ${styles.due}`}>
+              <Icon
+                name='clock'
+                size={14}
               />
-            </div>
-            <Button
-              disabled={blocked || busy || !confirmed}
-              loading={busy}>
-              과제 최종 제출
-            </Button>
-          </>
+              기한 {formatDate(value.dueAt)}
+            </li>
+            <li className={styles.condition}>
+              기한 후 제출 {value.allowLate ? '허용' : '불가'}
+            </li>
+            <li className={styles.condition}>
+              재제출 {value.allowResubmit ? '허용' : '불가'}
+            </li>
+            <li className={styles.condition}>
+              제출 후 정답 {value.revealAfterSubmit ? '공개' : '비공개'}
+            </li>
+            <li className={styles.condition}>
+              힌트 {value.allowHints ? '허용' : '불가'}
+            </li>
+          </ul>
+        </div>
+        {sessionExpired && <SessionRecovery />}
+        {value.sourceAvailable === false && (
+          <Banner
+            status='quote'
+            icon='info'>
+            원본이 삭제되었거나 현재 열람 권한이 없습니다. 새 학습·제출·힌트는
+            중지하며 본인의 과거 제출과 변경 이력은 계속 확인할 수 있습니다.
+          </Banner>
         )}
-      </form>
-      {previousDrafts.map((draft, index) => (
-        <Card
-          className={styles.panel}
-          key={`${draft.version}:${index}`}>
-          <Heading level={2}>이전 과제 v{draft.version} · 미제출 초안</Heading>
+        {error && (
+          <Banner
+            status='error'
+            icon='circle-alert'
+            title='확인이 필요해요'
+            role='alert'>
+            {error}
+          </Banner>
+        )}
+        {message && (
           <Banner
             status='info'
-            title='안내'>
-            과제 변경 전에 작성한 내용입니다. 새 버전의 제출 답안으로 자동
-            사용하지 않습니다.
+            icon='info'
+            role='status'
+            className={styles.notice}>
+            {message}
           </Banner>
-          {draft.answers.map((answer, position) => (
-            <div
-              className={styles.field}
-              key={position}>
-              <TextArea
+        )}
+        <form
+          id={formId}
+          noValidate
+          className={styles.form}
+          onSubmit={(event) => void submit(event)}>
+          {task && (
+            <AssignmentTask
+              key={`${value.version}:${task.id}`}
+              value={value}
+              task={task}
+              index={current}
+              answer={answers[task.id]}
+              onAnswer={(next) => answer(task.id, next)}
+              disabled={blocked || busy}
+              listening={listeningTaskId === task.id}
+              onListen={() => setListeningTaskId(task.id)}
+              hint={hints[task.id]}
+              onHint={() => void hint(task.id)}
+              canHint={canHint}
+              busy={busy}
+            />
+          )}
+        </form>
+        {tasks.length > 1 && (
+          <nav
+            aria-label={`${unit} 이동`}
+            className={styles.steps}>
+            <Button
+              type='button'
+              variant='secondary'
+              disabled={current === 0}
+              onClick={() => setStep(current - 1)}>
+              이전 {unit}
+            </Button>
+            <div className={styles.dots}>
+              {tasks.map((item, index) => (
+                <Button
+                  key={item.id}
+                  type='button'
+                  variant={
+                    index === current
+                      ? 'ink'
+                      : filled[index]
+                        ? 'success-outline'
+                        : 'secondary'
+                  }
+                  className={styles.dot}
+                  aria-label={`${index + 1}번 ${unit}${filled[index] ? ' · 답 채움' : ''}`}
+                  aria-current={index === current ? 'step' : undefined}
+                  onClick={() => setStep(index)}>
+                  {index + 1}
+                </Button>
+              ))}
+            </div>
+            <Button
+              type='button'
+              variant='secondary'
+              disabled={current === tasks.length - 1}
+              onClick={() => setStep(current + 1)}>
+              다음 {unit}
+            </Button>
+          </nav>
+        )}
+        {previousDrafts.map((draft, index) => (
+          <section
+            aria-label={`이전 과제 v${draft.version} 미제출 초안`}
+            className={styles.draft}
+            key={`${draft.version}:${index}`}>
+            <Heading
+              level={2}
+              className={styles.draftTitle}>
+              이전 과제 v{draft.version} · 미제출 초안
+            </Heading>
+            <Text
+              as='p'
+              display='block'
+              size='sm'
+              color='secondary'>
+              과제 변경 전에 작성한 내용입니다. 새 버전의 제출 답안으로 자동
+              사용하지 않습니다.
+            </Text>
+            {draft.answers.map((answer, position) => (
+              <Input
+                key={position}
                 label={contentLabel(<>{answer.label}</>)}
                 readOnly
+                isNumeric
                 value={
                   Array.isArray(answer.answer)
                     ? answer.answer.join(' / ')
                     : answer.answer
                 }
               />
-            </div>
-          ))}
-        </Card>
-      ))}
-      <Section>
-        <Heading level={2}>제출 이력</Heading>
-        {!value.submissions.length && (
-          <Text
-            as='p'
-            display='block'>
-            아직 제출한 기록이 없습니다.
-          </Text>
-        )}
-        {value.submissions.map((item) => (
-          <Card
-            className={styles.message}
-            key={item.id}>
-            <Badge tone={item.late ? 'warning' : 'success'}>
-              {item.late ? '기한 후 제출' : '제출 완료'} · 과제 v{item.version}
-            </Badge>
+            ))}
+          </section>
+        ))}
+        <section
+          id='history'
+          aria-labelledby='assignment-history'
+          className={styles.history}>
+          <Heading
+            level={2}
+            id='assignment-history'
+            className={styles.sectionTitle}>
+            제출 이력
+          </Heading>
+          {!value.submissions.length && (
             <Text
               as='p'
-              display='block'>
-              {item.studentName ?? '내 제출'} · {formatDate(item.createdAt)} ·
-              힌트 {item.hintCount ?? 0}회
+              display='block'
+              size='sm'
+              color='secondary'>
+              아직 제출한 기록이 없습니다.
             </Text>
-            {item.answers.map((answer, index) => (
-              <div key={answer.id}>
-                <Heading level={3}>{index + 1}번 답안</Heading>
-                <Text
-                  as='p'
-                  display='block'
-                  className={styles.prose}>
-                  {Array.isArray(answer.answer)
-                    ? answer.answer.join(' / ')
-                    : answer.answer}
-                </Text>
-                <Text
-                  as='p'
-                  display='block'>
-                  {item.result.find((result) => result.id === answer.id)
-                    ?.correct === true
-                    ? '정답'
-                    : item.result.find((result) => result.id === answer.id)
-                          ?.correct === false
-                      ? '다시 확인'
-                      : '읽기 제출 · 자동 성적 없음'}
-                </Text>
-                {item.result.find((result) => result.id === answer.id)
-                  ?.expected !== undefined && (
-                  <Text
-                    as='p'
-                    display='block'>
-                    당시 정답:{' '}
-                    {JSON.stringify(
-                      item.result.find((result) => result.id === answer.id)
-                        ?.expected
-                    )}
-                  </Text>
-                )}
+          )}
+          {value.submissions.map((item) => (
+            <AssignmentSubmission
+              key={item.id}
+              item={item}
+              fresh={item.id === submitted?.id}
+            />
+          ))}
+        </section>
+        <Card className={styles.revisions}>
+          <Collapsible trigger={<>과제 변경 이력</>}>
+            <ol className={styles.revisionList}>
+              {value.revisions.map((item) => (
+                <li
+                  className={styles.revision}
+                  key={item.version}>
+                  <span className={styles.revisionVersion}>
+                    v{item.version}
+                  </span>
+                  <span className={styles.revisionReason}>{item.reason}</span>
+                  <RelativeTime
+                    value={item.createdAt}
+                    className={styles.revisionTime}
+                  />
+                </li>
+              ))}
+            </ol>
+          </Collapsible>
+        </Card>
+      </main>
+      {canSubmit && (
+        <div className={styles.dock}>
+          {submitted ? (
+            <div
+              role='status'
+              className={styles.sheet}>
+              <div className={styles.sheetInner}>
+                <GraduationStamp size={68} />
+                <div className={styles.sheetText}>
+                  <p className={styles.sheetTitle}>
+                    {submitted.late
+                      ? '기한 후 제출을 저장했습니다.'
+                      : '과제 제출을 저장했습니다.'}
+                  </p>
+                  <p className={styles.sheetBody}>
+                    개인 학습 진도는 변경하지 않습니다.
+                  </p>
+                </div>
+                <ButtonLink
+                  href='#history'
+                  variant='success-outline'
+                  size='prominent'>
+                  제출 이력 보기
+                </ButtonLink>
+                <ButtonLink
+                  href={`/courses/${encodeURIComponent(value.courseId)}`}
+                  size='prominent'>
+                  수업으로 돌아가기
+                </ButtonLink>
               </div>
-            ))}
-          </Card>
-        ))}
-      </Section>
-      <Collapsible trigger={<> 과제 변경 이력 </>}>
-        {value.revisions.map((item) => (
-          <Text
-            as='p'
-            display='block'
-            key={item.version}>
-            v{item.version} · {item.reason} · {formatDate(item.createdAt)}
-          </Text>
-        ))}
-      </Collapsible>
+            </div>
+          ) : (
+            <div className={styles.bar}>
+              <div className={styles.barInner}>
+                <Checkbox
+                  className={styles.consent}
+                  label={contentLabel(
+                    <>
+                      과제 v{value.version}의 답안을 수업 담당자에게 제출하는 데
+                      동의합니다.
+                    </>
+                  )}
+                  checked={confirmed}
+                  disabled={busy || blocked}
+                  onChange={(event) => setConfirmed(event.target.checked)}
+                />
+                <Button
+                  form={formId}
+                  variant='ink'
+                  size='prominent'
+                  className={styles.submit}
+                  disabled={blocked || busy || !confirmed}
+                  loading={busy}>
+                  과제 최종 제출
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
