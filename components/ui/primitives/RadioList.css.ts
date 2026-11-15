@@ -1,4 +1,4 @@
-import { style } from '@vanilla-extract/css';
+import { style, styleVariants } from '@vanilla-extract/css';
 import { layered } from '@/lib/styles/layers.css';
 import { vars } from '@/lib/styles/theme.css';
 
@@ -26,5 +26,8 @@ export const legend = style(
   })
 );
 
-/** 선택지 목록이다. */
-export const options = style(layered({ display: 'grid', gap: vars.space.xs }));
+/** 세로 목록이나 폭이 좁으면 줄바꿈되는 가로 타일로 선택지를 놓는다. */
+export const options = styleVariants({
+  list: layered({ display: 'grid', gap: vars.space.xs }),
+  tile: layered({ display: 'flex', flexWrap: 'wrap', gap: vars.space.sm }),
+});

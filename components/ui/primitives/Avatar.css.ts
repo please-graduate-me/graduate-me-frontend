@@ -33,6 +33,16 @@ export const palette = styleVariants(
   layered
 );
 
+/** 이름과 무관하게 역할로 정하는 색으로, 조교는 청록 단색, 본인은 연보라, 순위 목록은 회색이다. */
+export const role = styleVariants(
+  {
+    helper: { background: vars.color.accent, color: vars.color.onAccent },
+    self: { background: vars.color.reviewBackground, color: vars.color.review },
+    neutral: { background: vars.color.neutral, color: vars.color.ink },
+  },
+  layered
+);
+
 /** 계정 이동 링크는 아바타가 작아도 누르기 쉬운 영역을 확보한다. */
 export const link = style(
   layered({

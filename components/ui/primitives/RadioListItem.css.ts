@@ -73,3 +73,28 @@ export const description = style(
     lineHeight: vars.lineHeight.small,
   })
 );
+
+/** 가로 타일 선택지는 남은 폭을 나눠 갖고 좁으면 다음 줄로 넘어간다. */
+export const tile = style(
+  layered({
+    // 공통 칩 스타일과 불러오는 순서에 관계없이 이기도록 클래스를 두 번 겹친다.
+    selectors: { '&&': { flex: '1 1 180px', minHeight: 60 } },
+  })
+);
+
+/** 타일 안에서 화면에는 숨기고 키보드와 보조 기술에는 남기는 라디오다. */
+export const hiddenRadio = style(
+  layered({
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    margin: 0,
+    opacity: 0,
+    pointerEvents: 'none',
+  })
+);
+
+/** 타일 라벨 앞 아이콘 자리다. */
+export const icon = style(
+  layered({ display: 'inline-flex', flexShrink: 0, color: 'inherit' })
+);

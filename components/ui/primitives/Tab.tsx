@@ -35,7 +35,9 @@ export function Tab({
       aria-current={!list.isTablist && selected ? 'true' : undefined}
       aria-label={isLabelHidden ? label : undefined}
       tabIndex={list.tabStop === value ? 0 : -1}
-      className={styles.tab}
+      className={
+        list.variant === 'pill' ? `${styles.tab} ${styles.pill}` : styles.tab
+      }
       onClick={() => {
         if (!selected) list.onChange(value);
       }}>

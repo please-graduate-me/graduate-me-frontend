@@ -10,10 +10,11 @@ export type TopNavMenuItemData = {
   title: string;
   href?: string;
   icon?: ReactNode;
+  endContent?: ReactNode;
   onClick?: () => void;
 };
 
-/** 넓은 화면에서는 드롭다운, 접힌 패널에서는 펼친 목록으로 보이는 상단 더보기 메뉴다. */
+/** 넓은 화면에서는 드롭다운, 접힌 패널에서는 펼친 목록으로 보이는 상단 더보기 메뉴이며 항목 끝에 개수 배지를 둘 수 있다. */
 export function TopNavMenu({
   label,
   items,
@@ -40,7 +41,15 @@ export function TopNavMenu({
           }
           items={items.map((item) => ({
             id: item.href ?? item.title,
-            label: item.title,
+            label:
+              item.endContent == null ? (
+                item.title
+              ) : (
+                <>
+                  {item.title}
+                  <span className={styles.end}>{item.endContent}</span>
+                </>
+              ),
             href: item.href,
             icon: item.icon,
             onClick: item.onClick,
@@ -67,6 +76,9 @@ export function TopNavMenu({
                     <span className={styles.icon}>{item.icon}</span>
                   )}
                   {item.title}
+                  {item.endContent != null && (
+                    <span className={styles.end}>{item.endContent}</span>
+                  )}
                 </NextLink>
               ) : (
                 <button
@@ -77,6 +89,9 @@ export function TopNavMenu({
                     <span className={styles.icon}>{item.icon}</span>
                   )}
                   {item.title}
+                  {item.endContent != null && (
+                    <span className={styles.end}>{item.endContent}</span>
+                  )}
                 </button>
               )}
             </li>

@@ -1,4 +1,4 @@
-import { style } from '@vanilla-extract/css';
+import { style, styleVariants } from '@vanilla-extract/css';
 import { layered } from '@/lib/styles/layers.css';
 import { vars } from '@/lib/styles/theme.css';
 
@@ -9,6 +9,27 @@ export const body = style(
     gap: vars.space.sm,
     padding: `${vars.space.lg} ${vars.space.lg} ${vars.space.md}`,
   })
+);
+
+/** 제목 위 44px 원형 상태 아이콘이다. */
+export const icon = style(
+  layered({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: '50%',
+  })
+);
+
+/** 위험 작업은 빨간 원, 그 밖의 확인은 회색 원으로 칠한다. */
+export const iconTone = styleVariants(
+  {
+    danger: { background: vars.color.errorBackground, color: vars.color.error },
+    neutral: { background: vars.color.canvas, color: vars.color.ink },
+  },
+  layered
 );
 
 /** 확인 제목이다. */
@@ -30,6 +51,24 @@ export const description = style(
     fontSize: vars.fontSize.small,
     lineHeight: vars.lineHeight.small,
     whiteSpace: 'pre-line',
+  })
+);
+
+/** 제외할 구성원의 이름·역할처럼 작업 대상을 다시 보여 주는 회색 상자다. */
+export const detail = style(
+  layered({
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: vars.space.xs,
+    padding: `${vars.space.sm} ${vars.space.compact}`,
+    borderRadius: vars.radius.control,
+    background: vars.color.canvas,
+    color: vars.color.ink,
+    fontSize: vars.fontSize.small,
+    fontWeight: vars.fontWeight.heavy,
+    lineHeight: vars.lineHeight.small,
+    overflowWrap: 'anywhere',
   })
 );
 

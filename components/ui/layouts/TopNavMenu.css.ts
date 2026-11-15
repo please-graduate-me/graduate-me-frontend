@@ -101,3 +101,8 @@ export const link = style({
 export const icon = style(
   layered({ display: 'inline-flex', flexShrink: 0, color: vars.color.muted })
 );
+
+/** 항목 끝의 개수 배지 자리이며 라벨과 떨어뜨려 오른쪽 끝에 붙인다. */
+export const end = style(
+  layered({ display: 'inline-flex', flexShrink: 0, marginLeft: 'auto' })
+);

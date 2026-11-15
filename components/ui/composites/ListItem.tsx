@@ -1,8 +1,9 @@
 import type { LiHTMLAttributes, MouseEventHandler, ReactNode } from 'react';
 import * as styles from './ListItem.css';
 
-/** 이름, 설명과 앞뒤 내용을 한 줄로 표시하고 onClick이 있으면 항목 전체를 버튼으로 만든다. */
+/** 이름, 설명과 앞뒤 내용을 한 줄로 표시하고 onClick이 있으면 항목 전체를 버튼으로 만들며 card면 테두리 카드로 그린다. */
 export function ListItem({
+  variant = 'plain',
   label,
   description,
   startContent,
@@ -14,6 +15,7 @@ export function ListItem({
   'aria-current': ariaCurrent,
   ...props
 }: Omit<LiHTMLAttributes<HTMLLIElement>, 'onClick'> & {
+  variant?: 'plain' | 'card';
   label: ReactNode;
   description?: ReactNode;
   startContent?: ReactNode;
@@ -24,6 +26,7 @@ export function ListItem({
 }) {
   const classes = [
     styles.root,
+    variant === 'card' && styles.card,
     onClick && !isDisabled && styles.interactive,
     isSelected && styles.selected,
     isDisabled && styles.disabled,

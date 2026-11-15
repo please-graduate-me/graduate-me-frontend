@@ -9,6 +9,7 @@ import {
 } from 'react';
 import * as fieldStyles from '@/lib/styles/field.css';
 import { contentLabel } from './contentLabel';
+import { FieldLabel } from './FieldLabel';
 import { Icon } from './Icon';
 import * as styles from './Select.css';
 
@@ -43,6 +44,8 @@ export function Select({
   className,
   style,
   label,
+  labelSize,
+  hasRequiredTag,
   ...props
 }: Pick<
   ComponentProps<'select'>,
@@ -58,6 +61,8 @@ export function Select({
   | 'aria-label'
 > & {
   label?: string;
+  labelSize?: 'medium' | 'large';
+  hasRequiredTag?: boolean;
   onChange?: (event: {
     target: { value: string };
     currentTarget: { value: string };
@@ -75,11 +80,12 @@ export function Select({
       className={[fieldStyles.field, className].filter(Boolean).join(' ')}
       style={style}>
       {label && (
-        <label
+        <FieldLabel
           htmlFor={selectId}
-          className={fieldStyles.label}>
+          size={labelSize}
+          hasRequiredTag={hasRequiredTag}>
           {label}
-        </label>
+        </FieldLabel>
       )}
       <div className={styles.box}>
         <select

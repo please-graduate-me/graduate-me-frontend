@@ -3,9 +3,10 @@ import { useState, type ReactNode } from 'react';
 import { Icon } from '../primitives/Icon';
 import * as styles from './Collapsible.css';
 
-/** 네이티브 details로 펼침 상태와 키보드 조작을 브라우저에 맡기는 접이식 영역이다. */
+/** 네이티브 details로 펼침 상태와 키보드 조작을 브라우저에 맡기는 접이식 영역이며 toggleLabel이 있으면 오른쪽에 "펼쳐 보기" 알약을 둔다. */
 export function Collapsible({
   trigger,
+  toggleLabel,
   children,
   defaultIsOpen = false,
   isOpen,
@@ -14,6 +15,7 @@ export function Collapsible({
   id,
 }: {
   trigger: ReactNode;
+  toggleLabel?: { closed: string; open: string };
   children?: ReactNode;
   defaultIsOpen?: boolean;
   isOpen?: boolean;
@@ -30,13 +32,30 @@ export function Collapsible({
       open={isOpen ?? initial}
       className={[styles.root, className].filter(Boolean).join(' ')}
       onToggle={(event) => onOpenChange?.(event.currentTarget.open)}>
-      <summary className={styles.summary}>
+      <summary
+        className={
+          toggleLabel
+            ? `${styles.summary} ${styles.pillSummary}`
+            : styles.summary
+        }>
         <span className={styles.trigger}>{trigger}</span>
-        <Icon
-          name='chevron-down'
-          size={18}
-          className={styles.chevron}
-        />
+        {toggleLabel ? (
+          <span className={styles.pill}>
+            <span className={styles.closedLabel}>{toggleLabel.closed}</span>
+            <span className={styles.openLabel}>{toggleLabel.open}</span>
+            <Icon
+              name='chevron-down'
+              size={16}
+              className={styles.chevron}
+            />
+          </span>
+        ) : (
+          <Icon
+            name='chevron-down'
+            size={18}
+            className={styles.chevron}
+          />
+        )}
       </summary>
       <div className={styles.content}>{children}</div>
     </details>

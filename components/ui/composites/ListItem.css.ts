@@ -35,6 +35,33 @@ export const selected = style(
   })
 );
 
+/** 카드형 항목은 흰 테두리 카드로 그리고 선택되면 먹색 2겹 테두리로 표시한다. */
+export const card = style(
+  layered({
+    alignItems: 'flex-start',
+    gap: '14px',
+    padding: vars.space.md,
+    border: `1px solid ${vars.color.line}`,
+    borderRadius: '16px',
+    background: vars.color.surface,
+    transition: `border-color ${vars.motion.fast} ${vars.motion.easeOut}, background-color ${vars.motion.fast} ${vars.motion.easeOut}, box-shadow ${vars.motion.fast} ${vars.motion.easeOut}`,
+    selectors: {
+      [`&${interactive}:hover`]: {
+        borderColor: vars.color.lineHover,
+        background: vars.color.surfaceHover,
+      },
+      [`&${selected}, &${selected}:hover`]: {
+        borderColor: vars.color.ink,
+        background: vars.color.surface,
+        boxShadow: `inset 0 0 0 1px ${vars.color.ink}`,
+      },
+    },
+    '@media': {
+      '(prefers-reduced-motion: reduce)': { transition: 'none' },
+    },
+  })
+);
+
 /** 사용할 수 없는 항목을 흐리게 한다. */
 export const disabled = style(layered({ opacity: 0.5 }));
 

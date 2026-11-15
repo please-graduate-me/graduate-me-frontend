@@ -32,15 +32,26 @@ export const type = styleVariants(
       fontWeight: 'inherit',
       color: 'inherit',
     },
+    stat: {
+      fontFamily: vars.font.numeric,
+      fontSize: vars.fontSize.heading2,
+      lineHeight: '1.15',
+      fontWeight: vars.fontWeight.bold,
+      fontVariantNumeric: 'tabular-nums',
+      letterSpacing: '-0.01em',
+      color: vars.color.ink,
+    },
   },
   layered
 );
 
-/** 유형의 크기는 두고 글자 크기만 바꾼다. */
+/** 유형의 크기는 두고 글자 크기만 바꾸며 xl·display는 통계 숫자용 큰 단계다. */
 export const size = styleVariants(
   {
     sm: { fontSize: vars.fontSize.small },
     lg: { fontSize: vars.fontSize.lead },
+    xl: { fontSize: vars.fontSize.heading1 },
+    display: { fontSize: '40px' },
   },
   layered
 );
@@ -68,6 +79,11 @@ export const center = style(layered({ textAlign: 'center' }));
 
 /** 숫자 폭을 맞춰 시간과 점수가 흔들리지 않게 한다. */
 export const tabular = style(layered({ fontVariantNumeric: 'tabular-nums' }));
+
+/** XP·쪽수·순위 같은 숫자를 시안의 숫자 서체로 쓰고 폭을 맞춘다. */
+export const numeric = style(
+  layered({ fontFamily: vars.font.numeric, fontVariantNumeric: 'tabular-nums' })
+);
 
 /** 한 줄을 넘는 글자를 말줄임표로 자른다. */
 export const singleLine = style(

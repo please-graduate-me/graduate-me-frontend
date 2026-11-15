@@ -13,6 +13,7 @@ export function Dialog({
   description,
   children,
   footer,
+  width,
 }: {
   open: boolean;
   onClose: () => void;
@@ -20,6 +21,7 @@ export function Dialog({
   description?: string;
   children?: ReactNode;
   footer?: ReactNode;
+  width?: number;
 }) {
   const titleId = useId();
   const descriptionId = useId();
@@ -28,6 +30,7 @@ export function Dialog({
     <Modal
       open={open}
       onCancel={onClose}
+      width={width}
       labelledBy={titleId}
       describedBy={description ? descriptionId : undefined}>
       <header className={styles.header}>

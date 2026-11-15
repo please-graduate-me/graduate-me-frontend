@@ -1,6 +1,7 @@
 'use client';
 import { useId, useState, type ComponentProps } from 'react';
 import * as styles from '@/lib/styles/field.css';
+import { FieldLabel } from './FieldLabel';
 
 /** 네이티브 여러 줄 입력에 라벨을 붙이고 초기값만 받은 필드도 제어 상태로 유지한다. */
 export function TextArea({
@@ -11,6 +12,8 @@ export function TextArea({
   className,
   style,
   label,
+  labelSize,
+  hasRequiredTag,
   ...props
 }: Pick<
   ComponentProps<'textarea'>,
@@ -35,7 +38,11 @@ export function TextArea({
   | 'autoCapitalize'
   | 'onKeyDown'
   | 'rows'
-> & { 'data-answer'?: boolean } & { label?: string }) {
+> & { 'data-answer'?: boolean } & {
+  label?: string;
+  labelSize?: 'medium' | 'large';
+  hasRequiredTag?: boolean;
+}) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const [draft, setDraft] = useState(String(defaultValue ?? ''));
@@ -45,11 +52,12 @@ export function TextArea({
       className={[styles.field, className].filter(Boolean).join(' ')}
       style={style}>
       {label && (
-        <label
+        <FieldLabel
           htmlFor={inputId}
-          className={styles.label}>
+          size={labelSize}
+          hasRequiredTag={hasRequiredTag}>
           {label}
-        </label>
+        </FieldLabel>
       )}
       <textarea
         {...props}

@@ -102,7 +102,7 @@
 - 기본 UI는 `components/ui/`의 사내 디자인 시스템 컴포넌트를 사용하고 컴포넌트마다 개별 경로에서 import한다. 화면의 의미에 따라 Heading·Text·Card·Section·Table·Collapsible·Banner 등을 조합한다.
 - `primitives/`에는 Button·Input·Text·Badge처럼 낱개로 쓰는 부품, `composites/`에는 Dialog·Table·DropdownMenu·Toast처럼 여러 요소를 묶은 부품, `layouts/`에는 AppShell·TopNav·Stack·Section처럼 업무를 모르는 배치 틀을 둔다. 하위 항목(TableRow, ListItem, Tab 등)도 한 파일에 하나씩 둔다.
 - 공통 컴포넌트의 기본 외형은 `lib/styles/layers.css.ts`의 `layered()`로 `ui` CSS 계층 안에 작성한다. 계층 순서는 `reset` → `ui` → 계층 밖 스타일이며, 화면 className은 계층 밖에 있어 불러온 순서와 관계없이 기본 외형보다 우선한다.
-- 버튼과 입력처럼 여러 컴포넌트가 공유하는 외형은 `lib/styles/button.css.ts`, `lib/styles/field.css.ts`에 둔다.
+- 버튼과 입력처럼 여러 컴포넌트가 공유하는 외형은 `lib/styles/button.css.ts`, `lib/styles/field.css.ts`에 둔다. 여러 화면이 쓰는 등장·반응 움직임(pop, shake, float 등)은 `lib/styles/motion.css.ts`의 클래스를 쓰며, 모두 모션 축소 설정에서 멈춘다.
 - 색·간격·반경·그림자·모션 토큰은 `lib/styles/theme.css.ts`에서 `:root`에 정의한다. 글꼴은 Noto Sans KR(본문), Space Grotesk(숫자), Source Serif 4(문서)이며 `public/fonts/`의 파일을 `app/globals.css.ts`에서 불러온다.
 - 기본 제어는 네이티브 요소로 구현한다. 대화상자는 `<dialog>`의 `showModal()`, 펼침 영역은 `<details>`/`<summary>`를 쓴다. Radix는 드롭다운 메뉴, 툴팁, 토스트의 동작에만 사용하며 각 컴포넌트가 필요한 Provider를 스스로 감싼다. 앱 전역 Provider는 두지 않는다.
 - 내부 주소 링크는 `Link`, `ButtonLink`, TopNav 계열이 `next/link`로 직접 렌더링한다.

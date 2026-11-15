@@ -40,3 +40,30 @@ export const tab = style({
     },
   }),
 });
+
+/** 알약 탭은 하위 메뉴처럼 쓰며 선택되면 먹색 바탕 흰 글자로 바뀐다. */
+export const pill = style({
+  selectors: {
+    '&[aria-selected="true"], &[aria-current="true"]': {
+      color: vars.color.onAccent,
+    },
+  },
+  ...layered({
+    padding: `0 14px`,
+    borderBottom: 0,
+    borderRadius: vars.radius.pill,
+    transition: `color ${vars.motion.fast} ${vars.motion.easeOut}, background-color ${vars.motion.fast} ${vars.motion.easeOut}`,
+    selectors: {
+      '&:hover': { background: vars.color.canvasHover },
+      '&[aria-selected="true"], &[aria-current="true"]': {
+        background: vars.color.ink,
+      },
+      '&[aria-selected="true"]:hover, &[aria-current="true"]:hover': {
+        background: vars.color.ink,
+      },
+    },
+    '@media': {
+      '(prefers-reduced-motion: reduce)': { transition: 'none' },
+    },
+  }),
+});

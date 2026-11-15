@@ -29,6 +29,34 @@ export const transparent = style(
   layered({ borderColor: 'transparent', background: 'transparent' })
 );
 
+/** 가리키면 테두리가 진해지고 그림자가 넓어지는 카드다. */
+export const hoverBorder = style(
+  layered({
+    transition: `transform ${vars.motion.base} ${vars.motion.easeOut}, box-shadow ${vars.motion.base} ${vars.motion.easeOut}, border-color ${vars.motion.base} ${vars.motion.easeOut}`,
+    selectors: {
+      '&:hover': {
+        borderColor: vars.color.lineHover,
+        boxShadow: '0 10px 24px rgba(22, 24, 29, 0.07)',
+      },
+    },
+    '@media': {
+      '(prefers-reduced-motion: reduce)': { transition: 'none' },
+    },
+  })
+);
+
+/** 타일처럼 크게 떠오르는 카드는 3px 올라간다. */
+export const liftHigh = style(
+  layered({
+    selectors: { '&:hover': { transform: 'translateY(-3px)' } },
+    '@media': {
+      '(prefers-reduced-motion: reduce)': {
+        selectors: { '&:hover': { transform: 'none' } },
+      },
+    },
+  })
+);
+
 /** 간격 단계마다 카드 안쪽 여백을 정한다. */
 export const padding = styleVariants(
   {

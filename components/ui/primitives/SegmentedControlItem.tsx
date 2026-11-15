@@ -31,7 +31,7 @@ export function SegmentedControlItem({
       aria-label={isLabelHidden ? label : undefined}
       tabIndex={group.tabStop === value ? 0 : -1}
       disabled={group.isDisabled || isDisabled}
-      className={styles.item}
+      className={`${styles.item} ${styles.variant[group.variant]}`}
       onClick={() => {
         if (!selected) group.onChange(value);
       }}>

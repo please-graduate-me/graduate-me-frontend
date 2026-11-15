@@ -1,7 +1,7 @@
 import type { HTMLAttributes } from 'react';
 import * as styles from './Text.css';
 
-/** 글자 유형, 크기, 색, 굵기와 줄 수 제한을 고르는 본문 글자 속성이다. */
+/** 글자 유형, 크기, 색, 굵기, 숫자 서체와 줄 수 제한을 고르는 본문 글자 속성이다. */
 export type TextProps = Omit<HTMLAttributes<HTMLElement>, 'color'> & {
   as?: 'span' | 'p' | 'h3';
   type?: keyof typeof styles.type;
@@ -12,6 +12,7 @@ export type TextProps = Omit<HTMLAttributes<HTMLElement>, 'color'> & {
   justify?: 'start' | 'center';
   maxLines?: number;
   hasTabularNumbers?: boolean;
+  isNumeric?: boolean;
 };
 
 /** 시안의 본문 위계로 글자를 표시하고 필요한 의미 요소로 렌더링한다. */
@@ -25,6 +26,7 @@ export function Text({
   justify = 'start',
   maxLines = 0,
   hasTabularNumbers = false,
+  isNumeric = false,
   className,
   style,
   ...props
@@ -38,6 +40,7 @@ export function Text({
     display === 'block' && styles.block,
     justify === 'center' && styles.center,
     hasTabularNumbers && styles.tabular,
+    isNumeric && styles.numeric,
     maxLines === 1 && styles.singleLine,
     maxLines > 1 && styles.multiLine,
     className,

@@ -83,4 +83,25 @@ describe('확인 뒤에만 실행하는 삭제와 이동', () => {
     await act(async () => root.render(null));
     await expect(current!).resolves.toBe(false);
   });
+
+  it('대상 상세와 실행 문구를 넘기면 대화상자 설명에 함께 연결한다', async () => {
+    await act(async () => {
+      void confirmation.confirm('이 구성원을 수업에서 제외할까요?', undefined, {
+        detail: '김하윤 · 조교',
+        actionLabel: '제외',
+      });
+    });
+
+    const dialog = document.querySelector('dialog');
+    const ids = dialog?.getAttribute('aria-describedby')?.split(' ') ?? [];
+
+    expect(ids).toHaveLength(2);
+    expect(document.getElementById(ids[1])?.textContent).toBe('김하윤 · 조교');
+
+    expect(
+      Array.from(document.querySelectorAll('button')).some(
+        (button) => button.textContent?.trim() === '제외'
+      )
+    ).toBe(true);
+  });
 });

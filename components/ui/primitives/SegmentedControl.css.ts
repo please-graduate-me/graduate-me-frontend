@@ -1,4 +1,4 @@
-import { style } from '@vanilla-extract/css';
+import { style, styleVariants } from '@vanilla-extract/css';
 import { layered } from '@/lib/styles/layers.css';
 import { vars } from '@/lib/styles/theme.css';
 
@@ -16,3 +16,17 @@ export const root = style(
     scrollbarWidth: 'none',
   })
 );
+
+/** 기본 알약 묶음, 칸 폭을 나눠 채우는 블록, 바탕 없이 줄바꿈되는 칩 묶음이다. */
+export const variant = styleVariants({
+  pill: {},
+  block: layered({ display: 'flex', width: '100%', borderRadius: '16px' }),
+  chip: layered({
+    flexWrap: 'wrap',
+    gap: vars.space.xs,
+    padding: 0,
+    borderRadius: 0,
+    background: 'transparent',
+    overflowX: 'visible',
+  }),
+});

@@ -49,6 +49,50 @@ export const trigger = style(
   })
 );
 
+/** 알약 표시가 있는 제목 줄은 줄 전체 대신 알약만 가리킴에 반응한다. */
+export const pillSummary = style(
+  layered({
+    padding: 0,
+    selectors: { '&:hover': { background: 'transparent' } },
+  })
+);
+
+/** 오른쪽의 "펼쳐 보기" 알약이다. */
+export const pill = style(
+  layered({
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: vars.space.xs,
+    flexShrink: 0,
+    minHeight: 44,
+    padding: '0 14px',
+    border: `1px solid ${vars.color.line}`,
+    borderRadius: vars.radius.pill,
+    background: vars.color.surface,
+    transition: `background-color ${vars.motion.fast} ${vars.motion.easeOut}`,
+    selectors: {
+      [`${pillSummary}:hover &`]: { background: vars.color.canvas },
+    },
+    '@media': {
+      '(prefers-reduced-motion: reduce)': { transition: 'none' },
+    },
+  })
+);
+
+/** 접힌 상태에서만 보이는 알약 문구다. */
+export const closedLabel = style(
+  layered({
+    selectors: { [`${root}[open] > ${summary} &`]: { display: 'none' } },
+  })
+);
+
+/** 펼친 상태에서만 보이는 알약 문구다. */
+export const openLabel = style(
+  layered({
+    selectors: { [`${root}:not([open]) > ${summary} &`]: { display: 'none' } },
+  })
+);
+
 /** 펼치면 뒤집히는 화살표다. */
 export const chevron = style(
   layered({

@@ -2,13 +2,14 @@
 import { useState, type ComponentProps } from 'react';
 import * as styles from './Switch.css';
 
-/** 네이티브 체크 상자를 switch 역할로 알리고 초기값만 받은 상태도 제어 상태로 유지한다. */
+/** 네이티브 체크 상자를 switch 역할로 알리고 초기값만 받은 상태도 제어 상태로 유지하며 큰 크기를 고를 수 있다. */
 export function Switch({
   checked,
   defaultChecked,
   onChange,
   readOnly,
   label,
+  size = 'medium',
   className,
   style,
   ...props
@@ -26,7 +27,7 @@ export function Switch({
   | 'className'
   | 'style'
   | 'aria-label'
-> & { label?: string }) {
+> & { label?: string; size?: 'medium' | 'large' }) {
   const [draft, setDraft] = useState(defaultChecked ?? false);
 
   const classes = [styles.root, props.disabled && styles.disabled, className];
@@ -43,7 +44,9 @@ export function Switch({
           label ? undefined : (props['aria-label'] ?? props.name ?? '선택')
         }
         aria-readonly={readOnly || undefined}
-        className={styles.track}
+        className={
+          size === 'large' ? `${styles.track} ${styles.large}` : styles.track
+        }
         checked={checked ?? draft}
         onChange={(event) => {
           // 읽기 전용이면 제어값을 바꾸지 않아 React가 원래 상태로 되돌린다.

@@ -1,6 +1,8 @@
 'use client';
 import { useId, useState, type ComponentProps } from 'react';
 import * as styles from '@/lib/styles/field.css';
+import { FieldLabel } from './FieldLabel';
+import { Icon, type IconName } from './Icon';
 
 type InputChange = {
   target: {
@@ -49,6 +51,13 @@ type InputProps = Pick<
   | 'autoCapitalize'
 > & {
   label?: string;
+  labelSize?: 'medium' | 'large';
+  hasRequiredTag?: boolean;
+  size?: 'medium' | 'large';
+  startIcon?: IconName;
+  tone?: 'default' | 'danger' | 'accent';
+  isBorderless?: boolean;
+  isNumeric?: boolean;
   onChange?: (event: InputChange) => void;
 };
 
@@ -62,41 +71,75 @@ export function Input({
   className,
   style,
   label,
+  labelSize,
+  hasRequiredTag,
+  size = 'medium',
+  startIcon,
+  tone = 'default',
+  isBorderless = false,
+  isNumeric = false,
   ...props
 }: InputProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const [draft, setDraft] = useState(String(defaultValue ?? ''));
-  const classes = [styles.control, type === 'search' && styles.search];
+
+  const classes = [
+    styles.control,
+    type === 'search' && styles.search,
+    size === 'large' && styles.controlLarge,
+    size === 'large' && type === 'search' && styles.searchLarge,
+    startIcon && styles.withStartIcon,
+    tone === 'danger' && styles.toneDanger,
+    tone === 'accent' && styles.toneAccent,
+    isBorderless && styles.borderless,
+    isNumeric && styles.numeric,
+  ];
+
+  const input = (
+    <input
+      {...props}
+      id={inputId}
+      type={type}
+      aria-label={
+        label
+          ? undefined
+          : (props['aria-label'] ?? props.placeholder ?? props.name ?? '입력')
+      }
+      className={classes.filter(Boolean).join(' ')}
+      // 파일 선택은 브라우저만 값을 쓸 수 있어 제어하지 않는다.
+      {...(type === 'file' ? {} : { value: String(value ?? draft) })}
+      onChange={(event) => {
+        setDraft(event.target.value);
+        onChange?.(event);
+      }}
+    />
+  );
 
   return (
     <div
       className={[styles.field, className].filter(Boolean).join(' ')}
       style={style}>
       {label && (
-        <label
+        <FieldLabel
           htmlFor={inputId}
-          className={styles.label}>
+          size={labelSize}
+          hasRequiredTag={hasRequiredTag}>
           {label}
-        </label>
+        </FieldLabel>
       )}
-      <input
-        {...props}
-        id={inputId}
-        type={type}
-        aria-label={
-          label
-            ? undefined
-            : (props['aria-label'] ?? props.placeholder ?? props.name ?? '입력')
-        }
-        className={classes.filter(Boolean).join(' ')}
-        // 파일 선택은 브라우저만 값을 쓸 수 있어 제어하지 않는다.
-        {...(type === 'file' ? {} : { value: String(value ?? draft) })}
-        onChange={(event) => {
-          setDraft(event.target.value);
-          onChange?.(event);
-        }}
-      />
+      {startIcon ? (
+        <span className={styles.controlBox}>
+          <Icon
+            name={startIcon}
+            size={18}
+            className={styles.startIcon}
+          />
+          {input}
+        </span>
+      ) : (
+        input
+      )}
     </div>
   );
 }

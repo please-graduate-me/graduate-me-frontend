@@ -35,6 +35,33 @@ export const selected = style(
   })
 );
 
+const check = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E")`;
+
+/** 체크 표시가 있는 카드는 표시 자리만큼 왼쪽 여백을 둔다. */
+export const withIndicator = style(
+  layered({ paddingLeft: `calc(${vars.space.sm} + 30px)` })
+);
+
+/** 카드 왼쪽 위의 18px 체크 표시이며 카드가 선택되면 청록으로 채워진다. */
+export const indicator = style(
+  layered({
+    position: 'absolute',
+    top: vars.space.compact,
+    left: vars.space.compact,
+    width: 18,
+    height: 18,
+    border: `1.5px solid ${vars.color.inputBorder}`,
+    borderRadius: 5,
+    background: vars.color.surface,
+    selectors: {
+      [`${selected} &`]: {
+        borderColor: vars.color.accent,
+        background: `${check} center / 14px no-repeat, ${vars.color.accent}`,
+      },
+    },
+  })
+);
+
 /** 카드 전체를 덮는 투명 체크 상자로, 선택 상태와 이름을 보조 기술에 알린다. */
 export const input = style(
   layered({

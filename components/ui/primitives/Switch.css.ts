@@ -59,3 +59,16 @@ export const track = style(
 export const disabled = style(
   layered({ color: vars.color.subtle, cursor: 'not-allowed' })
 );
+
+/** 큰 스위치는 52x32 막대와 24px 손잡이를 쓰고 바깥 여백으로 60x44 누름 영역을 확보한다. */
+export const large = style(
+  layered({
+    width: 52,
+    height: 32,
+    margin: '6px 4px',
+    selectors: {
+      '&::before': { top: 4, left: 4, width: 24, height: 24 },
+      '&:checked::before': { transform: 'translateX(20px)' },
+    },
+  })
+);

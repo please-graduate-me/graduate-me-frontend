@@ -10,6 +10,7 @@ export function IconButton({
   name,
   selected,
   size = 'small',
+  variant = 'ghost',
   className,
   ...props
 }: Omit<ComponentProps<'button'>, 'children'> & {
@@ -17,10 +18,12 @@ export function IconButton({
   name: IconName;
   selected?: boolean;
   size?: 'small' | 'medium';
+  variant?: 'ghost' | 'outline';
 }) {
   const classes = [
     styles.base,
     styles.variant.ghost,
+    variant === 'outline' && styles.iconOutline,
     styles.iconOnly[size],
     className,
   ];
