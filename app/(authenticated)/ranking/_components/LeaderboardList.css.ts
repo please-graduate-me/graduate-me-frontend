@@ -26,20 +26,22 @@ export const row = style({
   '@media': { '(prefers-reduced-motion: reduce)': { transition: 'none' } },
 });
 
-/** 내 기록은 청록 바탕과 별도 문구로 함께 식별한다. */
+/** 내 기록은 청록 바탕으로 식별하고 보조 기술에는 숨김 문구로 알린다. */
 export const me = style({
   background: vars.color.selected,
-  selectors: { '&:hover': { background: '#D6EFE6' } },
+  selectors: { '&:hover': { background: vars.color.selectedHover } },
 });
 
 /** 자릿수가 달라도 순위 열 너비가 흔들리지 않게 한다. */
 export const rank = style({
   flex: '0 0 28px',
   textAlign: 'center',
+  fontFamily: vars.font.numeric,
   fontSize: 15,
   fontWeight: 700,
   color: vars.color.muted,
   fontVariantNumeric: 'tabular-nums',
+  selectors: { [`${me} &`]: { color: vars.color.accent } },
 });
 
 /** 긴 닉네임은 남는 너비 안에서 줄을 바꿔 이니셜 원과 XP 열을 밀어내지 않게 한다. */
@@ -51,16 +53,15 @@ export const name = style({
   overflowWrap: 'anywhere',
 });
 
-/** 내 행 표시 문구를 강조색으로 닉네임과 구분한다. */
-export const meTag = style({ color: vars.color.accent });
-
 /** XP 수치는 오른쪽 끝에서 자릿수를 맞춰 비교하게 한다. */
 export const xp = style({
   flexShrink: 0,
+  fontFamily: vars.font.numeric,
   fontSize: vars.fontSize.small,
   fontWeight: 700,
   color: vars.color.muted,
   fontVariantNumeric: 'tabular-nums',
+  selectors: { [`${me} &`]: { color: vars.color.accent } },
 });
 
 /** 상위 순위와 내 주변 순위 사이가 끊겼음을 알린다. */

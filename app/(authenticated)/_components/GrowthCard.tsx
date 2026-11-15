@@ -4,17 +4,24 @@ import { Heading } from '@/components/ui/primitives/Heading';
 import { ProgressBar } from '@/components/ui/primitives/ProgressBar';
 import { Text } from '@/components/ui/primitives/Text';
 import { useEffect, useState } from 'react';
-import { Link } from '@/components/ui/primitives/Link';
-import { getGrowth } from '@/domains/growth/api/growth';
+import { getGrowth, getLeaderboard } from '@/domains/growth/api/growth';
 import { rewardEventName } from '@/domains/growth/lib/rewardEvents';
-import type { GrowthSummary } from '@/domains/growth/model/contracts';
+import type {
+  GrowthSummary,
+  Leaderboard,
+} from '@/domains/growth/model/contracts';
 import { Button } from '@/components/ui/primitives/Button';
 import { Icon } from '@/components/ui/primitives/Icon';
+import { MiniRanking } from './MiniRanking';
+import { GrowthCardWeek } from './GrowthCardWeek';
 import * as styles from './GrowthCard.css';
 
-/** 실제 지급 원장의 연속 학습, 레벨, 주간 XP를 홈 왼쪽 열에서 이어 볼 수 있게 한다. */
+const numberFormat = new Intl.NumberFormat('ko-KR');
+
+/** 실제 지급 원장의 연속 학습과 요일별 기록, 레벨, 이번 주 리그를 홈 왼쪽 열에서 이어 볼 수 있게 한다. */
 export function GrowthCard() {
   const [value, setValue] = useState<GrowthSummary | null>(null);
+  const [board, setBoard] = useState<Leaderboard | null>(null);
   const [error, setError] = useState('');
   const [reload, setReload] = useState(0);
 
@@ -25,16 +32,20 @@ export function GrowthCard() {
     async function refresh() {
       const request = ++serial;
 
-      try {
-        const data = await getGrowth();
+      // 순위는 보조 정보라 실패해도 성장 카드는 그대로 보여 준다.
+      const [growth, ranks] = await Promise.allSettled([
+        getGrowth(),
+        getLeaderboard(),
+      ]);
 
-        if (active && request === serial) {
-          setValue(data);
-          setError('');
-        }
-      } catch (error) {
-        if (active && request === serial) setError((error as Error).message);
-      }
+      if (!active || request !== serial) return;
+
+      if (growth.status === 'fulfilled') {
+        setValue(growth.value);
+        setError('');
+      } else setError((growth.reason as Error).message);
+
+      setBoard(ranks.status === 'fulfilled' ? ranks.value : null);
     }
 
     void refresh();
@@ -45,6 +56,10 @@ export function GrowthCard() {
       window.removeEventListener(rewardEventName, refresh);
     };
   }, [reload]);
+
+  const remaining = value
+    ? Math.max(0, value.dailyGoal - value.dailyCompleted)
+    : 0;
 
   return (
     <section
@@ -61,27 +76,43 @@ export function GrowthCard() {
                   size={22}
                 />
               </span>
-              <Text weight='bold'>일 연속</Text>
+              <Text
+                weight='bold'
+                color='secondary'
+                size='sm'>
+                일 연속
+              </Text>
             </div>
             <Text
               as='p'
-              display='block'>
-              {value.dailyGoalReached
-                ? '오늘 목표를 달성했어요!'
-                : `오늘의 목표 ${Math.min(value.dailyCompleted, value.dailyGoal)} / ${value.dailyGoal}`}
+              display='block'
+              type='supporting'>
+              {value.dailyGoalReached || remaining === 0 ? (
+                '오늘 목표를 달성했어요! 연속 기록이 이어져요.'
+              ) : (
+                <>
+                  오늘 구절{' '}
+                  <strong className={styles.emphasis}>{remaining}개</strong>를
+                  학습하면 연속 기록이 이어져요.
+                </>
+              )}
             </Text>
-            <ProgressBar
-              label='오늘의 목표 진행률'
-              isLabelHidden
-              value={Math.min(value.dailyCompleted, value.dailyGoal)}
-              max={value.dailyGoal}
-            />
+            <GrowthCardWeek days={value.weekDays} />
           </Card>
           <Card className={styles.card}>
             <div className={styles.row}>
-              <Heading level={2}>레벨 {value.level}</Heading>
-              <Text color='secondary'>
-                {value.levelXp} / {value.levelTarget} XP
+              <Heading
+                level={2}
+                className={styles.cardTitle}>
+                레벨 {value.level}
+              </Heading>
+              <Text
+                isNumeric
+                weight='semibold'
+                color='secondary'
+                className={styles.levelXp}>
+                {numberFormat.format(value.levelXp)} /{' '}
+                {numberFormat.format(value.levelTarget)} XP
               </Text>
             </div>
             <ProgressBar
@@ -93,25 +124,19 @@ export function GrowthCard() {
             <Text
               as='p'
               display='block'
-              color='secondary'>
-              다음 레벨까지 {value.levelTarget - value.levelXp} XP
+              type='supporting'
+              className={styles.levelXp}>
+              다음 레벨까지{' '}
+              {numberFormat.format(
+                Math.max(0, value.levelTarget - value.levelXp)
+              )}{' '}
+              XP 남았어요
             </Text>
           </Card>
-          <Card className={styles.card}>
-            <Heading level={2}>이번 주 {value.weeklyXp} XP</Heading>
-            <Text
-              as='p'
-              display='block'
-              color='secondary'>
-              오늘 {value.todayXp} / {value.dailyLimit} XP · XP는 학습 참여
-              기록이에요.
-            </Text>
-            <Link
-              href='/ranking'
-              className={styles.link}>
-              주간 랭킹과 보상 규칙 보기
-            </Link>
-          </Card>
+          <MiniRanking
+            summary={value}
+            board={board}
+          />
         </>
       ) : (
         !error && (

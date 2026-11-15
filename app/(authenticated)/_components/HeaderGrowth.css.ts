@@ -22,6 +22,7 @@ export const pill = style({
   border: `1px solid ${vars.color.line}`,
   borderRadius: 999,
   fontSize: vars.fontSize.small,
+  fontFamily: vars.font.numeric,
   fontWeight: 700,
   fontVariantNumeric: 'tabular-nums',
   selectors: { [`${root}:hover &`]: { borderColor: vars.color.inputBorder } },

@@ -1,117 +1,26 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 이어 학습과 자료를 위에, 복습과 질문 카드를 그 아래 한 줄에 배치한다. */
+/** 이어서 학습 묶음과 오늘의 복습을 한 열로 쌓는다. */
 export const workspace = style({
   display: 'grid',
   gridTemplateColumns: 'minmax(0, 1fr)',
   gap: 28,
 });
 
-/** 긴 자료 제목이 복습 카드 줄을 밀지 않게 한다. */
-export const library = style({ minWidth: 0 });
-
-/** 오늘의 복습, 도우미 답변, 최근 표현을 같은 높이의 카드로 나란히 둔다. */
-export const sidebar = style({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-  gap: vars.space.md,
-});
-
-/** 복습의 주 행동을 연한 브랜드 바탕에 묶는다. */
+/** 복습 제목과 카드 줄 사이 간격만 정한다. */
 export const review = style({
-  background: vars.color.selected,
-  padding: 24,
+  display: 'grid',
+  gap: 14,
   margin: 0,
-  borderRadius: vars.radius.panel,
 });
 
-/** 복습 영역의 작은 표식을 제목보다 낮은 위계로 둔다. */
-export const eyebrow = style({
-  display: 'inline-flex',
-  gap: 8,
-  alignItems: 'center',
-  color: vars.color.accent,
-  fontSize: vars.fontSize.caption,
-});
+/** 시안의 18px 영역 제목 크기를 쓴다. */
+export const reviewTitle = style({ fontSize: vars.fontSize.heading3 });
 
-/** 학습 화면 이동에도 버튼과 같은 높이와 상태를 적용한다. */
-export const primaryLink = style({
-  display: 'inline-flex',
-  gap: 8,
-  alignItems: 'center',
-  minHeight: 44,
-  padding: '10px 16px',
-  borderRadius: vars.radius.control,
-  color: vars.color.surface,
-  background: vars.color.accent,
-  textDecoration: 'none',
-  fontSize: vars.fontSize.small,
-  fontWeight: 500,
-  selectors: { '&:hover': { background: vars.color.accentHover } },
-});
-
-/** 새 답변과 최근 표현을 복습 카드와 같은 크기의 테두리 카드로 둔다. */
-export const sideSection = style({
-  margin: 0,
-  padding: 24,
-  border: '1px solid ' + vars.color.line,
-  borderRadius: vars.radius.panel,
-});
-
-/** 영역 제목과 전체 목록 이동을 같은 줄에 둔다. */
-export const sectionHeading = style({
+/** 세 복습 카드를 같은 폭으로 두고 좁으면 줄바꿈한다. */
+export const reviewCards = style({
   display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'baseline',
-  gap: 12,
-});
-
-/** 실제 답변이 도착한 질문을 원문 이동과 함께 표시한다. */
-export const answer = style({
-  display: 'grid',
-  justifyItems: 'start',
-  gap: 12,
-});
-
-/** 표현 자체와 뜻을 다른 서체 크기로 보여 준다. */
-export const savedExpression = style({
-  display: 'grid',
-  justifyItems: 'start',
-  gap: 12,
-});
-
-/** 비어 있는 보조 영역은 다음 행동을 간단히 안내한다. */
-export const sideEmpty = style({
-  color: vars.color.muted,
-  fontSize: vars.fontSize.caption,
-});
-
-/** 출처는 자료 종류와 페이지 또는 재생 시각을 함께 표시한다. */
-export const source = style({
-  display: 'inline-flex',
-  gap: 6,
-  alignItems: 'center',
-  color: vars.color.muted,
-  fontSize: vars.fontSize.caption,
-  textDecoration: 'none',
-});
-
-/** 질문과 표현의 상세 이동은 작은 글자 링크로 제공한다. */
-export const textLink = style({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-  fontSize: vars.fontSize.caption,
-  textDecoration: 'none',
-});
-
-/** 요약 실패가 기존 영상 목록을 가리지 않게 한다. */
-export const error = style({
-  padding: 16,
-  background: vars.color.errorBackground,
-  color: vars.color.error,
-  borderRadius: vars.radius.control,
-  marginBottom: 24,
-  fontSize: vars.fontSize.small,
+  flexWrap: 'wrap',
+  gap: 14,
 });

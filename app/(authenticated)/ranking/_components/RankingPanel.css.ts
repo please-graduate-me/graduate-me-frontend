@@ -32,16 +32,6 @@ export const aside = style({
   '@media': { '(max-width: 959px)': { maxWidth: 'none' } },
 });
 
-/** 캐릭터와 제목을 가운데 모아 화면의 시작점을 만든다. */
-export const hero = style({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  textAlign: 'center',
-  gap: vars.space.compact,
-  paddingBlock: '8px 4px',
-});
-
 /** 순위 제목과 새로 조회 버튼을 한 줄 양 끝에 둔다. */
 export const boardHeader = style({
   display: 'flex',

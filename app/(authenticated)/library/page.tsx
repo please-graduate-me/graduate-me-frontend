@@ -4,12 +4,13 @@ import { GrowthCard } from '../_components/GrowthCard';
 import * as styles from './page.css';
 import { requireSession } from '../requireSession';
 import { Dashboard } from './_components/Dashboard';
-import { Icon } from '@/components/ui/primitives/Icon';
 import { ButtonLink } from '@/components/ui/primitives/ButtonLink';
+import { getLearningProfile } from '@/domains/users/api/profile';
 
-/** 로그인한 계정의 현재 날짜와 개인 학습 홈을 표시한다. */
+/** 로그인한 계정의 현재 날짜와 개인 학습 홈을 표시하고 복습 집계에 쓸 학습 언어를 넘긴다. */
 export default async function LibraryPage() {
-  const { session } = await requireSession();
+  const { session, transport } = await requireSession();
+  const profile = await getLearningProfile(transport);
 
   const today = new Intl.DateTimeFormat('ko-KR', {
     month: 'long',
@@ -38,15 +39,13 @@ export default async function LibraryPage() {
           </div>
           <ButtonLink
             href='/materials?add=1'
-            variant='ink'>
-            <Icon
-              name='plus'
-              size={16}
-            />
+            variant='ink'
+            size='comfortable'
+            startIcon='plus'>
             자료 추가
           </ButtonLink>
         </div>
-        <Dashboard />
+        <Dashboard language={profile.targetLanguage} />
       </div>
     </div>
   );

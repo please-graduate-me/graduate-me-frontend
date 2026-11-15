@@ -42,6 +42,7 @@ export const tileLabel = style({
 /** 타일 수치를 가장 먼저 읽히게 크게 둔다. */
 export const tileValue = style({
   margin: '4px 0 0',
+  fontFamily: vars.font.numeric,
   fontSize: 22,
   fontWeight: 700,
   lineHeight: 1.3,
@@ -63,8 +64,8 @@ export const nudge = style({
   gap: vars.space.sm,
   padding: vars.space.comfortable,
   borderRadius: 18,
-  background: '#16181D',
-  color: '#FFFFFF',
+  background: vars.color.ink,
+  color: vars.color.onAccent,
 });
 
 /** 수치 이름과 큰 수치를 한 문장으로 읽히게 위아래로 놓는다. */
@@ -74,11 +75,12 @@ export const goal = style({ margin: 0, display: 'grid', gap: vars.space.xxs });
 export const goalLabel = style({
   fontSize: 13,
   fontWeight: 700,
-  color: '#B9BCC5',
+  color: vars.color.inputBorder,
 });
 
 /** 다음 레벨까지 남은 XP를 카드에서 가장 크게 보여 준다. */
 export const goalValue = style({
+  fontFamily: vars.font.numeric,
   fontSize: 26,
   fontWeight: 700,
   lineHeight: 1.2,

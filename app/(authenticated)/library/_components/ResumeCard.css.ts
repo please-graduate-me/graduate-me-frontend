@@ -1,98 +1,115 @@
-import { globalStyle, style } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 최근 학습은 뒤에 카드가 겹쳐 쌓인 모양으로 이어 할 학습이 더 있음을 보여 준다. */
-export const root = style({
-  padding: 18,
-  marginBottom: 14,
-  border: '1px solid ' + vars.color.line,
-  borderRadius: vars.radius.panel,
+/** 뒷장 두 장이 비치도록 오른쪽 아래에 여백을 남긴 카드 묶음이다. */
+export const stack = style({
+  position: 'relative',
+  maxWidth: 640,
+  padding: '0 14px 14px 0',
+});
+
+/** 가장 뒤의 카드로, 회색 바탕이 오른쪽 아래로 14px 비친다. */
+export const backCard = style({
+  position: 'absolute',
+  inset: '14px 0 0 14px',
+  border: `1px solid ${vars.color.line}`,
+  borderRadius: 24,
+  background: vars.color.surfaceHover,
+});
+
+/** 가운데 카드로, 앞 카드와 뒷장 사이 7px 간격을 만든다. */
+export const middleCard = style({
+  position: 'absolute',
+  inset: 7,
+  border: `1px solid ${vars.color.line}`,
+  borderRadius: 24,
   background: vars.color.surface,
-  minWidth: 0,
-  // 음수 spread 그림자 두 겹으로 아래쪽에 비치는 뒷장 카드 가장자리를 그린다.
-  boxShadow: [
-    `0 7px 0 -1px ${vars.color.surface}`,
-    `0 7px 0 0 ${vars.color.line}`,
-    `0 14px 0 -3px ${vars.color.surface}`,
-    `0 14px 0 -2px ${vars.color.line}`,
-  ].join(', '),
-  transition: 'transform 180ms ease',
-  selectors: { '&:hover': { transform: 'translateY(-2px)' } },
-  '@media': {
-    '(prefers-reduced-motion: reduce)': {
-      transition: 'none',
-      selectors: { '&:hover': { transform: 'none' } },
-    },
-  },
 });
 
-/** 표지와 제목을 두 열로 배치한다. */
-export const row = style({
-  display: 'grid',
-  gridTemplateColumns: '100px minmax(0, 1fr)',
-  gap: 18,
-});
-
-/** 사진이 없는 원문도 실제 제목과 페이지를 가진 문서 표지로 표현한다. */
-export const cover = style({
+/** 앞 카드에 제목, 그림, 진행률, 주 행동을 세로로 쌓는다. */
+export const card = style({
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'space-between',
-  gap: 10,
-  width: 100,
-  minHeight: 142,
-  padding: 14,
-  background: vars.color.document,
-  color: vars.color.documentInk,
-  borderRadius: 7,
-  textDecoration: 'none',
-  overflow: 'hidden',
-  selectors: {
-    '&[data-kind="video"]': {
-      background: vars.color.reviewBackground,
-      color: vars.color.review,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-  },
+  gap: vars.space.comfortable,
+  padding: 28,
+  border: `1px solid ${vars.color.lineStrong}`,
+  borderRadius: 24,
+  background: vars.color.surface,
+  boxShadow: vars.shadow.card,
+  '@media': { '(max-width: 640px)': { padding: vars.space.comfortable } },
 });
 
-globalStyle('.' + cover + ' small', { fontSize: 10 });
-
-globalStyle('.' + cover + ' strong', {
-  fontSize: 28,
-  fontWeight: 500,
-  lineHeight: '36px',
+/** 알약, 제목, 진행 문구를 가운데 정렬한다. */
+export const header = style({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: vars.space.sm,
+  textAlign: 'center',
 });
 
-globalStyle('.' + cover + ' span', {
-  display: '-webkit-box',
-  WebkitBoxOrient: 'vertical',
-  WebkitLineClamp: 2,
-  overflow: 'hidden',
-  fontSize: 10,
-  lineHeight: '16px',
+/** 시안의 24px 카드 제목 크기를 유지한다. */
+export const title = style({
+  fontSize: vars.fontSize.heading2,
+  letterSpacing: '-0.01em',
   overflowWrap: 'anywhere',
 });
 
-/** 짧은 제목과 이어 학습 동작이 카드 안에서 같은 위치를 사용하게 한다. */
-export const information = style({
-  minWidth: 0,
+/** 자료 종류와 진도를 제목 아래 작은 굵은 글자로 둔다. */
+export const meta = style({ fontSize: vars.fontSize.label });
+
+/** 떠다니는 장식 그림이 들어갈 200px 높이 자리다. */
+export const illustration = style({
   display: 'flex',
-  alignItems: 'flex-start',
-  flexDirection: 'column',
-  gap: 10,
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: 200,
+  '@media': { '(max-width: 480px)': { height: 160 } },
 });
 
-/** 실제 진행 표시의 외형은 공통 ProgressBar에 맡기고 간격만 유지한다. */
-export const progress = style({ marginTop: 18 });
-
-/** 자료에서 확인한 실제 영상 썸네일을 표지 비율 안에 표시한다. */
-export const thumbnail = style({
-  position: 'absolute',
-  inset: 0,
-  width: '100%',
-  height: '100%',
-  objectFit: 'cover',
+/** 다음 단계 묶음을 옅은 회색 줄에 아이콘, 문구, 예상 XP 순으로 둔다. */
+export const nextStep = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: vars.space.compact,
+  padding: '12px 14px',
+  borderRadius: 16,
+  background: vars.color.canvas,
 });
+
+/** 재생 표지는 밝은 청록 원 안에 흰 아이콘으로 둔다. */
+export const nextIcon = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  width: 36,
+  height: 36,
+  borderRadius: '50%',
+  background: vars.color.accentBright,
+  color: vars.color.onAccent,
+});
+
+/** 문구가 예상 XP를 밀지 않게 남은 폭을 쓴다. */
+export const nextBody = style({ flex: '1 1 auto', minWidth: 0 });
+
+/** "다음 단계" 이름은 12px로 낮춘다. */
+export const nextLabel = style({ fontSize: vars.fontSize.caption });
+
+/** 묶음 이름은 15px 굵은 글자다. */
+export const nextTitle = style({
+  marginTop: 2,
+  fontSize: 15,
+  fontWeight: vars.fontWeight.heavy,
+});
+
+/** 예상 XP는 청록 숫자 서체로 오른쪽 끝에 둔다. */
+export const nextXp = style({
+  flexShrink: 0,
+  fontSize: vars.fontSize.label,
+  color: vars.color.accent,
+});
+
+/** 주 행동은 카드 폭 전체를 채운다. */
+export const action = style({ width: '100%' });
