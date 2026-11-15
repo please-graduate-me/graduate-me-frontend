@@ -2,6 +2,7 @@
 
 - 사용자에게 전달하는 설명과 주석은 한국어로 작성한다. em dash 문자는 사용하지 않는다.
 - 프론트엔드 코드의 파일 배치, 의존 방향과 스타일은 [Architecture.md](Architecture.md)를 따른다.
+- 서비스 표기, 로고, 색과 화면별로 정한 디자인 결정은 [docs/design-decisions.md](docs/design-decisions.md)를 따르고, 업무 규칙은 백엔드 저장소 `docs/business-rules.md`를 확인한다.
 - 프론트와 백엔드의 타입·검증·업무 로직은 각 앱에서 관리한다. 공통 소스 패키지나 앱 간 직접 import를 만들지 않는다. API 변경 시 양쪽 정의와 사용처를 확인한다.
 - 로컬 서비스 실행과 환경변수 주입은 Docker Compose에서 담당한다.
 - 파일을 수정한 작업은 완료 보고와 커밋 전에 반드시 `pnpm check`를 실행한다. Prettier 포맷 적용, ESLint 검사, 타입 검사를 순서대로 수행하며, 실패하면 수정 후 다시 실행한다. 포맷으로 변경된 내용도 검토한다.
