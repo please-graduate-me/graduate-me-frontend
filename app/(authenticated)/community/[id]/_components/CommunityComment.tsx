@@ -1,8 +1,9 @@
 'use client';
 import { Avatar } from '@/components/ui/primitives/Avatar';
+import { Badge } from '@/components/ui/primitives/Badge';
 import { Card } from '@/components/ui/primitives/Card';
+import { RelativeTime } from '@/components/ui/primitives/RelativeTime';
 import type { CommunityPost } from '@/domains/community/model/contracts';
-import { formatDate } from '@/domains/learning/lib/format';
 import { Button } from '@/components/ui/primitives/Button';
 import * as styles from './CommunityComment.css';
 
@@ -27,6 +28,8 @@ export function CommunityComment({
       <Avatar
         name={name}
         size='md'
+        // 조교 답변은 이름과 무관하게 청록 단색으로 묶어 역할을 먼저 알린다.
+        tone={comment.author.isHelper ? 'helper' : 'auto'}
         tooltip={false}
       />
     </span>
@@ -51,10 +54,16 @@ export function CommunityComment({
           <div className={styles.answerHeader}>
             {avatar}
             {name}
-            <span className={styles.helperTag}>조교</span>
-            <span className={styles.answerTime}>
-              {formatDate(comment.createdAt)}
-            </span>
+            <Badge
+              tone='solid'
+              size='small'
+              shape='square'>
+              조교
+            </Badge>
+            <RelativeTime
+              value={comment.createdAt}
+              className={styles.answerTime}
+            />
           </div>
           <p className={styles.answerBody}>{comment.body}</p>
           {remove}
@@ -69,7 +78,7 @@ export function CommunityComment({
         <p className={styles.commentHeader}>
           {name}{' '}
           <span className={styles.commentTime}>
-            · {formatDate(comment.createdAt)}
+            · <RelativeTime value={comment.createdAt} />
           </span>
         </p>
         <p className={styles.commentBody}>{comment.body}</p>

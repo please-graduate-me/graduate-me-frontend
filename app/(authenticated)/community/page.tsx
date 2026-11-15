@@ -8,7 +8,11 @@ import { CommunityList } from './_components/CommunityList';
 export default async function CommunityPage({
   searchParams,
 }: {
-  searchParams: Promise<{ source?: string; language?: string }>;
+  searchParams: Promise<{
+    source?: string;
+    language?: string;
+    compose?: string;
+  }>;
 }) {
   const { transport } = await requireSession();
   const profile = await getLearningProfile(transport);
@@ -38,6 +42,9 @@ export default async function CommunityPage({
       initialLanguage={selectedLanguage}
       initial={initial}
       source={parsed.success ? parsed.data : undefined}
+      isHelper={profile.isHelper}
+      // 나의 질문 보관함의 질문하기 동작이 조교 태그 글쓰기를 바로 열도록 받는다.
+      initialCompose={search.compose === '1'}
     />
   );
 }

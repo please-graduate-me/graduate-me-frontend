@@ -1,8 +1,29 @@
-import { keyframes, style } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
+
+/** 본문 열과 관련 학습 열을 나란히 두고 좁은 화면에서는 아래로 내린다. */
+export const layout = style({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'flex-start',
+  gap: 40,
+  minWidth: 0,
+});
+
+/** 같은 구절 질문과 표현 저장 카드를 본문 제목 높이에 맞춰 쌓는다. */
+export const aside = style({
+  flex: '1 1 260px',
+  maxWidth: 320,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: vars.space.md,
+  paddingTop: 72,
+  '@media': { '(max-width: 900px)': { maxWidth: 'none', paddingTop: 0 } },
+});
 
 /** 글 본문을 읽기 좋은 폭으로 제한하고 요소를 읽는 순서대로 쌓는다. */
 export const root = style({
+  flex: '999 1 560px',
   maxWidth: 760,
   minWidth: 0,
   display: 'flex',
@@ -136,13 +157,6 @@ export const actions = style({
   gap: vars.space.sm,
 });
 
-/** 태그된 조교 표시 앞의 짧은 제목이다. */
-export const tagLabel = style({
-  fontSize: vars.fontSize.caption,
-  fontWeight: 700,
-  color: vars.color.muted,
-});
-
 /** 태그된 조교는 테두리만 있는 알약 표시로 구분한다. */
 export const tag = style({
   display: 'inline-flex',
@@ -158,21 +172,6 @@ export const tag = style({
 
 /** 태그 표시와 글 동작 사이의 남은 공간을 채운다. */
 export const spacer = style({ flex: '1 1 auto' });
-
-const pop = keyframes({
-  '0%': { transform: 'scale(0.6)' },
-  '60%': { transform: 'scale(1.25)' },
-  '100%': { transform: 'scale(1)' },
-});
-
-/** 아이콘에 변형을 적용할 수 있도록 인라인 블록으로 감싼다. */
-export const likeIcon = style({ display: 'inline-flex' });
-
-/** 추천이 반영되면 아이콘이 한 번 튀어 올라 상태 변화를 알린다. */
-export const liked = style({
-  animation: `${pop} 400ms cubic-bezier(0.3, 1.6, 0.5, 1)`,
-  '@media': { '(prefers-reduced-motion: reduce)': { animation: 'none' } },
-});
 
 /** 구분선 아래 댓글 제목, 답변과 입력을 일정한 간격으로 쌓는다. */
 export const comments = style({

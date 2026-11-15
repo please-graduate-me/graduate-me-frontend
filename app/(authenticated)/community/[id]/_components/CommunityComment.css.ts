@@ -19,16 +19,6 @@ export const answerHeader = style({
   fontWeight: 800,
 });
 
-/** 조교 표식은 연한 청록 카드 위에서도 보이도록 진한 청록 바탕에 흰 글자로 둔다. */
-export const helperTag = style({
-  padding: '2px 8px',
-  borderRadius: 6,
-  background: vars.color.accent,
-  color: '#FFFFFF',
-  fontSize: 11,
-  fontWeight: 800,
-});
-
 /** 작성 시각은 이름 줄 오른쪽 끝에 낮은 위계로 둔다. */
 export const answerTime = style({
   marginLeft: 'auto',

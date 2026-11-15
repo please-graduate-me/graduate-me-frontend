@@ -33,8 +33,20 @@ export const intro = style({
   width: '100%',
 });
 
-/** 작은 머리표를 가장 먼저 떠오르게 한다. */
-export const riseFirst = riseIn;
+/** 지원 자료 범위를 아이콘 없는 회색 알약 머리표로 가장 먼저 떠오르게 한다. */
+export const eyebrow = style([
+  riseIn,
+  {
+    display: 'inline-flex',
+    margin: 0,
+    padding: '6px 12px',
+    borderRadius: vars.radius.pill,
+    background: vars.color.canvas,
+    color: '#33363F',
+    fontSize: vars.fontSize.label,
+    fontWeight: 800,
+  },
+]);
 
 /** 제목을 머리표 바로 뒤에 떠오르게 한다. */
 export const riseSecond = style([riseIn, { animationDelay: '0.12s' }]);
@@ -75,16 +87,6 @@ export const accountActions = style([
     alignItems: 'center',
     gap: 12,
     marginTop: 36,
-  },
-]);
-
-/** 지원 자료 범위를 시작 동작 아래 보조 문구로 둔다. */
-export const supportNote = style([
-  riseThird,
-  {
-    marginTop: 16,
-    color: vars.color.muted,
-    fontSize: vars.fontSize.caption,
   },
 ]);
 
@@ -162,9 +164,5 @@ export const account = style({
   },
 });
 
-/** 어두운 띠의 설명을 제목보다 한 단계 옅게 둔다. */
-export const accountText = style({
-  maxWidth: 520,
-  color: 'rgba(255, 255, 255, 0.72)',
-  wordBreak: 'keep-all',
-});
+/** 어두운 띠의 체험 버튼은 시안처럼 넓은 최소 폭으로 눈에 띄게 한다. */
+export const closingAction = style({ minWidth: 220 });

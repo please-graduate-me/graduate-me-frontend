@@ -26,9 +26,6 @@ export const views = style({
   gap: vars.space.xxs,
 });
 
-/** 행 전체를 눌러 고를 수 있도록 버튼을 열 너비로 늘리고 왼쪽 정렬한다. */
-export const view = style({ width: '100%', justifyContent: 'flex-start' });
-
 /** 언어 선택 제목과 선택지를 한 묶음으로 둔다. */
 export const languages = style({
   display: 'flex',
@@ -61,19 +58,8 @@ export const intro = style({
   gap: vars.space.md,
 });
 
-/** 검색 입력과 버튼을 회색 둥근 바탕 하나로 묶는다. */
-export const search = style({
-  display: 'flex',
-  alignItems: 'center',
-  gap: vars.space.sm,
-  padding: '8px 8px 8px 16px',
-  borderRadius: 16,
-  background: vars.color.canvas,
-  color: vars.color.muted,
-});
-
-/** 검색 입력이 버튼을 제외한 남은 폭을 사용한다. */
-export const searchInput = style({ flex: '1 1 auto', minWidth: 0 });
+/** 부제는 제목 아래 6px 간격으로 붙인다. */
+export const description = style({ marginTop: 6 });
 
 /** 글 카드를 목록 표식 없이 일정한 간격으로 쌓는다. */
 export const list = style({
@@ -83,14 +69,4 @@ export const list = style({
   display: 'flex',
   flexDirection: 'column',
   gap: 14,
-});
-
-/** 페이지 이동을 목록 아래 가운데에 둔다. */
-export const pagination = style({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: vars.space.sm,
-  fontSize: vars.fontSize.small,
-  color: vars.color.muted,
 });

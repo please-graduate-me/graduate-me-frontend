@@ -6,7 +6,7 @@ import { CommunityList } from '../_components/CommunityList';
 
 /** 조교에게 태그된 글도 기존 게시글의 공개 범위를 그대로 적용한다. */
 export default async function TaggedCommunityPage() {
-  const { transport } = await requireSession();
+  const { session, transport } = await requireSession();
   const profile = await getLearningProfile(transport);
 
   if (!profile.isHelper) redirect('/community');
@@ -20,6 +20,7 @@ export default async function TaggedCommunityPage() {
     <CommunityList
       initial={initial}
       initialLanguage={profile.targetLanguage}
+      viewerId={session.user.id}
       tagged
     />
   );

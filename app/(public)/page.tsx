@@ -14,7 +14,7 @@ import { HeroDecor } from './_components/HeroDecor';
 import { MethodStrip } from './_components/MethodStrip';
 import { HowItWorksStep } from './_components/HowItWorksStep';
 import { SourceIllustration } from './_components/SourceIllustration';
-import { LearningPreview } from './_components/LearningPreview';
+import { BlankIllustration } from './_components/BlankIllustration';
 import { QuestionIllustration } from './_components/QuestionIllustration';
 
 /** 사용자별 세션 화면이 정적 결과로 공유되지 않게 한다. */
@@ -36,15 +36,9 @@ export default async function Home({
         aria-labelledby='home-title'>
         <HeroDecor />
         <div className={styles.intro}>
-          <div className={styles.riseFirst}>
-            <Badge tone='neutral'>
-              <Icon
-                name='bookmark'
-                size={14}
-              />
-              수업과 일상을 잇는 언어 학습
-            </Badge>
-          </div>
+          <p className={styles.eyebrow}>
+            영어 · 태국어 PDF와 영어 영상으로 시작해요
+          </p>
           <Heading
             level={1}
             id='home-title'
@@ -63,9 +57,8 @@ export default async function Home({
             color='secondary'
             justify='center'
             className={styles.subtitle}>
-            수업 PDF의 한 문장부터 영상 속 한 구절까지.
-            <br />
-            원문에서 이해하고, 내 표현으로 남겨 보세요.
+            내가 고른 PDF와 영상을 한 구절씩 풀어 보며 배워요. 모르는 부분은
+            조교와 함께 해결해요.
           </Text>
           <div className={styles.accountActions}>
             {session?.user ? (
@@ -82,6 +75,7 @@ export default async function Home({
               <AuthButton
                 action='signin'
                 size='large'
+                label='학습 시작하기'
                 disabled={!configured}
               />
             )}
@@ -92,9 +86,6 @@ export default async function Home({
               로그인 없이 체험하기
             </ButtonLink>
           </div>
-          <small className={styles.supportNote}>
-            영어 · 태국어 PDF와 영어 영상으로 시작해요.
-          </small>
           {(error || (!configured && !session?.user)) && (
             <div className={styles.notices}>
               {error && (
@@ -134,20 +125,20 @@ export default async function Home({
         <HowItWorksStep
           number='01'
           title='나의 자료에서 시작해요'
-          description='수업 PDF를 가져오거나 공개 영어 영상의 링크를 추가하세요.'
+          description='PDF를 올리거나 공개 YouTube 주소를 붙여 넣으면, 번역과 핵심 단어, 요약이 준비돼요.'
           illustration={<SourceIllustration />}
         />
         <HowItWorksStep
           number='02'
           title='한 구절씩, 내 속도로'
-          description='원문을 읽고, 영상을 반복해 듣고, 필요한 표현을 기록하세요.'
-          illustration={<LearningPreview />}
+          description='읽기만 하지 않고 빈칸 채우기와 받아쓰기로 직접 풀어 봐요. 풀 때마다 XP가 쌓여요.'
+          illustration={<BlankIllustration />}
           reversed
         />
         <HowItWorksStep
           number='03'
           title='질문하고 다시 기억해요'
-          description='선택한 원문을 커뮤니티에 질문하고, 나의 표현집으로 복습하세요.'
+          description='궁금한 구절을 골라 조교를 태그해 물어보고, 기억할 표현은 표현집에 모아 반복해서 복습해요.'
           illustration={<QuestionIllustration />}
         />
       </Section>
@@ -178,37 +169,22 @@ export default async function Home({
       </Section>
       <Section
         className={styles.account}
-        aria-label='내 학습으로 이어가기'>
+        aria-labelledby='closing-title'>
         <Heading
           level={2}
+          id='closing-title'
           type='display-2'
           weight='bold'
           color='inherit'
           justify='center'>
-          자료는 그대로, 이해는 더 깊게.
+          오늘 첫 구절을 풀어 볼까요?
         </Heading>
-        <div className={styles.accountText}>
-          <Text
-            as='p'
-            display='block'
-            color='inherit'
-            justify='center'>
-            로그인하면 원문과 표현, 질문과 학습 기록을 내 공간에 남길 수 있어요.
-          </Text>
-        </div>
-        {session?.user ? (
-          <ButtonLink
-            href={videoPaths.library}
-            size='large'>
-            내 학습 공간으로
-          </ButtonLink>
-        ) : (
-          <AuthButton
-            action='signin'
-            size='large'
-            disabled={!configured}
-          />
-        )}
+        <ButtonLink
+          href='#try-learning'
+          size='large'
+          className={styles.closingAction}>
+          로그인 없이 체험하기
+        </ButtonLink>
       </Section>
     </>
   );

@@ -1,31 +1,12 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
-/** 카드에 올리거나 초점을 두면 살짝 떠올라 누를 수 있는 글임을 알린다. */
-export const card = style({
-  minWidth: 0,
-  transition: 'transform 180ms ease, filter 180ms ease',
-  selectors: {
-    '&:hover, &:focus-within': {
-      transform: 'translateY(-2px)',
-      // 공통 Card의 테두리 외형을 덮지 않도록 그림자는 filter로 더한다.
-      filter: 'drop-shadow(0 10px 24px rgba(22, 24, 29, 0.07))',
-    },
-  },
-  '@media': {
-    '(prefers-reduced-motion: reduce)': {
-      transition: 'none',
-      selectors: { '&:hover, &:focus-within': { transform: 'none' } },
-    },
-  },
-});
-
 /** 카드 안 요소를 읽는 순서대로 일정한 간격으로 쌓는다. */
-export const content = style({
+export const card = style({
   display: 'flex',
   flexDirection: 'column',
   gap: 14,
-  minWidth: 0,
+  padding: 22,
 });
 
 /** 글 종류 배지와 작성 시각을 한 줄 양 끝에 둔다. */
@@ -43,6 +24,9 @@ export const time = style({
   fontSize: vars.fontSize.caption,
   fontWeight: 700,
 });
+
+/** 카드 제목은 시안의 18px 굵은 제목으로 둔다. */
+export const title = style({ fontSize: 18, lineHeight: 1.4 });
 
 /** 공유 원문은 따뜻한 바탕의 본문 서체 인용으로 질문과 구분한다. */
 export const quote = style({
@@ -108,6 +92,13 @@ export const tag = style({
   padding: '3px 10px',
   borderRadius: 999,
   border: `1px solid ${vars.color.line}`,
+});
+
+/** 나를 태그한 표시는 청록 알약으로 바꿔 내 차례임을 바로 알게 한다. */
+export const tagMine = style({
+  borderColor: vars.color.accent,
+  background: vars.color.selected,
+  color: vars.color.accent,
 });
 
 /** 추천과 댓글 수는 오른쪽 끝에 붙인다. */

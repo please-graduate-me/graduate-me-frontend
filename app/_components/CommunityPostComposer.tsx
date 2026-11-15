@@ -14,13 +14,19 @@ import {
   listCommunityHelpers,
   saveCommunityPost,
 } from '@/domains/community/api/community';
-import type { CommunityPost } from '@/domains/community/model/contracts';
+import type {
+  CommunityPost,
+  CommunityPostKind,
+} from '@/domains/community/model/contracts';
+import { communityPostKinds } from '@/domains/community/config/kinds';
 import type { SourceInput } from '@/domains/materials/model/source';
 import { Dialog } from '@/components/ui/composites/Dialog';
 import { Input } from '@/components/ui/primitives/Input';
 import { TextArea } from '@/components/ui/primitives/TextArea';
 import { Select } from '@/components/ui/primitives/Select';
 import { Checkbox } from '@/components/ui/primitives/Checkbox';
+import { RadioList } from '@/components/ui/primitives/RadioList';
+import { RadioListItem } from '@/components/ui/primitives/RadioListItem';
 import { Button } from '@/components/ui/primitives/Button';
 import * as styles from '@/lib/styles/workspace.css';
 
@@ -41,6 +47,9 @@ export function CommunityPostComposer({
   beforeNavigate?: () => boolean | Promise<boolean>;
 }) {
   const router = useRouter();
+  // 새 글은 서버가 종류를 필수로 받아 기본값 없이 직접 고르게 하고 수정은 기존 종류에서 시작한다.
+  const [kind, setKind] = useState<CommunityPostKind | ''>(initial?.kind ?? '');
+
   const [title, setTitle] = useState(initial?.title ?? '');
   const [body, setBody] = useState(initial?.body ?? initialBody);
 
@@ -91,27 +100,36 @@ export function CommunityPostComposer({
     event.preventDefault();
     // 이전 공개 확인을 입력 변경 뒤 재사용하지 않으며 원본 권한은 서버가 다시 확인한다.
     if (!confirmed || busy) return;
+
+    if (!kind) {
+      setError('글 종류를 골라 주세요.');
+
+      return;
+    }
+
     setBusy(true);
     setError('');
 
     try {
       if (beforeNavigate && !(await beforeNavigate())) return;
 
-      const result = await saveCommunityPost(
-        {
-          title: title.trim(),
-          body: body.trim(),
-          language: selectedLanguage,
-          visibility,
-          allowedUserIds:
-            visibility === 'accounts'
-              ? accounts.split(/[\s,]+/).filter(Boolean)
-              : [],
-          source: excerpt,
-          taggedHelperIds: tagged,
-        },
-        initial?.id
-      );
+      const input = {
+        kind,
+        title: title.trim(),
+        body: body.trim(),
+        language: selectedLanguage,
+        visibility,
+        allowedUserIds:
+          visibility === 'accounts'
+            ? accounts.split(/[\s,]+/).filter(Boolean)
+            : [],
+        source: excerpt,
+        taggedHelperIds: tagged,
+      };
+
+      const result = initial
+        ? await saveCommunityPost(input, initial.id)
+        : await saveCommunityPost(input);
 
       router.push(`/community/${encodeURIComponent(result.id)}`);
       router.refresh();
@@ -135,6 +153,23 @@ export function CommunityPostComposer({
       <form
         className={styles.stack}
         onSubmit={(event) => void submit(event)}>
+        <RadioList
+          label='글 종류'
+          variant='tile'
+          value={kind}
+          isDisabled={busy}
+          onChange={(value) => {
+            setKind(value as CommunityPostKind);
+            setError('');
+          }}>
+          {communityPostKinds.map((option) => (
+            <RadioListItem
+              key={option.value}
+              value={option.value}
+              label={option.label}
+            />
+          ))}
+        </RadioList>
         <div className={styles.field}>
           <Input
             label='제목'
