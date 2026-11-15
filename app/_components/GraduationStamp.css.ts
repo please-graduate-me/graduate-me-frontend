@@ -15,3 +15,6 @@ export const stamp = style({
     '(prefers-reduced-motion: reduce)': { animation: 'none' },
   },
 });
+
+/** 번진 도장은 찍히는 동작 없이 감싼 요소의 흔들림만 따른다. */
+export const faded = style({ flex: 'none' });

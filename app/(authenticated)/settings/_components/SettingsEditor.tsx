@@ -1,5 +1,5 @@
 'use client';
-import { contentLabel } from '@/components/ui/primitives/contentLabel';
+import { useId } from 'react';
 import { Text } from '@/components/ui/primitives/Text';
 import { StatusDot } from '@/components/ui/primitives/StatusDot';
 import type { LearningSettings } from '@/domains/users/model/settings';
@@ -7,10 +7,13 @@ import { useLearningSettings } from '../../../_components/useLearningSettings';
 import * as styles from './SettingsEditor.css';
 import { Switch } from '@/components/ui/primitives/Switch';
 import { Select } from '@/components/ui/primitives/Select';
+import { ReplayPreview } from './ReplayPreview';
 
 /** 학습 화면과 같은 저장 규칙으로 계정 옵션을 편집한다. */
 export function SettingsEditor({ initial }: { initial: LearningSettings }) {
   const { settings, saving, error, change } = useLearningSettings(initial);
+  const id = useId();
+  const replayOff = !settings.autoReplay;
 
   return (
     <fieldset
@@ -18,13 +21,15 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
       aria-label='내 학습 옵션'
       disabled={saving}>
       <div className={styles.row}>
+        <label
+          htmlFor={id + 'auto'}
+          className={styles.name}>
+          자동 미리듣기
+        </label>
         <Switch
+          id={id + 'auto'}
+          size='large'
           disabled={saving}
-          label={contentLabel(
-            <>
-              <span className={styles.name}>자동 미리듣기</span>
-            </>
-          )}
           aria-label='자동 미리듣기'
           checked={settings.autoReplay}
           onChange={(event) =>
@@ -33,13 +38,16 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
         />
       </div>
       <div className={styles.row}>
+        <label
+          htmlFor={id + 'delay'}
+          className={replayOff ? `${styles.name} ${styles.off}` : styles.name}>
+          반복 간격
+        </label>
         <Select
-          label={contentLabel(
-            <>
-              <span className={styles.name}>반복 간격</span>
-            </>
-          )}
-          disabled={saving || !settings.autoReplay}
+          id={id + 'delay'}
+          aria-label='반복 간격'
+          className={styles.control}
+          disabled={saving || replayOff}
           value={settings.replayDelay}
           onChange={(event) =>
             void change({
@@ -59,13 +67,16 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
         </Select>
       </div>
       <div className={styles.row}>
+        <label
+          htmlFor={id + 'count'}
+          className={replayOff ? `${styles.name} ${styles.off}` : styles.name}>
+          추가 반복
+        </label>
         <Select
-          label={contentLabel(
-            <>
-              <span className={styles.name}>추가 반복</span>
-            </>
-          )}
-          disabled={saving || !settings.autoReplay}
+          id={id + 'count'}
+          aria-label='추가 반복'
+          className={styles.control}
+          disabled={saving || replayOff}
           value={settings.replayCount ?? 'unlimited'}
           onChange={(event) =>
             void change({
@@ -87,13 +98,16 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
         </Select>
       </div>
       <div className={styles.row}>
+        <label
+          htmlFor={id + 'rate'}
+          className={styles.name}>
+          재생 속도
+        </label>
         <Select
+          id={id + 'rate'}
+          aria-label='재생 속도'
+          className={styles.control}
           disabled={saving}
-          label={contentLabel(
-            <>
-              <span className={styles.name}>재생 속도</span>
-            </>
-          )}
           value={settings.playbackRate}
           onChange={(event) =>
             void change({
@@ -112,6 +126,7 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
           ))}
         </Select>
       </div>
+      <ReplayPreview settings={settings} />
       <Text
         as='p'
         display='block'
@@ -132,7 +147,8 @@ export function SettingsEditor({ initial }: { initial: LearningSettings }) {
         />
         <Text
           type='supporting'
-          color='secondary'>
+          color='secondary'
+          weight='semibold'>
           {saving ? '옵션 저장 중…' : error || '계정에 저장됨'}
         </Text>
       </div>

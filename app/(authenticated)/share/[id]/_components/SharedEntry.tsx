@@ -4,6 +4,7 @@ import { Text } from '@/components/ui/primitives/Text';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/primitives/Button';
+import { Icon } from '@/components/ui/primitives/Icon';
 import {
   recordShareVisit,
   startSharedLesson,
@@ -66,14 +67,31 @@ export function SharedEntry({ id, segment }: { id: string; segment: boolean }) {
   return (
     <div className={styles.entry}>
       <Button
+        type='button'
+        variant='ink'
+        size='prominent'
         className={styles.start}
-        disabled={busy}
+        // 비활성 회색 대신 먹색을 유지해 준비 중 고리가 보이게 하고 중복 시작은 start가 막는다.
+        aria-busy={busy}
+        aria-disabled={busy}
         onClick={() => void start()}>
-        {busy
-          ? '학습 준비 중…'
-          : segment
-            ? '이 구절부터 학습'
-            : '내 학습에 추가하고 시작'}
+        {busy ? (
+          <>
+            <span
+              aria-hidden='true'
+              className={styles.spinner}
+            />
+            학습 준비 중…
+          </>
+        ) : (
+          <>
+            {segment ? '이 구절부터 학습' : '내 학습에 추가하고 시작'}
+            <Icon
+              name='arrow-right'
+              size={18}
+            />
+          </>
+        )}
       </Button>
       {segment && (
         <Text
@@ -89,7 +107,9 @@ export function SharedEntry({ id, segment }: { id: string; segment: boolean }) {
         <Banner
           status='error'
           title='확인이 필요해요'
-
+          layout='inline'
+          isOutlined
+          className={styles.error}
           role='alert'>
           {error}
         </Banner>

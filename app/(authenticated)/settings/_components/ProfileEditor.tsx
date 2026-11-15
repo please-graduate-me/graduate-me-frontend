@@ -1,7 +1,7 @@
 'use client';
-import { contentLabel } from '@/components/ui/primitives/contentLabel';
 import { Banner } from '@/components/ui/composites/Banner';
 import { Text } from '@/components/ui/primitives/Text';
+import { Icon } from '@/components/ui/primitives/Icon';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 import { useState } from 'react';
@@ -11,7 +11,26 @@ import type { LearningProfile } from '@/domains/users/model/profile';
 import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
 import { Select } from '@/components/ui/primitives/Select';
-import * as styles from '@/lib/styles/workspace.css';
+import { RadioList } from '@/components/ui/primitives/RadioList';
+import { RadioListItem } from '@/components/ui/primitives/RadioListItem';
+import { SegmentedControl } from '@/components/ui/primitives/SegmentedControl';
+import { SegmentedControlItem } from '@/components/ui/primitives/SegmentedControlItem';
+import * as styles from './ProfileEditor.css';
+
+const targets: {
+  value: LearningProfile['targetLanguage'];
+  code: string;
+  label: string;
+}[] = [
+  { value: 'en', code: 'EN', label: '영어' },
+  { value: 'th', code: 'TH', label: '태국어' },
+];
+
+const levels: { value: LearningProfile['level']; label: string }[] = [
+  { value: 'beginner', label: '초급' },
+  { value: 'intermediate', label: '중급' },
+  { value: 'advanced', label: '고급' },
+];
 
 /** 설명 언어와 관심 주제를 실제 계정 프로필에 저장한다. */
 export function ProfileEditor({ initial }: { initial: LearningProfile }) {
@@ -57,37 +76,50 @@ export function ProfileEditor({ initial }: { initial: LearningProfile }) {
   return (
     <form
       onSubmit={(event) => void submit(event)}
-      className={styles.stack}>
+      className={styles.form}>
       {profile.isHelper && (
         <Banner
-          status='info'
+          status='success'
+          role='note'
+          layout='inline'
           title='안내'>
           조교 · 커뮤니티에서 학습자들과 함께 활동합니다.
         </Banner>
       )}
       <fieldset
-        className={styles.stack}
+        className={styles.fields}
         disabled={busy}>
-        <div className={styles.field}>
+        <RadioList
+          label='목표 언어'
+          variant='tile'
+          value={profile.targetLanguage}
+          isDisabled={busy}
+          onChange={(value) =>
+            setProfile((current) => ({
+              ...current,
+              targetLanguage: value as LearningProfile['targetLanguage'],
+            }))
+          }>
+          {targets.map((target) => (
+            <RadioListItem
+              key={target.value}
+              value={target.value}
+              icon={
+                <span
+                  aria-hidden='true'
+                  className={styles.code}>
+                  {target.code}
+                </span>
+              }
+              label={target.label}
+            />
+          ))}
+        </RadioList>
+        <div className={styles.pair}>
           <Select
+            className={styles.pairField}
             disabled={busy}
-            label={contentLabel(<>목표 언어</>)}
-            value={profile.targetLanguage}
-            onChange={(event) =>
-              setProfile((value) => ({
-                ...value,
-                targetLanguage: event.target
-                  .value as LearningProfile['targetLanguage'],
-              }))
-            }>
-            <option value='en'>영어</option>
-            <option value='th'>태국어</option>
-          </Select>
-        </div>
-        <div className={styles.field}>
-          <Select
-            disabled={busy}
-            label={contentLabel(<>설명 언어</>)}
+            label='설명 언어'
             value={profile.explanationLanguage}
             onChange={(event) =>
               setProfile((value) => ({
@@ -100,65 +132,78 @@ export function ProfileEditor({ initial }: { initial: LearningProfile }) {
             <option value='en'>영어</option>
             <option value='th'>태국어</option>
           </Select>
+          <div className={styles.pairItem}>
+            {/* 분할 선택은 접근성 이름만 받으므로 보이는 이름은 중복 낭독을 막아 따로 둔다. */}
+            <span
+              aria-hidden='true'
+              className={styles.label}>
+              현재 수준 · 자기평가
+            </span>
+            <SegmentedControl
+              label='현재 수준 · 자기평가'
+              value={profile.level}
+              variant='block'
+              isDisabled={busy}
+              onChange={(value) =>
+                setProfile((current) => ({
+                  ...current,
+                  level: value as LearningProfile['level'],
+                }))
+              }>
+              {levels.map((level) => (
+                <SegmentedControlItem
+                  key={level.value}
+                  value={level.value}
+                  label={level.label}
+                />
+              ))}
+            </SegmentedControl>
+          </div>
         </div>
-        <div className={styles.field}>
-          <Select
-            disabled={busy}
-            label={contentLabel(<>현재 수준 · 자기평가</>)}
-            value={profile.level}
-            onChange={(event) =>
-              setProfile((value) => ({
-                ...value,
-                level: event.target.value as LearningProfile['level'],
-              }))
-            }>
-            <option value='beginner'>초급</option>
-            <option value='intermediate'>중급</option>
-            <option value='advanced'>고급</option>
-          </Select>
-        </div>
-        <div className={styles.field}>
-          <Input
-            disabled={busy}
-            label={contentLabel(<>관심 주제</>)}
-            value={interests}
-            maxLength={2039}
-            onChange={(event) => setInterests(event.target.value)}
-            placeholder='회화, 언어학, 경제 · 쉼표로 구분해 최대 20개'
-          />
-        </div>
+        <Input
+          disabled={busy}
+          label='관심 주제'
+          value={interests}
+          maxLength={2039}
+          onChange={(event) => setInterests(event.target.value)}
+          placeholder='회화, 언어학, 경제 · 쉼표로 구분해 최대 20개'
+        />
         <Text
           as='p'
           display='block'
-          className={styles.meta}>
+          className={styles.note}>
           언어를 바꾸어도 이전 언어의 자료와 답안·표현·질문 기록은 유지됩니다.
           자기평가 수준은 연습 난이도의 참고값으로 사용합니다.
         </Text>
-        <div>
+        <div className={styles.actions}>
           <Button
+            variant='ink'
+            size='comfortable'
             loading={busy}
             disabled={busy}>
             학습 프로필 저장
           </Button>
+          {saved && (
+            <p
+              role='status'
+              className={styles.saved}>
+              <Icon
+                name='check'
+                size={16}
+              />
+              학습 프로필을 저장했습니다.
+            </p>
+          )}
         </div>
       </fieldset>
       {sessionExpired && <SessionRecovery />}
       {error && (
         <Banner
           status='error'
+          icon='circle-alert'
           title='확인이 필요해요'
-
           role='alert'>
           {error}
-        </Banner>
-      )}
-      {saved && (
-        <Banner
-          status='info'
-          title='안내'
-
-          role='status'>
-          학습 프로필을 저장했습니다.
         </Banner>
       )}
     </form>

@@ -1,20 +1,25 @@
-import { Heading } from '@/components/ui/primitives/Heading';
-import { Text } from '@/components/ui/primitives/Text';
-import { Panel } from '@/components/ui/layouts/Panel';
-import { Link } from '@/components/ui/primitives/Link';
+import { TopNav } from '@/components/ui/layouts/TopNav';
+import { TopNavHeading } from '@/components/ui/layouts/TopNavHeading';
+import { videoPaths } from '@/domains/videos/config/paths';
+import { BrandLogo } from './_components/BrandLogo';
+import { NotFoundView } from './_components/NotFoundView';
 
-/** 없는 자원에서 학습 목록으로 복귀할 경로를 제공한다. */
+/** 로그인 틀 밖의 없는 주소에서 학습 목록으로 복귀할 경로를 제공한다. */
 export default function NotFound() {
   return (
-    <Panel>
-      <Heading level={1}>자료를 찾거나 열 수 없어요.</Heading>
-      <Text
-        as='p'
-        display='block'>
-        자료가 삭제되었거나 공유가 해제되었을 수 있습니다. 접근할 수 없는 원문과
-        개인 기록은 표시하지 않습니다.
-      </Text>
-      <Link href='/library'>내 학습으로 돌아가기</Link>
-    </Panel>
+    <>
+      <TopNav
+        heading={
+          <TopNavHeading
+            heading='Please graduate me'
+            headingHref={videoPaths.home}
+            logo={<BrandLogo />}
+          />
+        }
+      />
+      <main>
+        <NotFoundView />
+      </main>
+    </>
   );
 }
