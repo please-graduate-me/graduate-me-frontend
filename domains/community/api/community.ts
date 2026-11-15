@@ -5,7 +5,10 @@ import {
   communityPostsSchema,
   communityHelpersSchema,
   communityPostSchema,
+  relatedCommunityPostsSchema,
   savedCommunityPostSchema,
+  taggedCountSchema,
+  type CommunityPostKind,
 } from '../model/contracts';
 
 const endpoint = (id: string) =>
@@ -20,12 +23,14 @@ export const listCommunityPosts = (
     q?: string;
     following?: boolean;
     tagged?: boolean;
+    helpers?: boolean;
+    kind?: CommunityPostKind;
     page?: number;
   },
   transport?: Transport
 ) =>
   request(
-    `/api/community/posts?${new URLSearchParams({ language: input.language, q: input.q ?? '', following: String(input.following ?? false), tagged: String(input.tagged ?? false), page: String(input.page ?? 1), limit: '20' })}`,
+    `/api/community/posts?${new URLSearchParams({ language: input.language, q: input.q ?? '', following: String(input.following ?? false), tagged: String(input.tagged ?? false), helpers: String(input.helpers ?? false), page: String(input.page ?? 1), limit: '20', ...(input.kind ? { kind: input.kind } : {}) })}`,
     communityPostsSchema,
     undefined,
     transport
@@ -35,17 +40,36 @@ export const listCommunityPosts = (
 export const getCommunityPost = (id: string, transport?: Transport) =>
   request(endpoint(id), communityPostSchema, undefined, transport);
 
-/** 명시적으로 확인한 내용과 발췌만 일반 글에 공유한다. */
-export const saveCommunityPost = (
-  input: {
-    title: string;
-    body: string;
-    language: 'en' | 'th';
-    visibility: 'public' | 'accounts';
-    allowedUserIds?: string[];
-    taggedHelperIds?: string[];
-    source?: SourceInput;
-  },
+/** 같은 자료·페이지 또는 같은 영상 구간에 달린 읽기 가능한 다른 글을 가져온다. */
+export const listRelatedCommunityPosts = (id: string, transport?: Transport) =>
+  request(
+    `${endpoint(id)}/related`,
+    relatedCommunityPostsSchema,
+    undefined,
+    transport
+  );
+
+/** 조교 배지에 쓸 미응답 태그 글 수이며 조교가 아니면 0이다. */
+export const getTaggedCount = (transport?: Transport) =>
+  request(
+    '/api/community/tagged/count',
+    taggedCountSchema,
+    undefined,
+    transport
+  );
+
+type CommunityPostInput = {
+  title: string;
+  body: string;
+  language: 'en' | 'th';
+  visibility: 'public' | 'accounts';
+  allowedUserIds?: string[];
+  taggedHelperIds?: string[];
+  source?: SourceInput;
+};
+
+const savePost = (
+  input: CommunityPostInput & { kind?: CommunityPostKind },
   id?: string
 ) =>
   request(
@@ -53,6 +77,24 @@ export const saveCommunityPost = (
     savedCommunityPostSchema,
     { ...jsonBody(input), method: id ? 'PATCH' : 'POST' }
   );
+
+/** 명시적으로 확인한 내용과 발췌만 일반 글에 공유하며 새 글은 종류가 필수다. */
+export function saveCommunityPost(
+  input: CommunityPostInput & { kind: CommunityPostKind }
+): ReturnType<typeof savePost>;
+
+/** 수정은 종류를 생략하면 서버가 기존 종류를 유지한다. */
+export function saveCommunityPost(
+  input: CommunityPostInput & { kind?: CommunityPostKind },
+  id: string
+): ReturnType<typeof savePost>;
+
+export function saveCommunityPost(
+  input: CommunityPostInput & { kind?: CommunityPostKind },
+  id?: string
+) {
+  return savePost(input, id);
+}
 
 /** 작성자의 요청으로 게시글을 삭제한다. */
 export const deleteCommunityPost = (id: string) =>

@@ -1,13 +1,29 @@
 import { request, jsonBody, type Transport } from '@/lib/api/request';
 import { okSchema } from '@/lib/api/contracts';
 import type { SourceInput } from '@/domains/materials/model/source';
-import { expressionSchema, expressionsSchema } from '../model/contracts';
+import {
+  expressionReviewSchema,
+  expressionSchema,
+  expressionsSchema,
+} from '../model/contracts';
 
 const endpoint = (id: string) => `/api/expressions/${encodeURIComponent(id)}`;
 
 /** 내 표현집만 가져와 검색과 복습에 사용한다. */
 export const listExpressions = (transport?: Transport) =>
   request('/api/expressions', expressionsSchema, undefined, transport);
+
+/** 오늘 복습할 표현 또는 복습 포함 전체에서 이번 세션 덱을 가져온다. */
+export const getExpressionReview = (
+  input: { scope?: 'due' | 'all'; limit?: number } = {},
+  transport?: Transport
+) =>
+  request(
+    `/api/expressions/review?${new URLSearchParams({ scope: input.scope ?? 'due', limit: String(input.limit ?? 10) })}`,
+    expressionReviewSchema,
+    undefined,
+    transport
+  );
 
 /** 선택한 원문과 표현을 함께 저장해 최초 문맥을 보존한다. */
 export const createExpression = (input: {

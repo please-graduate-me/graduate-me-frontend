@@ -12,6 +12,7 @@ export const materialSummarySchema = z.object({
   filename: z.string(),
   pageCount: z.number().int().positive(),
   currentPage: z.number().int().positive(),
+  completedAt: z.string().nullable(),
   status: z.literal('ready'),
   createdAt: z.string(),
   updatedAt: z.string(),

@@ -7,6 +7,7 @@ import { expressionSchema } from '@/domains/expressions/model/contracts';
 export const learningSummarySchema = z.object({
   materials: z.number().int().nonnegative(),
   expressions: z.number().int().nonnegative(),
+  dueExpressions: z.number().int().nonnegative(),
   questions: z.number().int().nonnegative(),
   unanswered: z.number().int().nonnegative(),
   recentMaterials: z.array(materialSummarySchema),

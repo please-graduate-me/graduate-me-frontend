@@ -37,7 +37,12 @@ export const learningInsightsSchema = z.object({
   ),
   basis: z.string(),
   roadmap: z.array(
-    z.object({ year: z.number(), title: z.string(), goal: z.string() })
+    z.object({
+      year: z.number(),
+      title: z.string(),
+      goal: z.string(),
+      current: z.boolean(),
+    })
   ),
   roadmapBasis: z.string(),
 });

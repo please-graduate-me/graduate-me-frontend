@@ -24,6 +24,8 @@ export const learningHistorySchema = z.object({
       href: z.string(),
     })
   ),
+  limit: z.number().int().positive(),
+  truncated: z.boolean(),
 });
 
 /** 기록 화면에서 사용하는 실제 활동 계약이다. */
@@ -34,4 +36,8 @@ export const practiceResultSchema = z.object({
   reward: rewardReceiptSchema.nullable().optional(),
   id: z.string(),
   createdAt: z.string(),
+  review: z.object({
+    step: z.number().int().min(1).max(5),
+    nextReviewOn: z.string().nullable(),
+  }),
 });

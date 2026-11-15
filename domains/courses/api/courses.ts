@@ -4,6 +4,7 @@ import {
   coursesSchema,
   courseDetailSchema,
   assignmentSchema,
+  myAssignmentsSchema,
   submissionSchema,
 } from '../model/contracts';
 
@@ -15,6 +16,15 @@ const assignmentPath = (id: string, assignmentId: string) =>
 /** 내 소속 수업만 조회한다. */
 export const listCourses = (transport?: Transport) =>
   request('/api/courses', coursesSchema, undefined, transport);
+
+/** 수강 중인 수업들의 과제와 내 제출 상태를 한 번에 조회한다. */
+export const listMyAssignments = (transport?: Transport) =>
+  request(
+    '/api/courses/assignments',
+    myAssignmentsSchema,
+    undefined,
+    transport
+  );
 
 /** 전달받은 초대 코드는 서버가 유효성을 확인한다. */
 export const joinCourse = (inviteCode: string) =>

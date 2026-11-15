@@ -116,6 +116,48 @@ export const assignmentSchema = z.object({
       actorId: z.string().optional(),
     })
   ),
+  hints: z
+    .array(
+      z.object({
+        taskId: z.string(),
+        hintCount: z.number().int().positive(),
+        hint: z.string(),
+      })
+    )
+    .default([]),
+});
+
+/** 수강생으로 속한 모든 수업의 과제를 미제출·마감 임박 순으로 요약한다. */
+export const myAssignmentsSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      courseId: z.string(),
+      courseTitle: z.string(),
+      courseLanguage: z.enum(['en', 'th']),
+      title: z.string(),
+      version: z.number(),
+      mode: z.enum(['full', 'blank', 'reading']),
+      dueAt: z.string(),
+      allowLate: z.boolean(),
+      allowResubmit: z.boolean(),
+      source: z.object({
+        kind: z.enum(['video', 'pdf']),
+        id: z.string(),
+        title: z.string(),
+      }),
+      taskCount: z.number(),
+      submitted: z.boolean(),
+      submission: z
+        .object({
+          version: z.number(),
+          createdAt: z.string(),
+          late: z.boolean(),
+          outdated: z.boolean(),
+        })
+        .nullable(),
+    })
+  ),
 });
 
 /** 과제별 제출은 개인 학습 기록과 독립된 계약이다. */
@@ -126,6 +168,9 @@ export type Courses = z.infer<typeof coursesSchema>;
 
 /** 학생 수업 상세는 허용된 구성원·과제만 포함한다. */
 export type CourseDetail = z.infer<typeof courseDetailSchema>;
+
+/** 자료 보관함의 수업 과제 요약이다. */
+export type MyAssignments = z.infer<typeof myAssignmentsSchema>;
 
 /** 과제 화면은 공개된 당시 버전과 제출 이력을 사용한다. */
 export type Assignment = z.infer<typeof assignmentSchema>;
