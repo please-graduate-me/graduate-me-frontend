@@ -36,6 +36,7 @@ import { QuestionComposer } from './QuestionComposer';
 import { getLearningProfile } from '@/domains/users/api/profile';
 import { aiProviderLabel } from '@/domains/ai/lib/providerLabel';
 import * as styles from '@/lib/styles/workspace.css';
+import * as panelStyles from './LearningAiPanel.css';
 
 /** PDF와 영상의 저장 설명·개인 대화·적용 연습을 같은 원문에 연결한다. */
 export function LearningAiPanel({
@@ -49,6 +50,7 @@ export function LearningAiPanel({
   onQuestion,
   onSaved,
   beforeNavigate,
+  practiceXp = 0,
 }: {
   source: SourceInput;
   language: 'en' | 'th';
@@ -59,6 +61,7 @@ export function LearningAiPanel({
   onQuestion?: () => void;
   onSaved?: () => void;
   beforeNavigate?: () => boolean | Promise<boolean>;
+  practiceXp?: number;
   image?: { base64: string; mimeType: 'image/png' | 'image/jpeg' };
 }) {
   const router = useRouter();
@@ -373,17 +376,29 @@ export function LearningAiPanel({
               </Text>
             )}
             <div hidden={conversationView}>
-              <div className={styles.row}>
+              <div className={styles.stack}>
+                <div className={styles.row}>
+                  <Button
+                    variant='secondary'
+                    size='small'
+                    startIcon='bookmark'
+                    disabled={busy}
+                    onClick={() => setDialog('expression')}>
+                    표현 저장
+                  </Button>
+                </div>
                 <Button
-                  disabled={busy}
-                  onClick={() => setDialog('expression')}>
-                  표현 저장
-                </Button>
-                <Button
-                  variant='secondary'
+                  variant='ink'
+                  size='prominent'
+                  shape='rounded'
                   disabled={busy || !allowGeneration}
                   onClick={() => void practice()}>
-                  이해 확인
+                  이 구절로 문제 풀기
+                  {practiceXp > 0 && (
+                    <span className={panelStyles.practiceXp}>
+                      +{practiceXp} XP
+                    </span>
+                  )}
                 </Button>
               </div>
               <Collapsible

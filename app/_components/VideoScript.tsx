@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/primitives/Card';
 import { Text } from '@/components/ui/primitives/Text';
 
 import type { SourceInput } from '@/domains/materials/model/source';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type {
   Mode,
   Segment,
@@ -34,6 +34,7 @@ export function VideoScript({
   demo,
   language = 'en',
   scriptViewed = false,
+  aiRequest = null,
   onNavigate,
 }: {
   segments: Segment[];
@@ -46,6 +47,7 @@ export function VideoScript({
   language?: 'en' | 'th';
   scriptViewed?: boolean;
   selection?: SourceInput;
+  aiRequest?: { segmentId: string; count: number } | null;
   onNavigate: (index: number) => void;
 }) {
   const [query, setQuery] = useState('');
@@ -61,6 +63,18 @@ export function VideoScript({
   );
 
   const segment = segments[index];
+  const actions = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // 결과 시트에서 설명을 요청하면 넓은 화면의 옆 열이나 좁은 화면의 아래쪽 도구로 시선을 옮긴다.
+    if (aiRequest)
+      actions.current?.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          ? 'auto'
+          : 'smooth',
+        block: 'start',
+      });
+  }, [aiRequest]);
 
   const selectedQuote =
     selection?.id === segment?.id ? selection.quote : segment?.text;
@@ -187,7 +201,9 @@ export function VideoScript({
         />
       )}
       {segment && visible(segment.id) && !demo && (
-        <div className={styles.actions}>
+        <div
+          ref={actions}
+          className={styles.actions}>
           <Text
             as='p'
             className={styles.description}>
@@ -216,7 +232,9 @@ export function VideoScript({
             </Text>
           )}
           <SourceActions
-            key={`${segment.id}:${selectedQuote}`}
+            // 레슨의 "왜 그럴까요?" 요청마다 다시 만들어 저장된 설명 패널을 펼친 채로 연다.
+            key={`${segment.id}:${selectedQuote}:${aiRequest?.count ?? 0}`}
+            defaultAiOpen={aiRequest?.segmentId === segment.id}
             source={{
               kind: 'video',
               videoId,
@@ -224,6 +242,7 @@ export function VideoScript({
               quote: selectedQuote ?? segment.text,
               version: segment.version ?? 1,
             }}
+            start={segment.start}
             language={language}
           />
         </div>

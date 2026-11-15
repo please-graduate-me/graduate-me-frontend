@@ -3,13 +3,14 @@ import { AlertDialog } from '@/components/ui/composites/AlertDialog';
 import { useRouter } from 'next/navigation';
 import { useConfirmation } from '@/lib/hooks/useConfirmation';
 import { DropdownMenu } from '@/components/ui/composites/DropdownMenu';
-import { Blockquote } from '@/components/ui/primitives/Blockquote';
+import { Badge } from '@/components/ui/primitives/Badge';
 import { Banner } from '@/components/ui/composites/Banner';
 import { TabList } from '@/components/ui/primitives/TabList';
 import { Tab } from '@/components/ui/primitives/Tab';
 import { Heading } from '@/components/ui/primitives/Heading';
 import { Text } from '@/components/ui/primitives/Text';
 import { Collapsible } from '@/components/ui/composites/Collapsible';
+import * as motion from '@/lib/styles/motion.css';
 import { ProgressBar } from '@/components/ui/primitives/ProgressBar';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../../_components/SessionRecovery';
@@ -30,6 +31,13 @@ import { EmptyState } from '@/components/ui/composites/EmptyState';
 import { listAnnotations } from '@/domains/materials/api/records';
 import type { Annotation } from '@/domains/materials/model/records';
 import { MaterialAnalysisPanel } from './MaterialAnalysisPanel';
+import { useMaterialAnalysis } from './useMaterialAnalysis';
+import { PdfPassageCard } from './PdfPassageCard';
+import { PdfKeyExpressions } from './PdfKeyExpressions';
+import { PdfPageSummary } from './PdfPageSummary';
+import { PdfPassageMemo } from './PdfPassageMemo';
+import { PdfZoomControl, type PdfZoom } from './PdfZoomControl';
+import { passageVocabulary } from './pdfVocabulary';
 import { MaterialPreparation } from './MaterialPreparation';
 import { AnnotationList } from '../../../../_components/AnnotationList';
 import { LearningAiPanel } from '../../../../_components/LearningAiPanel';
@@ -37,6 +45,8 @@ import { ExpressionComposer } from '../../../../_components/ExpressionComposer';
 import { QuestionComposer } from '../../../../_components/QuestionComposer';
 import { AnnotationComposer } from '../../../../_components/AnnotationComposer';
 import { ExcerptShareComposer } from '../../../../_components/ExcerptShareComposer';
+import { useGrowthSummary } from '../../../_components/useGrowthSummary';
+import { expectedXp } from '@/domains/growth/lib/expectedXp';
 import { IconButton } from '@/components/ui/primitives/IconButton';
 import { PdfSavedExpressions } from './PdfSavedExpressions';
 import type { OcrPage } from '@/domains/materials/model/ocr';
@@ -63,19 +73,22 @@ export function PdfStudy({
   const router = useRouter();
   const [document, setDocument] = useState<PDFDocumentProxy | null>(null);
   const [page, setPage] = useState(initial.currentPage);
-  const [zoom, setZoom] = useState<number | 'width' | 'page'>('width');
+  const [zoom, setZoom] = useState<PdfZoom>('width');
   const [thumbnailsOpen, setThumbnailsOpen] = useState(true);
   const [selectionMode, setSelectionMode] = useState(true);
 
-  const [tab, setTab] = useState<
-    'overview' | 'explanation' | 'records' | 'questions'
-  >(selection ? 'explanation' : 'overview');
+  // 선택 구절 없이 열면 예전 기본 화면이던 전체 정리를 담은 요약·번역 탭부터 보여 준다.
+  const [tab, setTab] = useState<'passage' | 'summary' | 'memo'>(
+    selection ? 'passage' : 'summary'
+  );
 
   const [panelOpen, setPanelOpen] = useState(true);
 
-  const [initialMode, setInitialMode] = useState<'meaning' | 'translation'>(
-    'meaning'
-  );
+  // 서버가 기록한 완료 시각이 있으면 앞쪽을 다시 열어도 다 읽은 자료로 둔다.
+  const completed = Boolean(initial.completedAt);
+  const growth = useGrowthSummary();
+  const [explanationReload, setExplanationReload] = useState(0);
+  const analysis = useMaterialAnalysis(initial.id, initial.version ?? 1);
 
   const [savingExpression, setSavingExpression] = useState(false);
   const [savedReload, setSavedReload] = useState(0);
@@ -110,7 +123,7 @@ export function PdfStudy({
     'share' | 'annotation' | 'report' | 'question' | null
   >(null);
 
-  const memoOpen = panelOpen && tab === 'records';
+  const memoOpen = panelOpen && tab === 'memo';
   const [memo, setMemo] = useState(initial.memo);
   const [savedMemo, setSavedMemo] = useState(initial.memo);
   const [quote, setQuote] = useState(selection?.quote ?? '');
@@ -391,6 +404,24 @@ export function PdfStudy({
     version: initial.version ?? 1,
   };
 
+  const allowGeneration =
+    !historical &&
+    policy !== null &&
+    (eligibilityPendingAfterOcr || eligibility?.aiAllowed !== false);
+
+  const keyWords = passageVocabulary(
+    analysis.value?.overview?.vocabulary ?? [],
+    page,
+    quote
+  );
+
+  const reloadExpressions = () => {
+    setExpressionsLoading(true);
+    setSavedReload((value) => value + 1);
+  };
+
+  const languageLabel = initial.language === 'en' ? '영어' : '태국어';
+
   return (
     <div
       className={styles.root}
@@ -435,19 +466,21 @@ export function PdfStudy({
             display='block'
             type='supporting'
             weight='semibold'
-            maxLines={1}>
-            {initial.owned ? '내 자료' : '공유 자료'} /{' '}
-            {initial.language === 'en' ? '영어' : '태국어'} ·{' '}
-            {initial.visibility === 'public'
-              ? '공개 자료'
-              : initial.visibility === 'accounts'
-                ? '지정 계정 공유'
-                : '나만 보기'}{' '}
-            · 원본 v{initial.version ?? 1}
+            maxLines={1}
+            // 시안처럼 종류와 언어만 보이고 소유·공개 범위·원본 버전은 가리킬 때 확인한다.
+            title={`${initial.owned ? '내 자료' : '공유 자료'} · ${languageLabel} · ${
+              initial.visibility === 'public'
+                ? '공개 자료'
+                : initial.visibility === 'accounts'
+                  ? '지정 계정 공유'
+                  : '나만 보기'
+            } · 원본 v${initial.version ?? 1}`}>
+            PDF · {languageLabel}
           </Text>
           <Heading
             level={1}
-            maxLines={1}>
+            maxLines={1}
+            className={styles.heading}>
             {initial.title}
           </Heading>
         </div>
@@ -464,7 +497,19 @@ export function PdfStudy({
             aria-hidden='true'>
             {page} / {initial.pageCount}쪽
           </span>
+          {!historical && (completed || page === initial.pageCount) && (
+            <Badge
+              tone='success'
+              size='small'>
+              다 읽었어요
+            </Badge>
+          )}
         </div>
+        <PdfZoomControl
+          zoom={zoom}
+          scale={scale}
+          onZoom={setZoom}
+        />
         <span
           className={styles.meta}
           role='status'>
@@ -476,7 +521,7 @@ export function PdfStudy({
           disabled={!quote}
           onClick={() => {
             setPanelOpen(true);
-            setTab('explanation');
+            setTab('passage');
             setSavingExpression(true);
           }}
         />
@@ -522,15 +567,13 @@ export function PdfStudy({
       <PdfToolbar
         page={page}
         total={initial.pageCount}
-        zoom={zoom}
         selectionMode={selectionMode}
         memoOpen={memoOpen}
         thumbnailsOpen={thumbnailsOpen}
         onPage={(next) => void changePage(next)}
-        onZoom={setZoom}
         onSelectionMode={setSelectionMode}
         onMemo={() => {
-          setTab('records');
+          setTab('memo');
           setPanelOpen(!memoOpen);
         }}
         onThumbnails={() => setThumbnailsOpen((value) => !value)}
@@ -593,9 +636,9 @@ export function PdfStudy({
               source={source}
               onSelectionAction={(action) => {
                 setPanelOpen(true);
-                setTab('explanation');
+                setTab('passage');
                 setSavingExpression(action === 'save');
-                if (action !== 'save') setInitialMode(action);
+                if (action === 'question') setDialog('question');
               }}
               onRendered={() => {
                 const target = rects[0];
@@ -608,7 +651,7 @@ export function PdfStudy({
               }}
               highlights={[
                 ...(quote && rects.length
-                  ? [{ id: 'selection', rects, color: 'yellow' as const }]
+                  ? [{ id: 'selection', rects, color: 'selection' as const }]
                   : []),
                 ...annotations
                   .filter(
@@ -640,7 +683,7 @@ export function PdfStudy({
                   }
                 }
 
-                setTab('explanation');
+                setTab('passage');
                 setPanelOpen(true);
                 setSavingExpression(false);
                 setDialog(null);
@@ -662,37 +705,17 @@ export function PdfStudy({
           className={styles.sidebar}
           hidden={!panelOpen}
           aria-label='PDF 학습 패널'>
-          <div className={styles.panelHeading}>
-            <Icon
-              name='sparkles'
-              size={18}
-            />
-            <Heading level={2}>
-              {tab === 'overview'
-                ? '자료 전체 정리'
-                : savingExpression
-                  ? '표현 저장'
-                  : tab === 'records'
-                    ? '내 학습 기록'
-                    : '구절 살펴보기'}
-            </Heading>
-            <IconButton
-              name='x'
-              label='PDF 학습 패널 닫기'
-              onClick={() => setPanelOpen(false)}
-            />
-          </div>
           <TabList
             value={tab}
             role='tablist'
-            aria-label='구절 학습 보기'
+            aria-label='패널 보기'
             hasDivider
+            className={styles.tabs}
             onChange={(value) => {
               if (
-                value !== 'overview' &&
-                value !== 'explanation' &&
-                value !== 'records' &&
-                value !== 'questions'
+                value !== 'passage' &&
+                value !== 'summary' &&
+                value !== 'memo'
               )
                 return;
               setTab(value);
@@ -700,10 +723,9 @@ export function PdfStudy({
             }}>
             {(
               [
-                ['overview', '전체 정리'],
-                ['explanation', '설명'],
-                ['records', '내 기록'],
-                ['questions', '질문'],
+                ['passage', '구절'],
+                ['summary', '요약·번역'],
+                ['memo', '메모'],
               ] as const
             ).map(([value, label]) => (
               <Tab
@@ -715,89 +737,84 @@ export function PdfStudy({
               />
             ))}
           </TabList>
-          {quote && tab !== 'overview' && (
-            <div className={styles.passage}>
-              <Blockquote className={styles.quote}>
-                <small>
-                  PDF · {page}페이지 · 원본 v{source.version}
-                  {ocrSelectionId ? ' · OCR' : ''}
-                </small>
-                <Text
-                  as='p'
-                  display='block'
-                  type='inherit'>
-                  {quote}
-                </Text>
-              </Blockquote>
-            </div>
-          )}
           <div
             role='tabpanel'
-            id='pdf-panel-overview'
-            aria-labelledby='pdf-tab-overview'
-            hidden={tab !== 'overview'}>
-            <MaterialAnalysisPanel
-              materialId={initial.id}
-              version={initial.version ?? 1}
-              owned={initial.owned ?? false}
-              pageCount={initial.pageCount}
-              onPage={(target) => void changePage(target)}
-            />
-          </div>
-          <div
-            role='tabpanel'
-            id='pdf-panel-explanation'
-            aria-labelledby='pdf-tab-explanation'
-            hidden={tab !== 'explanation'}>
-            {quote ? (
-              savingExpression ? (
-                <ExpressionComposer
-                  key={JSON.stringify(source)}
-                  embedded
-                  source={source}
-                  onSaved={() => {
-                    setExpressionsLoading(true);
-                    setSavedReload((value) => value + 1);
-                    setTab('records');
-                  }}
-                  onClose={() => setSavingExpression(false)}
-                />
-              ) : (
-                <LearningAiPanel
-                  key={JSON.stringify([source, initialMode])}
-                  source={source}
-                  language={initial.language}
-                  image={pageImage}
-                  compact
-                  allowGeneration={
-                    !historical &&
-                    policy !== null &&
-                    (eligibilityPendingAfterOcr ||
-                      eligibility?.aiAllowed !== false)
-                  }
-                  initialMode={initialMode}
-                  beforeNavigate={confirmNavigation}
-                  onSaved={() => {
-                    setExpressionsLoading(true);
-                    setSavedReload((value) => value + 1);
-                    setTab('records');
-                  }}
-                  onQuestion={() => setDialog('question')}
-                />
-              )
-            ) : (
-              <EmptyState
-                icon='mouse-pointer-2'
-                title='궁금한 문장을 선택해 보세요.'
-                description={
-                  initial.pages[page - 1]?.trim()
-                    ? '문맥 속 뜻을 확인하고 기억할 표현을 저장할 수 있어요.'
-                    : currentOcr?.status === 'ready'
-                      ? '인식한 글자 선택을 누른 뒤 원본 위에서 선택해 보세요.'
-                      : '선택 가능한 글자가 없습니다. 아래 글자 인식에서 저장 결과를 조회하거나 명시적으로 OCR을 요청해 주세요.'
-                }
+            id='pdf-panel-passage'
+            aria-labelledby='pdf-tab-passage'
+            hidden={tab !== 'passage'}
+            className={`${styles.pane} ${motion.slideIn}`}>
+            {quote && (
+              <PdfPassageCard
+                key={JSON.stringify(source)}
+                source={source}
+                language={initial.language}
+                allowGeneration={allowGeneration}
+                onTranslated={() => setExplanationReload((value) => value + 1)}
               />
             )}
+            {quote && savingExpression ? (
+              <ExpressionComposer
+                key={JSON.stringify(source)}
+                embedded
+                source={source}
+                onSaved={() => {
+                  reloadExpressions();
+                  setSavingExpression(false);
+                }}
+                onClose={() => setSavingExpression(false)}
+              />
+            ) : (
+              <>
+                <PdfKeyExpressions
+                  words={keyWords}
+                  expressions={expressions}
+                  source={source}
+                  onChanged={reloadExpressions}
+                  confirmRemove={(term) =>
+                    confirmation.confirm(
+                      `'${term}'을(를) 표현집에서 삭제합니다. 저장한 뜻과 메모도 함께 사라집니다.`,
+                      '표현집에서 삭제할까요?',
+                      { actionLabel: '삭제', icon: 'trash-2' }
+                    )
+                  }
+                />
+                {quote ? (
+                  <LearningAiPanel
+                    key={JSON.stringify([source, explanationReload])}
+                    source={source}
+                    language={initial.language}
+                    image={pageImage}
+                    compact
+                    allowGeneration={allowGeneration}
+                    beforeNavigate={confirmNavigation}
+                    onSaved={reloadExpressions}
+                    onQuestion={() => setDialog('question')}
+                    practiceXp={
+                      growth ? expectedXp(growth, growth.rewards.exercise) : 0
+                    }
+                  />
+                ) : (
+                  <EmptyState
+                    icon='mouse-pointer-2'
+                    title='궁금한 문장을 선택해 보세요.'
+                    description={
+                      initial.pages[page - 1]?.trim()
+                        ? '문맥 속 뜻을 확인하고 기억할 표현을 저장할 수 있어요.'
+                        : currentOcr?.status === 'ready'
+                          ? '인식한 글자 선택을 누른 뒤 원본 위에서 선택해 보세요.'
+                          : '선택 가능한 글자가 없습니다. 아래 글자 인식에서 저장 결과를 조회하거나 명시적으로 OCR을 요청해 주세요.'
+                    }
+                  />
+                )}
+              </>
+            )}
+            <PdfSavedExpressions
+              key={JSON.stringify(source)}
+              source={source}
+              expressions={expressions}
+              loading={expressionsLoading}
+              error={expressionsError}
+            />
             <Collapsible
               className={styles.preparation}
               defaultIsOpen={!initial.pages[page - 1]?.trim()}
@@ -880,51 +897,53 @@ export function PdfStudy({
           </div>
           <div
             role='tabpanel'
-            id='pdf-panel-records'
-            aria-labelledby='pdf-tab-records'
-            hidden={tab !== 'records'}>
-            <PdfSavedExpressions
-              key={JSON.stringify(source)}
-              source={source}
-              expressions={expressions}
-              loading={expressionsLoading}
-              error={expressionsError}
-            />
-            {quote && (
-              <Button
-                variant='secondary'
-                onClick={() => setDialog('annotation')}>
-                이 구절 하이라이트·메모
-              </Button>
+            id='pdf-panel-summary'
+            aria-labelledby='pdf-tab-summary'
+            hidden={tab !== 'summary'}
+            className={`${styles.pane} ${motion.slideIn}`}>
+            {analysis.value && (
+              <PdfPageSummary
+                analysis={analysis.value}
+                page={page}
+              />
             )}
             <Collapsible
               className={styles.preparation}
-              trigger={<> 문서 공통 개인 메모 · 나만 보기 </>}>
+              defaultIsOpen={!analysis.value?.overview}
+              trigger={<>자료 전체 정리와 페이지별 번역</>}>
+              <MaterialAnalysisPanel
+                state={analysis}
+                owned={initial.owned ?? false}
+                pageCount={initial.pageCount}
+                onPage={(target) => void changePage(target)}
+              />
+            </Collapsible>
+          </div>
+          <div
+            role='tabpanel'
+            id='pdf-panel-memo'
+            aria-labelledby='pdf-tab-memo'
+            hidden={tab !== 'memo'}
+            className={`${styles.pane} ${motion.slideIn}`}>
+            {quote ? (
+              <PdfPassageMemo
+                key={JSON.stringify(source)}
+                source={source}
+                onSaved={(value) =>
+                  setAnnotations((previous) => [
+                    value,
+                    ...previous.filter((item) => item.id !== value.id),
+                  ])
+                }
+              />
+            ) : (
               <Text
                 as='p'
                 display='block'
                 className={styles.description}>
-                이 자료를 읽으며 떠오른 생각을 기록해 보세요.
+                원문에서 구절을 선택하면 그 위치에 개인 메모를 남길 수 있어요.
               </Text>
-              <TextArea
-                aria-label='자료 개인 메모'
-                className={styles.memo}
-                value={memo}
-                disabled={savingMemo}
-                maxLength={20000}
-                onChange={(event) => {
-                  setMemo(event.target.value);
-                  setSaveStatus('저장하지 않은 메모');
-                }}
-                placeholder='다시 읽고 싶은 부분과 생각을 남겨 주세요.'
-              />
-              <Button
-                disabled={savingMemo}
-                loading={savingMemo}
-                onClick={() => void saveMemo()}>
-                메모 저장
-              </Button>
-            </Collapsible>
+            )}
             <AnnotationList
               items={annotations.filter(
                 (item) =>
@@ -943,46 +962,43 @@ export function PdfStudy({
                 )
               }
             />
-          </div>
-          <div
-            role='tabpanel'
-            id='pdf-panel-questions'
-            aria-labelledby='pdf-tab-questions'
-            hidden={tab !== 'questions'}>
-            {quote ? (
-              <LearningAiPanel
-                key={JSON.stringify(source)}
-                source={source}
-                language={initial.language}
-                compact
-                conversationView
-                beforeNavigate={confirmNavigation}
-                allowGeneration={
-                  !historical &&
-                  policy !== null &&
-                  (eligibilityPendingAfterOcr ||
-                    eligibility?.aiAllowed !== false)
-                }
-                onSaved={() => {
-                  setExpressionsLoading(true);
-                  setSavedReload((value) => value + 1);
-                  setTab('records');
+            <div className={styles.documentMemo}>
+              <TextArea
+                label='자료 개인 메모'
+                className={styles.memo}
+                value={memo}
+                disabled={savingMemo}
+                maxLength={20000}
+                onChange={(event) => {
+                  setMemo(event.target.value);
+                  setSaveStatus('저장하지 않은 메모');
                 }}
-                onQuestion={() => setDialog('question')}
+                placeholder='다시 읽고 싶은 부분과 생각을 남겨 주세요.'
               />
-            ) : (
-              <EmptyState
-                icon='message-circle'
-                title='질문할 원문을 선택해 주세요'
-                description='선택한 발췌와 확인한 대상만 공유합니다. 전체 비공개 자료와 개인 메모는 전달하지 않습니다.'
-              />
-            )}
+              <Text
+                as='p'
+                display='block'
+                className={styles.meta}>
+                문서 공통 메모 · 나만 보기. 이 자료를 읽으며 떠오른 생각을
+                기록해 보세요.
+              </Text>
+              <div>
+                <Button
+                  size='small'
+                  disabled={savingMemo}
+                  loading={savingMemo}
+                  onClick={() => void saveMemo()}>
+                  메모 저장
+                </Button>
+              </div>
+            </div>
           </div>
         </aside>
       </div>
       {dialog === 'share' && quote && (
         <ExcerptShareComposer
           source={source}
+          sourceTitle={initial.title}
           onClose={() => setDialog(null)}
         />
       )}

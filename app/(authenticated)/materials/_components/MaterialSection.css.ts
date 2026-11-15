@@ -29,10 +29,17 @@ export const iconTile = style({
   selectors: {
     '&[data-tone="muted"]': {
       color: vars.color.muted,
-      background: '#F1F2F4',
+      background: vars.color.neutral,
+    },
+    '&[data-tone="info"]': {
+      color: vars.color.info,
+      background: vars.color.infoBackground,
     },
   },
 });
+
+/** 묶음 제목은 시안의 18px 단계를 쓴다. */
+export const title = style({ fontSize: vars.fontSize.heading3 });
 
 /** 제목 아래 설명은 한 단계 낮은 위계로 붙인다. */
 export const description = style({ marginTop: 2 });
@@ -47,7 +54,7 @@ export const tray = style({
   gridTemplateColumns: 'repeat(auto-fill, minmax(min(150px, 100%), 1fr))',
   gap: vars.space.md,
   borderRadius: 22,
-  background: '#F5F6F8',
+  background: vars.color.canvas,
   '@media': {
     '(max-width: 480px)': { padding: 12, gap: vars.space.compact },
   },

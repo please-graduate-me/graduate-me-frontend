@@ -1,4 +1,4 @@
-import { globalStyle, style } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
 /** PDF 학습은 내비게이션 대신 원문에 데스크톱 창 전체를 사용한다. */
@@ -57,6 +57,7 @@ export const progressText = style({
   flexShrink: 0,
   whiteSpace: 'nowrap',
   color: vars.color.muted,
+  fontFamily: vars.font.numeric,
   fontSize: 13,
   fontWeight: 700,
   fontVariantNumeric: 'tabular-nums',
@@ -112,42 +113,13 @@ export const canvas = style({
   background: vars.color.canvas,
 });
 
-/** 구절 학습 도구는 원본 오른쪽에서 독립적으로 스크롤한다. */
+/** 구절 학습 도구는 원본 오른쪽에서 독립적으로 스크롤하고 탭 줄은 위쪽 끝에 붙인다. */
 export const sidebar = style({
-  padding: vars.space.comfortable,
+  paddingBottom: vars.space.comfortable,
   borderLeft: `1px solid ${vars.color.line}`,
   background: vars.color.surface,
   overflowY: 'auto',
   minWidth: 0,
-});
-
-/** 패널의 주제를 아이콘과 실제 제목으로 함께 표시한다. */
-export const panelHeading = style({
-  display: 'flex',
-  alignItems: 'center',
-  gap: vars.space.sm,
-  marginBottom: 20,
-});
-
-/** 선택한 발췌는 따뜻한 종이색 카드에 담아 전체 자료와 구분한다. */
-export const passage = style({
-  padding: vars.space.md,
-  margin: '16px 0 24px',
-  borderRadius: 16,
-  border: '1px solid #FBE3C2',
-  background: '#FFF8EE',
-  color: '#16181D',
-});
-
-/** 발췌 원문은 원본과 같은 세리프로 읽히게 하고 긴 문장도 카드 안에 둔다. */
-export const quote = style({
-  margin: 0,
-  fontFamily: vars.font.document,
-  fontSize: 16,
-  fontWeight: 600,
-  lineHeight: 1.6,
-  overflowWrap: 'anywhere',
-  whiteSpace: 'pre-wrap',
 });
 
 /** 저장과 질문을 관련 설명과 함께 묶는다. */
@@ -168,7 +140,7 @@ export const capability = style({
 });
 
 /** 개인 메모는 긴 문장도 입력할 수 있는 높이를 확보한다. */
-export const memo = style({ minHeight: 320, marginBlock: '16px 20px' });
+export const memo = style({ minHeight: 200 });
 
 /** 읽기 도구 설명은 본문보다 낮은 위계로 둔다. */
 export const description = style({
@@ -203,14 +175,6 @@ export const notice = style({
   lineHeight: 1.7,
 });
 
-/** 문서 전체 정리와 구절별 학습을 같은 높이의 탭으로 구분한다. */
-export const tabs = style({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-  gap: 8,
-  marginBottom: 20,
-});
-
 /** 원본의 추가 동작은 주 학습 도구를 밀지 않는 메뉴에 둔다. */
 export const more = style({ position: 'relative' });
 
@@ -238,11 +202,25 @@ export const preparation = style({
   lineHeight: 1.7,
 });
 
-globalStyle(`${quote} small`, {
-  display: 'block',
-  marginBottom: vars.space.xxs,
-  fontFamily: vars.font.body,
-  fontSize: 12,
-  fontWeight: 700,
-  color: '#5B6070',
+/** 시안처럼 자료 제목을 머리 막대 높이에 맞춘 17px 굵은 글자로 둔다. */
+export const heading = style({ fontSize: 17, lineHeight: 1.35 });
+
+/** 탭 줄은 패널 좌우 여백 안쪽에서 시작한다. */
+export const tabs = style({ paddingInline: vars.space.compact });
+
+/** 탭 내용은 시안의 20px 여백과 18px 간격으로 세로로 쌓는다. */
+export const pane = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 18,
+  padding: vars.space.comfortable,
+  selectors: { '&[hidden]': { display: 'none' } },
+});
+
+/** 문서 공통 메모 입력과 저장 버튼을 구절 기록 아래에 묶는다. */
+export const documentMemo = style({
+  display: 'grid',
+  gap: vars.space.sm,
+  paddingTop: vars.space.md,
+  borderTop: `1px solid ${vars.color.line}`,
 });

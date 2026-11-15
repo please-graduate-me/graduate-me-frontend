@@ -11,7 +11,10 @@ import { pdfMeaningsAt } from '@/domains/materials/lib/pdfRecords';
 import { loadPdfEngine } from '@/domains/materials/lib/pdf';
 import type { OcrPage } from '@/domains/materials/model/ocr';
 import { readPdfSelection } from '@/domains/materials/lib/pdfSelection';
-import { PdfSelectionToolbar } from './PdfSelectionToolbar';
+import {
+  PdfSelectionToolbar,
+  type PdfSelectionAction,
+} from './PdfSelectionToolbar';
 import { PdfOcrLayer } from './PdfOcrLayer';
 import * as styles from './PdfPage.css';
 
@@ -33,7 +36,7 @@ export function PdfPage({
   savedExpressions?: Expression[];
   source?: SourceInput;
   ocr?: OcrPage;
-  onSelectionAction?: (action: 'meaning' | 'translation' | 'save') => void;
+  onSelectionAction?: (action: PdfSelectionAction) => void;
   number: number;
   scale: number;
   interactive?: boolean;
@@ -45,7 +48,7 @@ export function PdfPage({
   highlights?: {
     id: string;
     rects: { x: number; y: number; width: number; height: number }[];
-    color: 'yellow' | 'blue' | 'green';
+    color: 'yellow' | 'blue' | 'green' | 'selection';
   }[];
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);

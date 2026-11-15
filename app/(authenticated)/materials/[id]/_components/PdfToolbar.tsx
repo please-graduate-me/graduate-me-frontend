@@ -1,21 +1,18 @@
 'use client';
 import { Input } from '@/components/ui/primitives/Input';
-import { Select } from '@/components/ui/primitives/Select';
 import { Toolbar } from '@/components/ui/composites/Toolbar';
 import { useState } from 'react';
 import { IconButton } from '@/components/ui/primitives/IconButton';
 import * as styles from './PdfToolbar.css';
 
-/** 페이지 입력과 확대 메뉴를 실제 PDF 좌표 이동에 연결한다. */
+/** 페이지 입력, 선택 모드, 하이라이트와 메모 열기를 원본 위 도구 줄에 모은다. */
 export function PdfToolbar({
   page,
   total,
-  zoom,
   selectionMode,
   memoOpen,
   thumbnailsOpen,
   onPage,
-  onZoom,
   onSelectionMode,
   onMemo,
   onThumbnails,
@@ -24,12 +21,10 @@ export function PdfToolbar({
 }: {
   page: number;
   total: number;
-  zoom: number | 'width' | 'page';
   selectionMode: boolean;
   memoOpen: boolean;
   thumbnailsOpen: boolean;
   onPage: (page: number) => void;
-  onZoom: (zoom: number | 'width' | 'page') => void;
   onSelectionMode: (value: boolean) => void;
   onMemo: () => void;
   onThumbnails: () => void;
@@ -98,49 +93,6 @@ export function PdfToolbar({
               name='chevron-right'
               disabled={page >= total}
               onClick={() => onPage(page + 1)}
-            />
-          </div>
-          <span className={styles.divider} />
-          <div className={styles.zoomControls}>
-            <IconButton
-              label='축소'
-              name='minus'
-              disabled={typeof zoom === 'number' && zoom <= 0.5}
-              onClick={() =>
-                onZoom(
-                  Math.max(0.5, (typeof zoom === 'number' ? zoom : 1) - 0.25)
-                )
-              }
-            />
-            <Select
-              aria-label='PDF 확대율'
-              value={String(zoom)}
-              onChange={(event) => {
-                const value = event.target.value;
-
-                onZoom(
-                  value === 'width' || value === 'page' ? value : Number(value)
-                );
-              }}>
-              <option value='page'>페이지에 맞춤</option>
-              <option value='width'>너비에 맞춤</option>
-              {[0.5, 0.75, 1, 1.25, 1.5, 2].map((value) => (
-                <option
-                  key={value}
-                  value={value}>
-                  {Math.round(value * 100)}%
-                </option>
-              ))}
-            </Select>
-            <IconButton
-              label='확대'
-              name='plus'
-              disabled={typeof zoom === 'number' && zoom >= 2}
-              onClick={() =>
-                onZoom(
-                  Math.min(2, (typeof zoom === 'number' ? zoom : 1) + 0.25)
-                )
-              }
             />
           </div>
           <span className={styles.divider} />

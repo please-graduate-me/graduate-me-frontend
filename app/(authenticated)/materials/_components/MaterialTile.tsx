@@ -3,146 +3,61 @@ import { ClickableCard } from '@/components/ui/composites/ClickableCard';
 import { ProgressBar } from '@/components/ui/primitives/ProgressBar';
 import { Text } from '@/components/ui/primitives/Text';
 import type { ReactNode } from 'react';
+import { MaterialArt } from './MaterialArt';
 import * as styles from './MaterialTile.css';
 
-/** PDF와 영상 자료를 장식 그림, 제목, 실제 진도와 상태가 있는 타일로 보여 준다. */
+/** PDF·영상 자료와 수업 과제를 그림, 제목, 진행 막대, 한 줄 요약이 있는 타일로 보여 준다. */
 export function MaterialTile({
   kind,
+  seed,
   href,
   title,
   progress,
   progressLabel,
-  complete = false,
-  details,
-  status,
+  caption,
+  captionTone = 'muted',
+  complete,
+  pill,
+  hint,
   action,
 }: {
   kind: 'pdf' | 'video';
+  seed: string;
   href: string;
   title: string;
-  progress: number;
-  progressLabel: string;
-  complete?: boolean;
-  details: ReactNode;
-  status: ReactNode;
+  progress?: number;
+  progressLabel?: string;
+  caption: ReactNode;
+  captionTone?: 'muted' | 'accent' | 'warning' | 'error';
+  complete?: 'ink' | 'accent';
+  pill?: { label: string; tone: 'accent' | 'warning' };
+  hint?: string;
   action?: ReactNode;
 }) {
   return (
     <li className={styles.item}>
       <ClickableCard
         href={href}
-        label={title}
+        label={pill ? `${title}, ${pill.label}` : title}
         padding={3}
+        hasHoverBorder
+        liftDistance={3}
+        title={hint}
         className={styles.tile}>
+        {pill && (
+          <span
+            aria-hidden='true'
+            className={`${styles.pill} ${styles.pillTone[pill.tone]}`}>
+            {pill.label}
+          </span>
+        )}
         <div className={styles.body}>
-          {kind === 'pdf' ? (
-            <svg
-              aria-hidden='true'
-              className={styles.art}
-              width='72'
-              height='64'
-              viewBox='0 0 72 64'>
-              <rect
-                x='22'
-                y='2'
-                width='40'
-                height='52'
-                rx='8'
-                fill='#C9C2FB'
-              />
-              <rect
-                x='12'
-                y='10'
-                width='40'
-                height='52'
-                rx='8'
-                fill='#8B7CF6'
-              />
-              <rect
-                x='20'
-                y='24'
-                width='22'
-                height='5'
-                rx='2.5'
-                fill='#FFFFFF'
-              />
-              <rect
-                x='20'
-                y='34'
-                width='16'
-                height='5'
-                rx='2.5'
-                fill='#FFFFFF'
-              />
-              <rect
-                x='20'
-                y='44'
-                width='20'
-                height='5'
-                rx='2.5'
-                fill='#FFFFFF'
-              />
-            </svg>
-          ) : (
-            <svg
-              aria-hidden='true'
-              className={styles.art}
-              width='72'
-              height='64'
-              viewBox='0 0 72 64'>
-              <rect
-                x='6'
-                y='8'
-                width='60'
-                height='42'
-                rx='10'
-                fill='#16181D'
-              />
-              <path
-                d='M30 20v18l15-9-15-9z'
-                fill='#12A47F'
-              />
-              {complete ? (
-                <>
-                  <circle
-                    cx='58'
-                    cy='50'
-                    r='10'
-                    fill='#12A47F'
-                  />
-                  <path
-                    d='m54 50 3 3 5-6'
-                    stroke='#FFFFFF'
-                    strokeWidth='2.4'
-                    fill='none'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                  />
-                </>
-              ) : (
-                <>
-                  <rect
-                    x='0'
-                    y='40'
-                    width='30'
-                    height='16'
-                    rx='6'
-                    fill='#FFFFFF'
-                    stroke='#DADCE1'
-                    strokeWidth='2'
-                  />
-                  <rect
-                    x='6'
-                    y='46'
-                    width='14'
-                    height='4'
-                    rx='2'
-                    fill='#F97316'
-                  />
-                </>
-              )}
-            </svg>
-          )}
+          <MaterialArt
+            kind={kind}
+            seed={seed}
+            complete={complete}
+            className={styles.art}
+          />
           <Text
             as='h3'
             size='sm'
@@ -150,15 +65,19 @@ export function MaterialTile({
             maxLines={2}>
             {title}
           </Text>
-          <ProgressBar
-            label={progressLabel}
-            isLabelHidden
-            value={progress}
-            max={100}
-            className={styles.progress}
-          />
-          <div className={styles.details}>{details}</div>
-          <div className={styles.status}>{status}</div>
+          {progress !== undefined && (
+            <ProgressBar
+              label={progressLabel ?? title}
+              isLabelHidden
+              value={progress}
+              max={100}
+              className={styles.progress}
+            />
+          )}
+          <span
+            className={`${styles.caption} ${styles.captionTone[captionTone]}`}>
+            {caption}
+          </span>
         </div>
         {action && <div className={styles.action}>{action}</div>}
       </ClickableCard>

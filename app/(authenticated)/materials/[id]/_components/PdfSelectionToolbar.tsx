@@ -1,8 +1,10 @@
 import { Toolbar } from '@/components/ui/composites/Toolbar';
 import { Button } from '@/components/ui/primitives/Button';
-import { Icon } from '@/components/ui/primitives/Icon';
 import { pdfSelectionToolbarPosition } from '@/domains/materials/lib/pdfSelection';
 import * as styles from './PdfSelectionToolbar.css';
+
+/** 선택 도구 막대가 패널에 넘기는 동작이다. */
+export type PdfSelectionAction = 'explore' | 'save' | 'question';
 
 /** 선택 도구는 원문 위치에 머물며 명시한 동작만 패널로 전달한다. */
 export function PdfSelectionToolbar({
@@ -14,7 +16,7 @@ export function PdfSelectionToolbar({
   rect: { x: number; y: number; width: number; height: number };
   width: number;
   height: number;
-  onAction: (action: 'meaning' | 'translation' | 'save') => void;
+  onAction: (action: PdfSelectionAction) => void;
 }) {
   return (
     <Toolbar
@@ -25,34 +27,28 @@ export function PdfSelectionToolbar({
       startContent={
         <>
           <Button
-            variant='primary'
+            variant='ghost'
+            size='small'
             type='button'
-            onClick={() => onAction('meaning')}>
-            <Icon
-              name='sparkles'
-              size={16}
-            />
-            설명
+            startIcon='sparkles'
+            onClick={() => onAction('explore')}>
+            구절 살펴보기
           </Button>
           <Button
             variant='ghost'
+            size='small'
             type='button'
-            onClick={() => onAction('translation')}>
-            <Icon
-              name='book-open'
-              size={16}
-            />
-            번역
-          </Button>
-          <Button
-            variant='ghost'
-            type='button'
+            startIcon='bookmark'
             onClick={() => onAction('save')}>
-            <Icon
-              name='bookmark'
-              size={16}
-            />
-            저장
+            표현 저장
+          </Button>
+          <Button
+            variant='primary'
+            size='small'
+            type='button'
+            startIcon='message-circle'
+            onClick={() => onAction('question')}>
+            질문하기
           </Button>
         </>
       }

@@ -6,7 +6,7 @@ import { Banner } from '@/components/ui/composites/Banner';
 
 import { Heading } from '@/components/ui/primitives/Heading';
 import { Text } from '@/components/ui/primitives/Text';
-import { Input } from '@/components/ui/primitives/Input';
+import { InlineBlank } from '@/components/ui/primitives/InlineBlank';
 import { Collapsible } from '@/components/ui/composites/Collapsible';
 
 import { useConfirmation } from '@/lib/hooks/useConfirmation';
@@ -15,6 +15,7 @@ import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from './SessionRecovery';
 import { GraduationStamp } from './GraduationStamp';
 import { StudyFeedbackSheet } from './StudyFeedbackSheet';
+import { LessonXpPill } from './LessonXpPill';
 import { ProgressBar } from '@/components/ui/primitives/ProgressBar';
 import { useWatchPosition } from './useWatchPosition';
 import { useAnswerViewport } from './useAnswerViewport';
@@ -53,6 +54,19 @@ import { Select } from '@/components/ui/primitives/Select';
 import { TextArea } from '@/components/ui/primitives/TextArea';
 import type { SourceInput } from '@/domains/materials/model/source';
 import { VideoScript } from './VideoScript';
+
+const modeLabels: Record<Mode, string> = {
+  full: '문장 전체',
+  blank: '빈칸 채우기',
+};
+
+const instructions: Record<Mode, string> = {
+  full: '들리는 문장을 듣고 그대로 받아 적어 보세요.',
+  blank: '들리는 문장을 듣고 빈칸에 알맞은 표현을 적어 보세요.',
+};
+
+const clock = (seconds: number) =>
+  `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
 
 /** 저장과 제출 및 구절 이동의 순서를 한 화면에서 조율한다. */
 export function Study({
@@ -119,7 +133,19 @@ export function Study({
     initial.difficultSegmentIds
   );
 
-  const [feedback, setFeedback] = useState<Grade | null>(null);
+  // 정답이면 서버가 정한 다음 위치와 실제 지급 XP를 함께 들고 계속하기를 누를 때까지 현재 구절에 머문다.
+  const [feedback, setFeedback] = useState<{
+    grade: Grade;
+    nextIndex: number | null;
+    xp: number;
+  } | null>(null);
+
+  const [aiRequest, setAiRequest] = useState<{
+    segmentId: string;
+    count: number;
+  } | null>(null);
+
+  const continueButton = useRef<HTMLButtonElement>(null);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [error, setError] = useState('');
@@ -479,6 +505,13 @@ export function Study({
   async function submit() {
     if (!segment) return;
 
+    // 정답 시트가 떠 있는 동안 Enter는 같은 구절을 다시 제출하지 않고 계속하기로 동작한다.
+    if (feedback?.grade.correct) {
+      proceed();
+
+      return;
+    }
+
     await perform(async () => {
       const key = JSON.stringify([
         segment.id,
@@ -501,14 +534,43 @@ export function Study({
 
       submission.current = null;
       notifyLearningReward(result.reward);
-      setFeedback(result.grade!);
+      const grade = result.grade!;
 
-      if (result.grade?.correct) {
+      setFeedback({
+        grade,
+        nextIndex: grade.correct ? (result.nextIndex ?? index + 1) : null,
+        xp: result.reward ? result.reward.xp + result.reward.dailyBonus : 0,
+      });
+
+      if (grade.correct) {
         updateState({ status: 'correct' });
         prepareNext();
-        setIndex(result.nextIndex!);
       }
     });
+  }
+
+  function proceed() {
+    if (feedback?.nextIndex == null || busyRef.current) return;
+    // 서버는 제출 때 이미 다음 위치를 저장했으므로 화면만 옮겨 추가 요청 없이 이어 간다.
+    setIndex(feedback.nextIndex);
+    setFeedback(null);
+    setHint('');
+  }
+
+  function retry() {
+    setFeedback(null);
+    replay();
+    if (mode === 'full') input.current?.focus();
+    else blanksContainer.current?.querySelector('input')?.focus();
+  }
+
+  function explain() {
+    if (!segment) return;
+
+    setAiRequest((previous) => ({
+      segmentId: segment.id,
+      count: (previous?.count ?? 0) + 1,
+    }));
   }
 
   async function toggleDifficulty() {
@@ -618,6 +680,12 @@ export function Study({
   }, [index, mode, busy, segment]);
 
   useEffect(() => {
+    // 입력 초점 이동보다 뒤에 실행해 정답 직후 Enter와 Space가 계속하기를 바로 누르게 한다.
+    if (feedback?.grade.correct && !busy)
+      continueButton.current?.focus({ preventScroll: true });
+  }, [feedback, busy]);
+
+  useEffect(() => {
     function keydown(event: KeyboardEvent) {
       if (event.isComposing || !segment || busyRef.current) return;
       const target = event.target;
@@ -663,6 +731,18 @@ export function Study({
 
   const allCorrect = segments.length > 0 && correct === segments.length;
 
+  // 진행 막대는 정답 수가 아니라 지금 풀고 있는 단계를 따르고 정답을 맞히면 한 칸 먼저 채운다.
+  const step = Math.min(
+    segments.length,
+    index + (feedback?.grade.correct ? 1 : 0)
+  );
+
+  const solved = Boolean(feedback?.grade.correct);
+
+  const hasAnswer = Array.isArray(draft)
+    ? draft.some((value) => value.trim())
+    : draft.trim().length > 0;
+
   return (
     <div className={styles.study}>
       <AlertDialog {...confirmation.dialog} />
@@ -671,14 +751,14 @@ export function Study({
           <Link
             href={videoPaths.library}
             className={styles.backLink}
-            aria-label='내 학습으로 돌아가기'>
-            <Icon name='arrow-left' />
+            aria-label='레슨 닫기'>
+            <Icon name='x' />
           </Link>
           <ProgressBar
             className={styles.lessonProgress}
-            label='구절 정답 진행률'
+            label='레슨 진행률'
             isLabelHidden
-            value={correct}
+            value={step}
             // 구절이 없을 때 0으로 나누지 않도록 최대값을 1 이상으로 둔다.
             max={Math.max(1, segments.length)}
           />
@@ -687,13 +767,12 @@ export function Study({
               name='headphones'
               size={16}
             />{' '}
-            {correct} / {segments.length} 구절 완료
+            <span className={styles.numeric}>
+              {correct} / {segments.length}
+            </span>{' '}
+            구절 완료
           </Badge>
-          <Link
-            href={videoPaths.library}
-            className={styles.exitLink}>
-            학습 종료
-          </Link>
+          {!demo && <LessonXpPill />}
         </div>
         <div className={styles.headerTitle}>
           <Heading level={1}>{video.title}</Heading>
@@ -887,33 +966,44 @@ export function Study({
                 className={styles.answerPanel}
                 aria-label='받아쓰기'>
                 <div className={styles.answerHeading}>
-                  <Badge tone='brand'>
-                    <Icon
-                      name='headphones'
-                      size={16}
-                    />{' '}
-                    구절 {String(index + 1).padStart(2, '0')}
+                  <Badge tone='review'>
+                    {modeLabels[mode]} ·{' '}
+                    <span className={styles.numeric}>
+                      {index + 1} / {segments.length}
+                    </span>
                   </Badge>
                   <span className={styles.small}>
                     {segment.start.toFixed(0)}초 ~ {segment.end.toFixed(0)}초
                   </span>
-                  <Button
-                    variant='ghost'
-                    size='small'
-                    onClick={replay}
-                    disabled={!playerReady}>
-                    <Icon
-                      name='repeat-2'
-                      size={16}
-                    />
-                    구절 반복
-                  </Button>
                   <span
                     className={styles.saveStatus}
                     role='status'>
                     {saveStatus}
                   </span>
                 </div>
+                {!scriptView && (
+                  <div className={styles.prompt}>
+                    <Text
+                      as='p'
+                      size='lg'
+                      weight='bold'>
+                      {instructions[mode]}
+                    </Text>
+                    <Button
+                      type='button'
+                      variant='soft'
+                      size='comfortable'
+                      startIcon='volume-2'
+                      className={styles.listen}
+                      onClick={replay}
+                      disabled={!playerReady}>
+                      문장 듣기
+                      <span className={styles.listenTime}>
+                        {clock(Math.max(0, segment.end - segment.start))}
+                      </span>
+                    </Button>
+                  </div>
+                )}
                 <div className={styles.modeRow}>
                   <LearningModeSwitch
                     mode={mode}
@@ -972,6 +1062,7 @@ export function Study({
                         value={typeof draft === 'string' ? draft : ''}
                         maxLength={answerLimits.full}
                         disabled={busy}
+                        readOnly={solved}
                         autoComplete='off'
                         autoCorrect='off'
                         autoCapitalize='off'
@@ -1004,16 +1095,15 @@ export function Study({
                                 {video.language === 'th' ? '' : ' '}
                               </span>
                             ) : (
-                              <Input
-                                className={styles.blankInput}
+                              <InlineBlank
                                 key={wordIndex}
-                                aria-label={`빈칸 ${position + 1}`}
+                                label={`빈칸 ${position + 1}`}
+                                status={solved ? 'correct' : undefined}
                                 maxLength={answerLimits.blank}
                                 disabled={busy}
-                                autoComplete='off'
+                                readOnly={solved}
                                 autoCorrect='off'
                                 autoCapitalize='off'
-                                spellCheck={false}
                                 value={
                                   Array.isArray(draft)
                                     ? (draft[position] ?? '')
@@ -1033,21 +1123,25 @@ export function Study({
                         )}
                       </div>
                     )}
+                    {segment.translation && (
+                      <Text
+                        as='p'
+                        type='supporting'
+                        className={styles.translation}>
+                        {segment.translation}
+                      </Text>
+                    )}
                     <div className={styles.answerActions}>
-                      <span className={styles.pressable}>
-                        <Button disabled={busy}>
+                      {!solved && (
+                        <Button
+                          variant='ink'
+                          size='prominent'
+                          className={styles.cta}
+                          // 아무것도 적지 않은 제출은 채점할 내용이 없어 시안처럼 비활성으로 둔다.
+                          disabled={busy || !hasAnswer}>
                           {busy ? '저장 중…' : '제출하기'}
                         </Button>
-                      </span>
-                      <span className={styles.pressable}>
-                        <Button
-                          type='button'
-                          variant='secondary'
-                          disabled={busy}
-                          onClick={replay}>
-                          다시 듣기
-                        </Button>
-                      </span>
+                      )}
                       <span className={styles.small}>Enter 제출</span>
                       <Button
                         type='button'
@@ -1107,7 +1201,6 @@ export function Study({
                     title={<>표현 힌트: {hint} · 도움 사용으로 기록됩니다.</>}
                   />
                 )}
-                {feedback && <StudyFeedbackSheet grade={feedback} />}
                 {!scriptView && (state?.revealed || scriptViewed) && (
                   <Banner
                     status='warning'
@@ -1205,23 +1298,22 @@ export function Study({
                   정답을 확인한 구절: {revealed}개
                 </Text>
                 <div className={styles.completionActions}>
-                  <span className={styles.pressable}>
-                    <Button
-                      disabled={busy}
-                      onClick={() => void navigate(0)}>
-                      처음부터 복습
-                    </Button>
-                  </span>
-                  <span className={styles.pressable}>
-                    <Button
-                      variant='secondary'
-                      disabled={busy || (!blankAvailable && mode === 'full')}
-                      onClick={() =>
-                        void navigate(0, mode === 'full' ? 'blank' : 'full')
-                      }>
-                      다른 모드로 학습
-                    </Button>
-                  </span>
+                  <Button
+                    size='prominent'
+                    className={styles.cta}
+                    disabled={busy}
+                    onClick={() => void navigate(0)}>
+                    처음부터 복습
+                  </Button>
+                  <Button
+                    variant='secondary'
+                    size='prominent'
+                    disabled={busy || (!blankAvailable && mode === 'full')}
+                    onClick={() =>
+                      void navigate(0, mode === 'full' ? 'blank' : 'full')
+                    }>
+                    다른 모드로 학습
+                  </Button>
                 </div>
               </div>
             </Panel>
@@ -1302,9 +1394,23 @@ export function Study({
           language={video.language ?? 'en'}
           scriptViewed={scriptViewed}
           demo={demo}
+          aiRequest={aiRequest}
           onNavigate={(next) => void navigate(next)}
         />
       </div>
+      {feedback && !complete && !scriptView && (
+        <StudyFeedbackSheet
+          key={feedback.grade.correct ? 'correct' : 'wrong'}
+          grade={feedback.grade}
+          xp={feedback.xp}
+          busy={busy}
+          continueRef={continueButton}
+          onExplain={demo ? undefined : explain}
+          onContinue={proceed}
+          onReveal={() => void reveal()}
+          onRetry={retry}
+        />
+      )}
     </div>
   );
 }

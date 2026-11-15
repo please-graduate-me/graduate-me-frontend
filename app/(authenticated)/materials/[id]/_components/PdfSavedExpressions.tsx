@@ -53,7 +53,8 @@ export function PdfSavedExpressions({
           as='p'
           display='block'
           className={styles.description}>
-          이 원문의 저장 표현이 없습니다. 설명 탭에서 표현을 저장해 보세요.
+          이 원문의 저장 표현이 없습니다. 핵심 표현의 책갈피나 표현 저장으로
+          담아 보세요.
         </Text>
       )}
       {items.map((item) => (

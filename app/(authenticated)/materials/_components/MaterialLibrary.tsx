@@ -9,23 +9,29 @@ import { Select } from '@/components/ui/primitives/Select';
 import { useEffect, useState } from 'react';
 import type { MaterialSummary } from '@/domains/materials/model/contracts';
 import type { VideoHistory } from '@/domains/videos/model/contracts';
-import { listVideos } from '@/domains/videos/api/videos';
+import {
+  listVideos,
+  removeVideoFromLibrary,
+  setVideoFavorite,
+} from '@/domains/videos/api/videos';
 import { deleteMaterial } from '@/domains/materials/api/materials';
 import { Button } from '@/components/ui/primitives/Button';
 import { Input } from '@/components/ui/primitives/Input';
-import { Icon } from '@/components/ui/primitives/Icon';
 import { EmptyState } from '@/components/ui/composites/EmptyState';
 import { MaterialRegistration } from './MaterialRegistration';
 import { MaterialSection } from './MaterialSection';
 import { MaterialAddTile } from './MaterialAddTile';
 import { PdfTile } from './PdfTile';
 import { VideoTile } from './VideoTile';
+import { CourseAssignmentSection } from './CourseAssignmentSection';
+import { isPdfComplete } from './materialProgress';
+import { useCourseAssignments } from './useCourseAssignments';
 import * as styles from '@/lib/styles/workspace.css';
 import * as libraryStyles from './MaterialLibrary.css';
 import { ApiError } from '@/lib/api/request';
 import { SessionRecovery } from '../../../_components/SessionRecovery';
 
-/** 실제 PDF와 기존 영상 등록 이력을 같은 자료 목록에서 탐색한다. */
+/** 실제 PDF, 영상 등록 이력, 수업 과제를 학습 중·과제·완료 묶음으로 나눠 탐색한다. */
 export function MaterialLibrary({
   initial,
   initiallyAdding,
@@ -50,6 +56,8 @@ export function MaterialLibrary({
   const [reload, setReload] = useState(0);
   const [sessionExpired, setSessionExpired] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
+  const [videoBusy, setVideoBusy] = useState<string | null>(null);
+  const assignments = useCourseAssignments();
 
   useEffect(() => {
     let active = true;
@@ -96,6 +104,52 @@ export function MaterialLibrary({
     }
   }
 
+  async function favorite(video: VideoHistory[number]) {
+    setVideoBusy(video.videoId);
+    setError('');
+
+    try {
+      await setVideoFavorite(video.videoId, !video.favorite);
+
+      setVideos((items) =>
+        items.map((row) =>
+          row.videoId === video.videoId
+            ? { ...row, favorite: !video.favorite }
+            : row
+        )
+      );
+    } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
+      setError((error as Error).message);
+    } finally {
+      setVideoBusy(null);
+    }
+  }
+
+  async function removeVideo(video: VideoHistory[number]) {
+    if (
+      !(await confirmation.confirm(
+        `‘${video.title}’ 영상을 내 목록에서 제거할까요? 학습 기록은 보존되고 같은 링크를 다시 추가하면 이어서 학습할 수 있어요.`
+      ))
+    )
+      return;
+    setVideoBusy(video.videoId);
+    setError('');
+
+    try {
+      await removeVideoFromLibrary(video.videoId);
+
+      setVideos((items) =>
+        items.filter((row) => row.videoId !== video.videoId)
+      );
+    } catch (error) {
+      setSessionExpired(error instanceof ApiError && error.status === 401);
+      setError((error as Error).message);
+    } finally {
+      setVideoBusy(null);
+    }
+  }
+
   const matching = (title: string) =>
     title.toLowerCase().includes(query.toLowerCase());
 
@@ -119,6 +173,34 @@ export function MaterialLibrary({
 
   const learningVideos = filteredVideos.filter((item) => !item.isComplete);
   const completedVideos = filteredVideos.filter((item) => item.isComplete);
+  const learningPdfs = pdfs.filter((item) => !isPdfComplete(item));
+  const completedPdfs = pdfs.filter(isPdfComplete);
+
+  // 가장 최근에 손댄 학습 중 자료 하나에만 "이어서" 표지를 붙인다.
+  const latest = [...learningPdfs, ...learningVideos].reduce<
+    { id: string; time: number } | undefined
+  >((best, item) => {
+    const time = Date.parse(item.updatedAt);
+    const id = 'videoId' in item ? item.videoId : item.id;
+
+    return !best || time > best.time ? { id, time } : best;
+  }, undefined)?.id;
+
+  const courseSections = new Map<string, typeof assignments.items>();
+
+  for (const item of assignments.items) {
+    // 언어를 알 수 없는 수업(수업 목록 조회 실패)은 전체 언어에서만 보여 준다.
+    if (
+      (language === 'all' ||
+        assignments.languages[item.courseId] === language) &&
+      (kind === 'all' || item.source.kind === kind) &&
+      (matching(item.title) || matching(item.source.title))
+    )
+      courseSections.set(item.courseId, [
+        ...(courseSections.get(item.courseId) ?? []),
+        item,
+      ]);
+  }
 
   return (
     <div className={libraryStyles.root}>
@@ -135,11 +217,9 @@ export function MaterialLibrary({
         </div>
         <Button
           variant='ink'
+          size='comfortable'
+          startIcon='plus'
           onClick={() => setAdding(true)}>
-          <Icon
-            name='plus'
-            size={18}
-          />
           자료 추가
         </Button>
       </div>
@@ -216,7 +296,10 @@ export function MaterialLibrary({
           저장된 영상 목록을 불러오고 있어요.
         </Text>
       )}
-      {!loading && !pdfs.length && !filteredVideos.length ? (
+      {!loading &&
+      !pdfs.length &&
+      !filteredVideos.length &&
+      !courseSections.size ? (
         <EmptyState
           icon='layers'
           title={
@@ -244,13 +327,14 @@ export function MaterialLibrary({
           aria-label='내 PDF와 영상 자료'
           className={libraryStyles.sections}>
           <MaterialSection
-            icon='chart-no-axes-column'
+            icon='trending-up'
             title='학습 중인 자료'
             description='PDF는 읽던 페이지, 영상은 저장한 위치에서 이어 가요'>
-            {pdfs.map((material) => (
+            {learningPdfs.map((material) => (
               <PdfTile
                 key={material.id}
                 material={material}
+                isLatest={latest === material.id}
                 removing={removing === material.id}
                 onReplace={() => setReplacement(material)}
                 onRemove={() => void remove(material)}
@@ -260,20 +344,46 @@ export function MaterialLibrary({
               <VideoTile
                 key={video.videoId}
                 video={video}
+                isLatest={latest === video.videoId}
+                busy={videoBusy === video.videoId}
+                onFavorite={() => void favorite(video)}
+                onRemove={() => void removeVideo(video)}
               />
             ))}
             <MaterialAddTile onAdd={() => setAdding(true)} />
           </MaterialSection>
-          {completedVideos.length > 0 && (
+          {[...courseSections.values()].map((items) => (
+            <CourseAssignmentSection
+              key={items[0].courseId}
+              courseId={items[0].courseId}
+              courseTitle={items[0].courseTitle}
+              assignments={items}
+              now={assignments.loadedAt}
+            />
+          ))}
+          {completedPdfs.length + completedVideos.length > 0 && (
             <MaterialSection
-              icon='check-check'
+              icon='archive'
               tone='muted'
               title='완료한 자료'
-              description='학습 기록과 표현은 그대로 남아 있어요'>
+              description='학습 기록과 표현은 그대로 남아 있어요'
+              isCollapsible>
+              {completedPdfs.map((material) => (
+                <PdfTile
+                  key={material.id}
+                  material={material}
+                  removing={removing === material.id}
+                  onReplace={() => setReplacement(material)}
+                  onRemove={() => void remove(material)}
+                />
+              ))}
               {completedVideos.map((video) => (
                 <VideoTile
                   key={video.videoId}
                   video={video}
+                  busy={videoBusy === video.videoId}
+                  onFavorite={() => void favorite(video)}
+                  onRemove={() => void removeVideo(video)}
                 />
               ))}
             </MaterialSection>

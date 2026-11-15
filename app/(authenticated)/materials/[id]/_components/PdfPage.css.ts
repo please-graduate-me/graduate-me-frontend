@@ -17,6 +17,12 @@ export const highlight = style({
   selectors: {
     '&[data-color="blue"]': { background: '#8bbcff66' },
     '&[data-color="green"]': { background: '#9bdab466' },
+    // 지금 고른 구절은 저장 하이라이트와 구분되도록 시안의 크림색 둥근 강조로 감싼다.
+    '&[data-color="selection"]': {
+      background: vars.color.highlight,
+      borderRadius: 4,
+      boxShadow: `0 0 0 2px ${vars.color.highlight}`,
+    },
   },
 });
 

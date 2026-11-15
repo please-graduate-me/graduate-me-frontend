@@ -11,13 +11,7 @@ import { Section } from '@/components/ui/layouts/Section';
 import { Heading } from '@/components/ui/primitives/Heading';
 import { ProgressBar } from '@/components/ui/primitives/ProgressBar';
 import { Collapsible } from '@/components/ui/composites/Collapsible';
-import { useEffect, useRef, useState } from 'react';
-import {
-  getMaterialAnalysis,
-  retryMaterialAnalysis,
-} from '@/domains/materials/api/analysis';
-import type { MaterialAnalysisResponse } from '@/domains/materials/model/analysis';
-import { ApiError } from '@/lib/api/request';
+import type { MaterialAnalysisState } from './useMaterialAnalysis';
 import { Button } from '@/components/ui/primitives/Button';
 import { SessionRecovery } from '../../../../_components/SessionRecovery';
 import * as styles from '@/lib/styles/workspace.css';
@@ -32,92 +26,19 @@ const statusLabel = {
   skipped: '전체 자동 정리 범위를 초과했어요',
 };
 
-/** 자료를 다시 열어도 저장 분석을 복원하고 진행 중일 때만 상태를 갱신한다. */
+/** 자료 소개, 핵심 요약, 단어와 페이지별 전체 번역을 상위에서 받은 저장 정리로 표시한다. */
 export function MaterialAnalysisPanel({
-  materialId,
-  version,
+  state,
   owned,
   pageCount,
   onPage,
 }: {
-  materialId: string;
-  version: number;
+  state: MaterialAnalysisState;
   owned: boolean;
   pageCount: number;
   onPage: (page: number) => void;
 }) {
-  const [value, setValue] =
-    useState<MaterialAnalysisResponse['analysis']>(null);
-
-  const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const [sessionExpired, setSessionExpired] = useState(false);
-  const [refresh, setRefresh] = useState(0);
-  const requestId = useRef<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-
-    async function load() {
-      try {
-        const result = await getMaterialAnalysis(materialId, version);
-
-        if (!active) return;
-        setValue(result.analysis);
-        setError('');
-        setLoading(false);
-        if (
-          result.analysis &&
-          ['queued', 'running'].includes(result.analysis.status)
-        )
-          timer = setTimeout(() => void load(), 5000);
-      } catch (failure) {
-        if (!active) return;
-        setLoading(false);
-        setError((failure as Error).message);
-
-        setSessionExpired(
-          failure instanceof ApiError && failure.status === 401
-        );
-      }
-    }
-
-    void load();
-
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [materialId, version, refresh]);
-
-  async function retry() {
-    if (busy) return;
-    setBusy(true);
-    setError('');
-    setSessionExpired(false);
-    requestId.current ??= crypto.randomUUID();
-
-    try {
-      const result = await retryMaterialAnalysis(
-        materialId,
-        version,
-        requestId.current
-      );
-
-      setValue(result.analysis);
-      requestId.current = null;
-      setRefresh((count) => count + 1);
-    } catch (failure) {
-      setError((failure as Error).message);
-      setSessionExpired(failure instanceof ApiError && failure.status === 401);
-      if (failure instanceof ApiError && ![0, 409].includes(failure.status))
-        requestId.current = null;
-    } finally {
-      setBusy(false);
-    }
-  }
+  const { value, loading, busy, error, sessionExpired, retry, reload } = state;
 
   const working = value && ['queued', 'running'].includes(value.status);
 
@@ -141,7 +62,7 @@ export function MaterialAnalysisPanel({
           </Banner>
           <Button
             variant='ghost'
-            onClick={() => setRefresh((count) => count + 1)}>
+            onClick={reload}>
             결과 다시 조회
           </Button>
         </div>

@@ -20,23 +20,18 @@ export const pageControl = style({
 export const pageInput = style({ width: 64 });
 
 /** 전체 페이지 수는 조작부와 함께 줄바꿈하지 않는다. */
-export const total = style({ whiteSpace: 'nowrap', color: vars.color.muted });
+export const total = style({
+  whiteSpace: 'nowrap',
+  color: vars.color.muted,
+  fontFamily: vars.font.numeric,
+  fontVariantNumeric: 'tabular-nums',
+});
 
 /** 서로 다른 조작 묶음을 구별하는 보조 선이다. */
 export const divider = style({
   width: 1,
   height: 22,
   background: vars.color.line,
-});
-
-/** 확대 조작과 배율 선택을 둥근 알약 하나로 묶는다. */
-export const zoomControls = style({
-  display: 'flex',
-  alignItems: 'center',
-  gap: vars.space.xxs,
-  padding: 2,
-  border: `1px solid ${vars.color.line}`,
-  borderRadius: 999,
 });
 
 /** 잘못 입력한 페이지는 도구 모음 아래에 안내한다. */

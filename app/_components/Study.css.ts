@@ -48,8 +48,11 @@ export const backLink = style({
   selectors: { '&:hover': { background: vars.color.canvas } },
 });
 
-/** 학습 종료 링크를 제목과 분리한다. */
-export const exitLink = style({ whiteSpace: 'nowrap' });
+/** 진도와 단계 숫자는 시안의 숫자 서체로 폭을 맞춘다. */
+export const numeric = style({
+  fontFamily: vars.font.numeric,
+  fontVariantNumeric: 'tabular-nums',
+});
 
 /** 넓은 화면은 스크립트를 병렬로, 좁은 화면은 학습 뒤에 가운데 열로 배치한다. */
 export const studyGrid = style({
@@ -141,20 +144,44 @@ export const modeRow = style({
   gap: vars.space.md,
 });
 
-/** 빈칸과 원문을 같은 문장 흐름으로 크게 읽게 한다. */
-export const blankSentence = style({
-  paddingBlock: vars.space.md,
-  fontSize: vars.fontSize.heading3,
-  lineHeight: 2.7,
-  minHeight: 84,
+/** 지시문과 문장 듣기 버튼을 문제 위에 차례로 쌓는다. */
+export const prompt = style({
+  display: 'grid',
+  justifyItems: 'start',
+  gap: vars.space.compact,
 });
 
-/** 빈칸 입력은 문장 사이에서 일정한 폭을 확보한다. */
-export const blankInput = style({
-  display: 'inline-block',
-  width: 160,
-  verticalAlign: 'middle',
-  marginInline: vars.space.xs,
+/** 문장 듣기는 회색 알약에 구절 길이를 함께 보여 준다. */
+export const listen = style({ gap: vars.space.sm });
+
+/** 구절 길이는 버튼 글자보다 작은 보조색 숫자다. */
+export const listenTime = style({
+  fontFamily: vars.font.numeric,
+  fontSize: vars.fontSize.label,
+  fontWeight: vars.fontWeight.bold,
+  fontVariantNumeric: 'tabular-nums',
+  color: vars.color.muted,
+});
+
+/** 빈칸과 원문을 시안의 숫자 서체로 크게 읽고 밑줄 빈칸이 줄 사이에 들어가게 한다. */
+export const blankSentence = style({
+  paddingBlock: vars.space.md,
+  minHeight: 84,
+  fontFamily: vars.font.numeric,
+  fontSize: '30px',
+  fontWeight: vars.fontWeight.bold,
+  lineHeight: 2.1,
+  letterSpacing: '-0.01em',
+  '@media': { '(max-width: 600px)': { fontSize: '22px' } },
+});
+
+/** 풀이 중 번역은 문장 바로 아래 보조문으로 붙인다. */
+export const translation = style({ marginTop: `calc(${vars.space.xs} * -1)` });
+
+/** 주 행동 버튼은 시안처럼 넓은 최소 폭을 갖고 좁은 화면에서는 줄 전체를 쓴다. */
+export const cta = style({
+  minWidth: 220,
+  '@media': { '(max-width: 600px)': { minWidth: 0, flex: '1 1 100%' } },
 });
 
 /** 전체 받아쓰기 입력에 여러 줄의 작성 공간을 확보한다. */
@@ -167,27 +194,6 @@ export const answerActions = style({
   flexWrap: 'wrap',
   gap: vars.space.sm,
   marginTop: vars.space.md,
-});
-
-/** 주요 버튼 묶음은 눌릴 때 살짝 내려가고 비활성이나 모션 축소 설정에서는 움직이지 않는다. */
-export const pressable = style({
-  display: 'inline-flex',
-  transition: 'transform 100ms ease',
-  selectors: {
-    '&:active:not(:has(:disabled, [aria-disabled="true"]))': {
-      transform: 'translateY(2px)',
-    },
-  },
-  '@media': {
-    '(prefers-reduced-motion: reduce)': {
-      transition: 'none',
-      selectors: {
-        '&:active:not(:has(:disabled, [aria-disabled="true"]))': {
-          transform: 'none',
-        },
-      },
-    },
-  },
 });
 
 /** 검토와 구절 이동을 답안 제출에서 분리한다. */

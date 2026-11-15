@@ -67,6 +67,8 @@ export function ArchivedVideoSource({
       <SourceActions
         source={source}
         language={source.language}
+        sourceTitle={value.source.title}
+        start={value.source.start}
       />
     </Card>
   );

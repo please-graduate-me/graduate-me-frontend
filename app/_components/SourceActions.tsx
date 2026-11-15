@@ -13,23 +13,29 @@ import { ExcerptShareComposer } from './ExcerptShareComposer';
 import type { Annotation } from '@/domains/materials/model/records';
 import * as styles from '@/lib/styles/workspace.css';
 
-/** PDF와 영상의 선택한 원문을 같은 저장·질문 흐름에 연결한다. */
+/** PDF와 영상의 선택한 원문을 같은 저장·질문 흐름에 연결하고 아는 경우 자료 제목과 시작 위치를 발췌 공유에 넘긴다. */
 export function SourceActions({
   source,
   language,
   onAnnotated,
   image,
+  defaultAiOpen = false,
+  sourceTitle,
+  start,
 }: {
   source: SourceInput;
+  sourceTitle?: string;
+  start?: number;
   language: 'en' | 'th';
   onAnnotated?: (value: Annotation) => void;
   image?: { base64: string; mimeType: 'image/png' | 'image/jpeg' };
+  defaultAiOpen?: boolean;
 }) {
   const [dialog, setDialog] = useState<
     'expression' | 'question' | 'annotation' | 'share' | 'report' | null
   >(null);
 
-  const [aiOpen, setAiOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(defaultAiOpen);
   const [annotationReload, setAnnotationReload] = useState(0);
 
   return (
@@ -141,6 +147,8 @@ export function SourceActions({
       {dialog === 'share' && (
         <ExcerptShareComposer
           source={source}
+          sourceTitle={sourceTitle}
+          start={start}
           onClose={() => setDialog(null)}
         />
       )}

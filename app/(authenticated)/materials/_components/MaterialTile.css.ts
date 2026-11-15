@@ -1,33 +1,20 @@
-import { style } from '@vanilla-extract/css';
+import { style, styleVariants } from '@vanilla-extract/css';
 import { vars } from '@/lib/styles/theme.css';
 
 /** 격자 칸 높이에 맞춰 타일이 늘어나게 한다. */
 export const item = style({ display: 'flex', minWidth: 0 });
 
-/** 격자 칸을 채우는 흰 카드이며 올리면 살짝 떠오른다. */
-export const tile = style({
-  flex: 1,
-  minWidth: 0,
-  transition: 'transform 180ms ease',
-  selectors: {
-    '&:hover, &:focus-within': { transform: 'translateY(-3px)' },
-  },
-  '@media': {
-    '(prefers-reduced-motion: reduce)': {
-      transition: 'none',
-      selectors: { '&:hover, &:focus-within': { transform: 'none' } },
-    },
-  },
-});
+/** 격자 칸을 채우는 흰 카드이며 떠오름과 테두리 진해짐은 ClickableCard 옵션이 맡는다. */
+export const tile = style({ flex: 1, minWidth: 0 });
 
-/** 카드 안 내용을 가운데 정렬로 쌓고 상태 줄을 아래에 붙인다. */
+/** 카드 안 내용을 가운데 정렬로 쌓고 요약 줄을 아래에 붙인다. */
 export const body = style({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: vars.space.sm,
-  paddingTop: 10,
+  gap: vars.space.compact,
+  padding: '10px 0 4px',
   textAlign: 'center',
   overflowWrap: 'anywhere',
 });
@@ -51,34 +38,47 @@ export const art = style({
   },
 });
 
-/** 실제 진도 막대는 카드 폭을 모두 사용한다. */
+/** 진도 막대는 카드 폭을 모두 쓴다. */
 export const progress = style({ alignSelf: 'stretch' });
 
-/** 언어·분량·공유 범위 같은 보조 정보를 작게 묶는다. */
-export const details = style({
-  display: 'grid',
-  gap: 2,
-  color: vars.color.muted,
-  fontSize: vars.fontSize.caption,
-  lineHeight: 1.5,
-});
-
-/** 준비 상태와 최근 활동일은 카드 아래쪽에 고정한다. */
-export const status = style({
+/** "PDF · 18 / 28쪽" 같은 한 줄 요약은 카드 아래쪽에 붙인다. */
+export const caption = style({
   marginTop: 'auto',
-  display: 'flex',
-  flexWrap: 'wrap',
-  justifyContent: 'center',
-  alignItems: 'center',
-  gap: vars.space.xs,
-  color: vars.color.muted,
   fontSize: vars.fontSize.caption,
+  fontWeight: vars.fontWeight.bold,
+  fontVariantNumeric: 'tabular-nums',
 });
 
-/** 관리 메뉴와 바로가기는 카드 오른쪽 위 모서리에 띄워 둔다. */
+/** 요약 줄은 기본 회색, 제출 완료는 청록, 마감 임박은 주황, 실패는 빨강이다. */
+export const captionTone = styleVariants({
+  muted: { color: vars.color.muted },
+  accent: { color: vars.color.accent },
+  warning: { color: vars.color.warning },
+  error: { color: vars.color.error },
+});
+
+/** 이어서·마감 표지는 카드 오른쪽 위에 작은 알약으로 띄운다. */
+export const pill = style({
+  position: 'absolute',
+  top: 10,
+  right: 10,
+  padding: '2px 8px',
+  borderRadius: vars.radius.pill,
+  fontSize: '11px',
+  fontWeight: vars.fontWeight.heavy,
+  lineHeight: '16px',
+});
+
+/** 이어서는 밝은 청록 바탕, 마감은 옅은 주황 바탕이다. */
+export const pillTone = styleVariants({
+  accent: { background: vars.color.accent, color: vars.color.onAccent },
+  warning: { background: vars.color.notice, color: vars.color.warning },
+});
+
+/** 관리 메뉴는 카드 왼쪽 위 모서리에 띄워 오른쪽 알약과 겹치지 않게 한다. */
 export const action = style({
   position: 'absolute',
   top: 6,
-  right: 6,
+  left: 6,
   zIndex: 1,
 });
