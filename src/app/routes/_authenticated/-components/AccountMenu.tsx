@@ -4,8 +4,7 @@ import { DropdownMenu } from '@/components/ui/composites/DropdownMenu';
 import { Toast } from '@/components/ui/composites/Toast';
 import { Avatar } from '@/components/ui/primitives/Avatar';
 import { Icon } from '@/components/ui/primitives/Icon';
-import { getCsrfToken, signOut } from '@/domains/auth/api/auth';
-import { videoPaths } from '@/domains/videos/config/paths';
+import { signOut } from '@/domains/auth/api/auth';
 
 /** 헤더 아바타에서 학습 설정, 계정 관리, 로그아웃으로 바로 갈 수 있게 하는 계정 메뉴다. */
 export function AccountMenu({ name }: { name: string }) {
@@ -19,15 +18,10 @@ export function AccountMenu({ name }: { name: string }) {
     setError('');
 
     try {
-      const { csrfToken } = await getCsrfToken();
-
-      const result = await signOut(
-        csrfToken,
-        new URL(videoPaths.home, window.location.origin).href
-      );
+      await signOut();
 
       client.clear();
-      window.location.assign(result.url);
+      window.location.assign('/login');
     } catch (error) {
       setError((error as Error).message);
       setBusy(false);

@@ -83,7 +83,7 @@ describe('서비스 앱 라우팅', () => {
 
   it('기존 루트 콜백의 오류와 복귀 위치를 새 로그인 주소로 전달한다', async () => {
     const instance = testRouter(
-      '/?error=OAuthCallbackError&returnTo=%2Fmaterials%3Fadd%3D1'
+      '/?error=EMAIL_LOGIN_FAILED&returnTo=%2Fmaterials%3Fadd%3D1'
     );
 
     await instance.load();
@@ -91,7 +91,7 @@ describe('서비스 앱 라우팅', () => {
 
     expect(
       result?.type === 'redirect' && result.redirect.options.search
-    ).toEqual({ error: 'OAuthCallbackError', returnTo: '/materials?add=1' });
+    ).toEqual({ error: 'EMAIL_LOGIN_FAILED', returnTo: '/materials?add=1' });
   });
 
   it('로그인 복귀 경로로 외부 주소를 허용하지 않는다', async () => {

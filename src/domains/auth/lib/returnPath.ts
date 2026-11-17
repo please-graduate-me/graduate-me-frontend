@@ -5,6 +5,7 @@ export function safeReturnPath(
 ) {
   if (
     !value ||
+    ['/', '/login', '/login/'].includes(value.split(/[?#]/)[0]) ||
     !value.startsWith('/') ||
     value.startsWith('//') ||
     value.includes('\\') ||

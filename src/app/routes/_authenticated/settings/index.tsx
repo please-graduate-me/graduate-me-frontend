@@ -96,7 +96,7 @@ function SettingsPage() {
             </div>
             <div className={styles.accountActions}>
               <Badge tone='brand'>{spaceLabel}</Badge>
-              <AuthButton action='signout' />
+              <AuthButton />
             </div>
           </Card>
           {access.role && (

@@ -1,48 +1,43 @@
-import { request, type Transport } from '@/lib/api/request';
+import { request, jsonBody, type Transport } from '@/lib/api/request';
 import {
   sessionSchema,
   authStatusSchema,
-  csrfSchema,
-  authRedirectSchema,
+  schoolEmailSchema,
+  emailChallengeSchema,
+  authSuccessSchema,
 } from '../model/contracts';
 
-/** 전달받은 전송 방식으로 백엔드 세션을 조회한다. */
+/** 세션 쿠키로 학교 이메일 인증을 마친 계정을 확인한다. */
 export const getSession = (transport: Transport) =>
   request('/api/auth/session', sessionSchema, undefined, transport);
 
-/** 로그인 UI가 인증 설정의 준비 여부를 기준으로 동작하게 한다. */
+/** 메일 발송 설정이 준비됐을 때만 인증 화면을 활성화한다. */
 export async function isAuthConfigured(transport: Transport) {
   return (
     await request('/api/auth-status', authStatusSchema, undefined, transport)
   ).configured;
 }
 
-/** 인증 동작 전에 서버가 발급한 토큰을 확보한다. */
-export const getCsrfToken = () => request('/api/auth/csrf', csrfSchema);
-
-/** 로그인 전송 형식이 화면 로직에 섞이지 않게 한다. */
-export const signIn = (csrfToken: string, callbackUrl: string) =>
+/** 로그인 버튼을 누른 경우에만 학교 이메일로 인증 코드를 요청한다. */
+export const requestEmailCode = (email: string) =>
   request(
-    '/api/auth/signin/google',
-    authRedirectSchema,
-    authBody(csrfToken, callbackUrl)
+    '/api/auth/email/request',
+    emailChallengeSchema,
+    jsonBody({ email: schoolEmailSchema.parse(email) })
   );
 
-/** 로그아웃도 서버의 CSRF 검증 절차를 거치게 한다. */
-export const signOut = (csrfToken: string, callbackUrl: string) =>
+/** 코드 검증과 세션 발급은 백엔드가 함께 처리한다. */
+export const verifyEmailCode = (
+  email: string,
+  requestId: string,
+  code: string
+) =>
   request(
-    '/api/auth/signout',
-    authRedirectSchema,
-    authBody(csrfToken, callbackUrl)
+    '/api/auth/email/verify',
+    authSuccessSchema,
+    jsonBody({ email: schoolEmailSchema.parse(email), requestId, code })
   );
 
-function authBody(csrfToken: string, callbackUrl: string): RequestInit {
-  return {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'X-Auth-Return-Redirect': '1',
-    },
-    body: new URLSearchParams({ csrfToken, callbackUrl }),
-  };
-}
+/** 같은 출처의 POST 요청으로 서버 세션을 폐기한다. */
+export const signOut = () =>
+  request('/api/auth/signout', authSuccessSchema, { method: 'POST' });

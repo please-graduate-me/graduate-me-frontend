@@ -16,8 +16,24 @@ export const sessionSchema = z
 /** 인증 준비 여부를 임의의 응답 값으로 판단하지 않게 한다. */
 export const authStatusSchema = z.object({ configured: z.boolean() });
 
-/** 인증 요청에 필요한 토큰이 누락된 상태로 진행하지 않게 한다. */
-export const csrfSchema = z.object({ csrfToken: z.string() });
+/** 학교 주소만 인증 요청과 코드 확인에 사용한다. */
+export const schoolEmailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(254)
+  .email()
+  .refine(
+    (value) => value.split('@')[1] === 'hufs.ac.kr',
+    '한국외국어대학교 이메일(@hufs.ac.kr)을 입력해 주세요.'
+  );
 
-/** 인증 후 이동할 주소가 유효한 URL인지 확인한다. */
-export const authRedirectSchema = z.object({ url: z.url() });
+/** 인증 요청 식별자와 만료 시간만 화면에 전달하고 코드는 응답하지 않는다. */
+export const emailChallengeSchema = z.object({
+  requestId: z.uuid(),
+  expiresAt: z.iso.datetime(),
+  resendAfterSeconds: z.number().int().positive(),
+});
+
+/** 코드 인증과 로그아웃은 세션 쿠키만 발급하고 비밀 토큰은 응답하지 않는다. */
+export const authSuccessSchema = z.object({ ok: z.literal(true) });

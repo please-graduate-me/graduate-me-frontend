@@ -11,7 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root';
 import { Route as IndexRouteImport } from './routes/index';
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route';
-import { Route as LoginRouteImport } from './routes/login';
+import { Route as LoginIndexRouteImport } from './routes/login/index';
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index';
 import { Route as AuthenticatedCommunityIndexRouteImport } from './routes/_authenticated/community/index';
 import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authenticated/courses/index';
@@ -45,9 +45,9 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any);
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const LoginIndexRoute = LoginIndexRouteImport.update({
+  id: '/login/',
+  path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any);
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
@@ -190,7 +190,7 @@ const AuthenticatedCoursesIdAssignmentsAssignmentIdIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute;
-  '/login': typeof LoginRoute;
+  '/login/': typeof LoginIndexRoute;
   '/admin/': typeof AuthenticatedAdminIndexRoute;
   '/community/': typeof AuthenticatedCommunityIndexRoute;
   '/courses/': typeof AuthenticatedCoursesIndexRoute;
@@ -217,7 +217,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute;
-  '/login': typeof LoginRoute;
+  '/login': typeof LoginIndexRoute;
   '/admin': typeof AuthenticatedAdminIndexRoute;
   '/community': typeof AuthenticatedCommunityIndexRoute;
   '/courses': typeof AuthenticatedCoursesIndexRoute;
@@ -246,7 +246,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   '/': typeof IndexRoute;
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren;
-  '/login': typeof LoginRoute;
+  '/login/': typeof LoginIndexRoute;
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute;
   '/_authenticated/community/': typeof AuthenticatedCommunityIndexRoute;
   '/_authenticated/courses/': typeof AuthenticatedCoursesIndexRoute;
@@ -275,7 +275,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | '/'
-    | '/login'
+    | '/login/'
     | '/admin/'
     | '/community/'
     | '/courses/'
@@ -330,7 +330,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/login'
+    | '/login/'
     | '/_authenticated/admin/'
     | '/_authenticated/community/'
     | '/_authenticated/courses/'
@@ -359,7 +359,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren;
-  LoginRoute: typeof LoginRoute;
+  LoginIndexRoute: typeof LoginIndexRoute;
 }
 
 declare module '@tanstack/react-router' {
@@ -378,11 +378,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    '/login': {
-      id: '/login';
+    '/login/': {
+      id: '/login/';
       path: '/login';
-      fullPath: '/login';
-      preLoaderRoute: typeof LoginRouteImport;
+      fullPath: '/login/';
+      preLoaderRoute: typeof LoginIndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     '/_authenticated/admin/': {
@@ -611,7 +611,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  LoginRoute: LoginRoute,
+  LoginIndexRoute: LoginIndexRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
