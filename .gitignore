@@ -1,5 +1,4 @@
 node_modules/
-.next/
 .env
 .env.*
 !.env.example
@@ -11,5 +10,7 @@ __pycache__/
 coverage/
 
 **/dist/
-**/.next/
 **/node_modules/
+
+# 전환 전에 생성된 Next.js 빌드 산출물도 Git에서 제외한다.
+**/.next/

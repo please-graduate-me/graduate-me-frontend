@@ -20,11 +20,11 @@ const styleFileScope: Plugin = {
 export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
   plugins: [styleFileScope],
-  resolve: { alias: { '@': fileURLToPath(new URL('.', import.meta.url)) } },
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   test: {
     name: 'frontend',
     environment: 'node',
     include: ['**/*.test.ts'],
-    exclude: ['**/node_modules/**', '**/dist/**', '**/.next/**'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/coverage/**'],
   },
 });

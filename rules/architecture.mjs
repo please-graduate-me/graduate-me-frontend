@@ -3,7 +3,7 @@ import path from 'node:path';
 import ts from 'typescript';
 import { fileURLToPath } from 'node:url';
 
-const root = fileURLToPath(new URL('../', import.meta.url));
+const root = fileURLToPath(new URL('../src/', import.meta.url));
 const relative = (file) => path.relative(root, file).split(path.sep).join('/');
 
 function resolveImport(from, specifier) {
@@ -35,7 +35,7 @@ function layer(file) {
 
   if (name.startsWith('lib/') || name.startsWith('components/ui/')) return 0;
   if (name.startsWith('domains/')) return 1;
-  if (name.includes('/_components/')) return 2;
+  if (name.includes('/-components/')) return 2;
   if (name.startsWith('app/')) return 3;
 
   return -1;
@@ -76,22 +76,6 @@ function imports(file) {
   visit(source);
 
   return result;
-}
-
-function serverDependency(file, seen = new Set()) {
-  if (seen.has(file)) return false;
-  seen.add(file);
-
-  return imports(file).some(
-    (specifier) =>
-      specifier === 'server-only' ||
-      specifier === 'next/headers' ||
-      (() => {
-        const target = resolveImport(file, specifier);
-
-        return target && serverDependency(target, seen);
-      })()
-  );
 }
 
 function hasCycle(start, file = start, seen = new Set()) {
@@ -147,8 +131,8 @@ const architecture = {
           const currentLayer = layer(file);
 
           if (currentLayer < 0) return;
-          if (domain(file) && specifier.startsWith('next/'))
-            report(node, 'domains는 Next.js에 의존하지 않는다.');
+          if (specifier.startsWith('next/') || specifier === 'server-only')
+            report(node, '서비스 앱은 서버 전용 프레임워크에 의존하지 않는다.');
           if (
             specifier === 'typeorm' ||
             specifier.startsWith('typeorm/') ||
@@ -166,16 +150,16 @@ const architecture = {
           if (layer(target) > currentLayer)
             report(node, '하위 계층은 상위 계층을 import하지 않는다.');
 
-          if (targetName.includes('/_components/')) {
+          if (targetName.includes('/-components/')) {
             const owner = target.slice(
               0,
-              target.lastIndexOf(`${path.sep}_components${path.sep}`)
+              target.lastIndexOf(`${path.sep}-components${path.sep}`)
             );
 
             if (!file.startsWith(owner + path.sep))
               report(
                 node,
-                '_components는 소유 라우트와 그 하위에서만 사용한다.'
+                '-components는 소유 라우트와 그 하위에서만 사용한다.'
               );
           }
 
@@ -200,7 +184,7 @@ const architecture = {
           if (
             targetName.endsWith('.css.ts') &&
             !(
-              relative(file) === 'app/layout.tsx' &&
+              relative(file) === 'main.tsx' &&
               targetName === 'app/globals.css.ts'
             ) &&
             !targetName.startsWith('lib/styles/') &&
@@ -223,15 +207,6 @@ const architecture = {
           ImportExpression(node) {
             check(node, node.source.value);
           },
-          Program(node) {
-            if (
-              node.body.some(
-                (statement) => statement.directive === 'use client'
-              ) &&
-              serverDependency(file)
-            )
-              report(node, 'Client Component가 서버 전용 모듈을 참조한다.');
-          },
         };
       },
     },
@@ -249,15 +224,7 @@ const architecture = {
           count++;
           const filename = path.basename(context.filename, '.tsx');
 
-          const reserved = [
-            'page',
-            'layout',
-            'error',
-            'not-found',
-            'loading',
-            'template',
-            'global-error',
-          ];
+          const reserved = ['index', 'route', '__root', 'login'];
 
           let reason;
 

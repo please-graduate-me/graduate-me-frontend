@@ -10,6 +10,4 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 # 최초 실행할 소스를 복사하며 이후 변경은 개발 Compose가 동기화한다.
 COPY . .
-# Next.js 사용 통계 전송을 비활성화한다.
-ENV NEXT_TELEMETRY_DISABLED=1
 # 개발 서버의 실행 명령과 환경변수는 compose.dev.yaml에서 지정한다.

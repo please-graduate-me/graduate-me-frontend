@@ -1,14 +1,56 @@
+import js from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
-import { defineConfig } from 'eslint/config';
-import nextVitals from 'eslint-config-next/core-web-vitals';
-import nextTypeScript from 'eslint-config-next/typescript';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import prettier from 'eslint-config-prettier/flat';
+import hooks from 'eslint-plugin-react-hooks';
+import refresh from 'eslint-plugin-react-refresh';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 import architecture from './rules/architecture.mjs';
 
-/** 도구 설정을 한 진입점에서 적용해 실행 환경의 차이를 줄인다. */
+/** React 검사와 공통 포맷 규칙을 서비스 앱에서 독립 실행한다. */
 export default defineConfig([
-  ...nextVitals,
-  ...nextTypeScript,
+  globalIgnores([
+    'dist/**',
+    '.next/**',
+    'coverage/**',
+    'node_modules/**',
+    'src/app/routeTree.gen.ts',
+  ]),
+  { languageOptions: { globals: globals.node } },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: { globals: { ...globals.browser, ...globals.node } },
+    plugins: { 'react-hooks': hooks, 'react-refresh': refresh },
+    rules: {
+      ...hooks.configs.recommended.rules,
+      'react-refresh/only-export-components': [
+        'error',
+        { allowConstantExport: true, allowExportNames: ['iconNames'] },
+      ],
+    },
+  },
+  {
+    files: ['src/app/routes/**/*.{ts,tsx}'],
+    ignores: ['src/app/routes/**/-components/**'],
+    rules: {
+      // 라우트 모듈의 HMR은 TanStack Router의 Vite 플러그인이 처리한다.
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    plugins: { architecture },
+    rules: { 'architecture/boundaries': 'error' },
+  },
+  {
+    files: ['src/**/*.tsx'],
+    ignores: ['**/*.test.tsx', 'src/app/routeTree.gen.ts'],
+    plugins: { architecture },
+    rules: { 'architecture/components': 'error' },
+  },
   prettier,
   {
     plugins: { '@stylistic': stylistic },
@@ -44,21 +86,5 @@ export default defineConfig([
         },
       ],
     },
-  },
-  {
-    files: [
-      'app/**/*.{ts,tsx}',
-      'domains/**/*.{ts,tsx}',
-      'components/**/*.{ts,tsx}',
-      'lib/**/*.{ts,tsx}',
-    ],
-    plugins: { architecture },
-    rules: { 'architecture/boundaries': 'error' },
-  },
-  {
-    files: ['**/*.tsx'],
-    ignores: ['**/*.test.tsx'],
-    plugins: { architecture },
-    rules: { 'architecture/components': 'error' },
   },
 ]);
