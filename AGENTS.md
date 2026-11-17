@@ -9,12 +9,22 @@
 - 코드 수정 후 변경 범위에 맞는 테스트와 빌드를 추가로 확인한다.
 - 백엔드 저장소의 NestJS 작업 관리자는 Vitest를 사용한다. DB 통합 테스트에는 이름이 `_test`로 끝나는 별도 DB만 사용한다.
 
+## 앱 구조
+
+- React와 Vite를 사용한다. 라우팅은 TanStack Router 파일 기반 방식, 서버 상태는 TanStack Query로 관리한다.
+- 소스는 `src/`, 라우트는 `src/app/routes/`, 화면 전용 부품과 훅은 가장 가까운 소유 라우트의 `-components/`에 둔다.
+- 라우트 생성 파일은 직접 수정하지 않는다. `pnpm routes:generate`로 생성한다.
+- API 호출과 Query 설정은 도메인의 `api/`에서 관리하고 라우트는 조회와 화면 동작을 조합한다.
+- 랜딩은 별도 저장소의 책임이다. 이 앱은 로그인 화면과 로그인 이후의 서비스 화면만 제공한다.
+- Vite 개발 서버와 운영 Nginx가 `/api`를 백엔드로 전달한다. 비밀값을 `VITE_` 환경변수에 넣지 않는다.
+- Gemini 실제 호출이나 worker 실행 없이 모의 API로 검증한다.
+
 ## UI 시스템
 
-- 기본 UI는 `components/ui/`의 사내 디자인 시스템 컴포넌트를 먼저 사용한다. 필요한 컴포넌트와 props가 이미 있는지 확인하고 `@/components/ui/<primitives|composites|layouts>/<컴포넌트>`에서 가져온다.
-- 화면은 버튼, 입력, 대화상자, 표, 툴팁 같은 기본 제어를 직접 만들지 않는다. 필요한 기본 제어가 없으면 `components/ui/`에 추가한 뒤 사용한다.
-- 공통 디자인 값(색, 간격, 글꼴, 반경, 그림자, 모션)은 `lib/styles/theme.css.ts`의 토큰을 사용한다.
-- 공통 컴포넌트의 기본 외형은 `lib/styles/layers.css.ts`의 `layered()`로 `ui` CSS 계층 안에 둔다. 화면 className은 계층 밖에 있어 불러온 순서와 관계없이 기본 외형보다 우선한다.
+- 기본 UI는 `src/components/ui/`의 사내 디자인 시스템 컴포넌트를 먼저 사용한다. 필요한 컴포넌트와 props가 이미 있는지 확인하고 `@/components/ui/<primitives|composites|layouts>/<컴포넌트>`에서 가져온다.
+- 화면은 버튼, 입력, 대화상자, 표, 툴팁 같은 기본 제어를 직접 만들지 않는다. 필요한 기본 제어가 없으면 `src/components/ui/`에 추가한 뒤 사용한다.
+- 공통 디자인 값(색, 간격, 글꼴, 반경, 그림자, 모션)은 `src/lib/styles/theme.css.ts`의 토큰을 사용한다.
+- 공통 컴포넌트의 기본 외형은 `src/lib/styles/layers.css.ts`의 `layered()`로 `ui` CSS 계층 안에 둔다. 화면 className은 계층 밖에 있어 불러온 순서와 관계없이 기본 외형보다 우선한다.
 - 스타일은 vanilla-extract를 유지한다. 페이지 배치와 서비스 전용 표현은 해당 화면의 `.css.ts`에 두고, 공통 컴포넌트의 배경·테두리 같은 기본 외형을 화면에서 다시 그리지 않는다.
 - Radix는 드롭다운 메뉴, 툴팁, 토스트의 동작에만 사용한다. 나머지 기본 제어는 네이티브 요소로 구현한다.
 

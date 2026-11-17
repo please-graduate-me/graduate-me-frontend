@@ -1,6 +1,6 @@
 # graduate-me-frontend
 
-Next.js 웹 화면과 프론트엔드 API 계약을 관리합니다.
+React + Vite 기반의 로그인 전용 서비스 앱과 프론트엔드 API 계약을 관리합니다. 마케팅 랜딩은 별도 저장소에서 운영합니다. 서비스 앱의 목표 도메인은 `app.graduate.me`, 랜딩은 `graduate.me`입니다. DNS와 인증 공개 주소의 실제 전환은 별도 배포 작업입니다.
 
 ## 저장소 배치
 
@@ -14,14 +14,14 @@ codding/
 
 ## 로컬 개발
 
-백엔드 → 프론트엔드 순서로 실행합니다. 백엔드가 `graduate-me-app` 네트워크를 만들고 프론트엔드가 여기에 연결됩니다. 영상 분석은 백엔드 worker가 Gemini API를 직접 호출합니다.
+백엔드 → 프론트엔드 순서로 실행합니다. 백엔드가 `graduate-me-app` 네트워크를 만들고 프론트엔드가 여기에 연결됩니다. 영상 분석은 백엔드 worker가 담당합니다. 실제 Gemini 호출과 worker 실행은 사용자가 명시적으로 요청한 경우에만 수행하며, 검증에는 모의 응답을 사용합니다.
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-`pnpm dev`는 Docker Compose로 실행하며 파일 변경을 반영합니다. 환경변수는 Compose에서 주입합니다. 웹은 http://localhost:3000, API는 http://localhost:4000에서 접근합니다. 프론트 컨테이너의 `API_INTERNAL_URL`은 `http://api:4000`입니다.
+`pnpm dev`는 Docker Compose로 실행하며 파일 변경을 반영합니다. 환경변수는 Compose에서 주입합니다. 웹은 http://localhost:3000, API는 http://localhost:4000에서 접근합니다. 브라우저는 같은 출처의 `/api`를 사용하고, 개발 중에는 Vite가 `http://api:4000`으로 전달합니다. `ADMIN_APP_URL`은 Compose가 공개 환경변수 `VITE_ADMIN_APP_URL`로 전달합니다.
 
 ```sh
 pnpm dev:logs
@@ -36,7 +36,7 @@ pnpm test
 pnpm build
 ```
 
-`pnpm check`는 포맷 적용, ESLint, 타입 검사를 순서대로 실행합니다. `pnpm build`는 이 저장소만 빌드합니다.
+`pnpm check`는 포맷 적용, ESLint, 타입 검사를 순서대로 실행합니다. `pnpm build`는 타입 검사와 Vite 빌드로 `dist/`를 생성합니다. 운영 이미지는 Nginx가 정적 파일, `/api` 프록시, 직접 URL 진입의 fallback을 제공합니다. `/healthz`는 정적 서버의 상태만 확인합니다. 라우트 생성은 개발 플러그인과 `pnpm routes:generate`가 담당합니다.
 
 ## Git 이력과 기존 환경 전환
 
@@ -51,6 +51,12 @@ docker compose -f compose.yaml -f compose.dev.yaml down
 그다음 새 저장소를 위 순서대로 실행합니다. 백엔드는 기존 `graduate-me_postgres_data` 볼륨을 사용합니다. 새 DB로 시작하려면 백엔드 `.env`에 `POSTGRES_VOLUME_NAME`을 다른 이름으로 설정합니다. 같은 DB 볼륨으로 두 PostgreSQL 컨테이너를 동시에 실행하지 않습니다.
 
 코드 배치 규칙은 [Architecture.md](Architecture.md), 작업 지침은 [AGENTS.md](AGENTS.md)를 따릅니다.
+
+## 인증 전환 범위
+
+로그인 화면은 `/login`, 학습 홈은 `/library`입니다. 기존 `/` 콜백 주소의 복귀 경로와 오류는 `/login`으로 전달합니다. 인증 상위 라우트의 `beforeLoad` 이후에 개인 데이터 조회를 시작하며, 실제 접근 권한은 백엔드가 검사합니다. 로그아웃·탈퇴 후 개인 캐시를 제거하고 학습 중 세션 만료는 기존 답안을 유지하는 재인증 안내로 처리합니다.
+
+현재 Google OAuth와 백엔드 DB 세션은 유지했습니다. 학교 이메일 인증 방식과 허용 도메인이 정해지면 백엔드 검증과 로그인 UI를 함께 변경해야 합니다. 프론트 화면 검사만으로 학교 인증을 대신하지 않습니다.
 
 ## 일반 사용자와 조교
 
